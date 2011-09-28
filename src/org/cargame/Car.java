@@ -48,7 +48,7 @@ public class Car {
   }
   
   public void apply_turn(int delta) {
-    if(mSpeed < 0.01) return;
+    if(mSpeed < 0.01 || Math.abs(mSteerAngle) < steer_center_snap_angle) return;
     mAngle += delta * mSteerAngle * turn_factor;
     if(mAngle > Math.PI * 2) mAngle -= Math.PI * 2;
     else if(mAngle < Math.PI * 2) mAngle += Math.PI * 2;
