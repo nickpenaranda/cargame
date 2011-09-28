@@ -218,6 +218,11 @@ public class CarGame extends BasicGame {
     g.drawString(
         String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
+    
+    if(collision) {
+      g.setColor(Color.red);
+      g.drawString("!!!!BOOM SUCKA!!!!",320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!")/2,240);
+    }
   }
 
   private boolean isInBounds(int x, int y) {
