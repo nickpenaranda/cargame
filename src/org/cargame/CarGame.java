@@ -14,7 +14,7 @@ import org.newdawn.slick.SlickException;
 
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
-  public static final boolean MULTIPLAYER_MODE = false;
+  private static boolean multiplayer_mode;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   private ArrayList<Car> mCars;
   private ArrayList<Boundary> mWalls;
@@ -27,6 +27,13 @@ public class CarGame extends BasicGame {
 
   public CarGame() {
     super("CAR GAME, SON");
+
+    String mmode = System.getProperty("cargame.multiplayer_mode");
+    if (mmode != null)
+        multiplayer_mode = Boolean.valueOf(mmode);
+    else
+        multiplayer_mode = false;
+    System.out.println(multiplayer_mode);
 
     r = new Random();
     mCars = new ArrayList<Car>();
@@ -80,7 +87,8 @@ public class CarGame extends BasicGame {
     mTiles[4] = new Image("gfx/wall4.png");
 
     int player_num = PLAYER_NUM;
-    if (MULTIPLAYER_MODE) {
+    System.out.println(multiplayer_mode);
+    if (multiplayer_mode) {
       try {
         mClient = new Client();
         player_num = mClient.getPlayerId();
@@ -97,7 +105,7 @@ public class CarGame extends BasicGame {
 
   @Override
   public void update(GameContainer container, int delta) throws SlickException {
-    if (MULTIPLAYER_MODE) {
+    if (multiplayer_mode) {
       UpdateMessage message = null;
       try {
         message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(),
