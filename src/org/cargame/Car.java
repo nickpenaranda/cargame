@@ -5,6 +5,10 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 public class Car {
+  public static final int TURN_NONE = 0;
+  public static final int TURN_LEFT = 1;
+  public static final int TURN_RIGHT = 2;
+
   private static final double accel_factor = 0.01;
   private static final double decel_factor = 0.02;
   private static final double turn_factor = 0.005;
@@ -17,12 +21,14 @@ public class Car {
   private static final double max_reverse_speed = -5;
   private static final double speed_stop_snap = 0.1;
 
+  protected boolean mIsReversing=false, mIsAccelerating=false,mIsBraking=false;
   private Image mImage;
   private double mX, mY;
   private double mAngle;
   private double mSteerAngle;
   private double mSpeed;
   private int mDeadCount;
+  protected int mTurning;
 
   public Car(String graphic_file, float x, float y) {
     try {
@@ -94,7 +100,26 @@ public class Car {
   public void think(int delta) {
     if(isDead()) {
       brake(delta);
+    } else {
+      if (mIsReversing)
+        reverse(delta);
+      if (mIsAccelerating)
+        accelerate(delta);
+      if (mIsBraking)
+        brake(delta);
+      switch (mTurning) {
+      case TURN_LEFT:
+        turn_left(delta);
+        break;
+      case TURN_RIGHT:
+        turn_right(delta);
+        break;
+      case TURN_NONE:
+        turn_none(delta);
+        break;
+      }
     }
+    
     apply_turn(delta);
     mX += Math.sin(mAngle) * delta * mSpeed * speed_scalar;
     mY -= Math.cos(mAngle) * delta * mSpeed * speed_scalar;
@@ -149,4 +174,23 @@ public class Car {
     mDeadCount = i;
   }
 
+  public void setTurning(int turn) {
+    mTurning = turn;
+  }
+
+  public int getTurning() {
+    return (mTurning);
+  }
+
+  public void setReversing(boolean reverse) {
+    mIsReversing = reverse;
+  }
+
+  public void setAccelerating(boolean accel) {
+    mIsAccelerating = accel;
+  }
+  
+  public void setBraking(boolean brake) {
+    mIsBraking = brake;
+  }
 }

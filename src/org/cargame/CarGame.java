@@ -22,7 +22,7 @@ public class CarGame extends BasicGame {
 
   private ArrayList<Car> mCars;
   private ArrayList<Boundary> mWalls;
-  private PlayerCar mPlayerCar, mOtherCar;
+  private Car mPlayerCar, mOtherCar;
   private static final int PLAYER_NUM = 1;
   private int[][] mMap;
   private Image[] mTiles;
@@ -123,12 +123,12 @@ public class CarGame extends BasicGame {
       }
     }
 
-    mCars.add(new PlayerCar("gfx/car1.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+    mCars.add(new Car("gfx/car1.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
         -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
-    mCars.add(new PlayerCar("gfx/car2.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+    mCars.add(new Car("gfx/car2.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
         -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
-    mPlayerCar = (PlayerCar) mCars.get(player_num);
-    mOtherCar = (PlayerCar) mCars.get(player_num == 0 ? 1 :0);
+    mPlayerCar = mCars.get(player_num);
+    mOtherCar = mCars.get(player_num == 0 ? 1 :0);
   }
 
   @Override
@@ -159,7 +159,7 @@ public class CarGame extends BasicGame {
       otherCars.remove(mPlayerCar);
       for (Car other : otherCars) {
         if(distance(mPlayerCar.getX(),mPlayerCar.getY(),other.getX(),other.getY()) < 47 &&
-          mPlayerCar.getSpeed() < other.getSpeed())
+          Math.abs(mPlayerCar.getSpeed()) < Math.abs(other.getSpeed()))
             mPlayerCar.setDeadCount(1000);
       }
     }
@@ -258,10 +258,10 @@ public class CarGame extends BasicGame {
       mPlayerCar.setReversing(true);
       break;
     case Input.KEY_A:
-      mPlayerCar.setTurning(PlayerCar.TURN_LEFT);
+      mPlayerCar.setTurning(Car.TURN_LEFT);
       break;
     case Input.KEY_D:
-      mPlayerCar.setTurning(PlayerCar.TURN_RIGHT);
+      mPlayerCar.setTurning(Car.TURN_RIGHT);
       break;
     case Input.KEY_SPACE:
       mPlayerCar.setBraking(true);
@@ -281,12 +281,12 @@ public class CarGame extends BasicGame {
       mPlayerCar.setReversing(false);
       break;
     case Input.KEY_A:
-      if (mPlayerCar.getTurning() == PlayerCar.TURN_LEFT)
-        mPlayerCar.setTurning(PlayerCar.TURN_NONE);
+      if (mPlayerCar.getTurning() == Car.TURN_LEFT)
+        mPlayerCar.setTurning(Car.TURN_NONE);
       break;
     case Input.KEY_D:
-      if (mPlayerCar.getTurning() == PlayerCar.TURN_RIGHT)
-        mPlayerCar.setTurning(PlayerCar.TURN_NONE);
+      if (mPlayerCar.getTurning() == Car.TURN_RIGHT)
+        mPlayerCar.setTurning(Car.TURN_NONE);
       break;
     case Input.KEY_SPACE:
       mPlayerCar.setBraking(false);
