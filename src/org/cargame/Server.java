@@ -11,29 +11,32 @@ import com.captiveimagination.jgn.clientserver.*;
 import com.captiveimagination.jgn.event.*;
 
 
-public class Server extends DynamicMessageAdapter implements JGNConnectionListener {
+public class Server extends DynamicMessageAdapter {
     private static int NUM_PLAYERS = 2;
     private boolean[] playersWhoSent = new boolean[NUM_PLAYERS];
     private int cur_seq = 0;
+    private int connected_players = 0;
 
     Queue<UpdateMessage> prev_messages = new LinkedList<UpdateMessage>();
+    JGNServer server;
 
     public Server() throws Exception {
         JGN.register(UpdateMessage.class);
         InetSocketAddress reliableAddress = new InetSocketAddress(InetAddress.getLocalHost(), 2000);
         InetSocketAddress fastAddress = new InetSocketAddress(InetAddress.getLocalHost(), 2001);
-        JGNServer server = new JGNServer(reliableAddress, fastAddress);
-        server.addClientConnectionListener(this);
+        server = new JGNServer(reliableAddress, fastAddress);
         server.addMessageListener(this);
         JGN.createThread(1, server).start();
     }
 
-    public void connected(JGNConnection connection) {
+    public void connected() {
         System.out.println("CONNECTED");
-    }
-
-    public void disconnected(JGNConnection connection) {
-        System.out.println("DISCONNECTED");
+        connected_players++;
+        if (connected_players == NUM_PLAYERS) {
+            UpdateMessage message = new UpdateMessage();
+            message.ready = true;
+            server.sendToAll(message);
+        }
     }
 
     private void validateMessage(UpdateMessage message) {
@@ -59,9 +62,13 @@ public class Server extends DynamicMessageAdapter implements JGNConnectionListen
     }
 
     public void messageReceived(UpdateMessage message) {
-        validateMessage(message);
-        System.out.println("MESSAGE: " + message);
-        validateMessage(message);
+        if (message.connecting) {
+            connected();
+        } else {
+            validateMessage(message);
+            System.out.println("MESSAGE: " + message);
+            validateMessage(message);
+        }
     }
 
     public static void main(String[] args) throws Exception {

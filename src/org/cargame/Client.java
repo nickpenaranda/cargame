@@ -30,11 +30,22 @@ public class Client extends DynamicMessageAdapter {
 		client.connectAndWait(reliableServerAddress, fastServerAddress, 1000);
         System.out.println("connected");
 
+        UpdateMessage message = new UpdateMessage();
+        message.connecting = true;
+        client.sendToServer(message);
+        waitForPlayers();
+
         doUpdate(15.0, 17.0);
 	}
 
-    public waitForPlayers() {
-        // This calls nextMessage looking for a message with .ready set
+    public void waitForPlayers() throws Exception {
+        UpdateMessage message = nextMessage(0);
+        System.out.println("WAITING");
+        if (message.ready) {
+            System.out.println("READY!");
+        } else {
+            System.out.println("WTF");
+        }
     }
 
     public UpdateMessage doUpdate(double x, double y) throws Exception {
@@ -52,6 +63,7 @@ public class Client extends DynamicMessageAdapter {
     }
 
     private UpdateMessage nextMessage(int expected_seq) throws Exception {
+        // validate seq?
         while (true) {
             if (newMessage != null) {
                 System.out.println("got it");

@@ -7,7 +7,10 @@ public class UpdateMessage extends Message implements CertifiedMessage, PlayerMe
     private String text;
 
     // used only for the initial "all players ready message"
-    private ready = false;
+    public boolean ready = false;
+    
+    // used only for the client telling the server its connected.
+    public boolean connecting = false;
 
     // Server processes messages from different clients in lockstep based
     // on sequence number.
@@ -16,7 +19,7 @@ public class UpdateMessage extends Message implements CertifiedMessage, PlayerMe
     public double x, y;
 
 	public String toString() {
-		return "NCM id=" + getId() + " playerId:" + getPlayerId() + " destPl:" + getDestinationPlayerId() + "seq: " + seq + " " + x + " " + y;
+		return "id=" + getId() + " playerId:" + getPlayerId() + " destPl:" + getDestinationPlayerId() + "seq: " + seq + " " + x + " " + y;
 	}
 }
 
