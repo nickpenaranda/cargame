@@ -35,7 +35,11 @@ public class Client extends DynamicMessageAdapter {
     UpdateMessage message = new UpdateMessage();
     message.connecting = true;
     client.sendToServer(message);
-    waitForPlayers();
+    //waitForPlayers();
+  }
+
+  public int getPlayerId() {
+    return client.getPlayerId();
   }
 
   // Waits until the server sends us the ready message.
