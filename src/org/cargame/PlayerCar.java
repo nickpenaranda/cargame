@@ -38,8 +38,12 @@ public class PlayerCar extends Car {
     case TURN_RIGHT:
       turn_right(delta);
       break;
+    case TURN_NONE:
+      turn_none(delta);
+      break;
     }
     
     super.think(delta);
   }
+
 }

@@ -44,7 +44,7 @@ public class CarGame extends BasicGame {
       image.setRotation((float)(car.getAngle()*180/Math.PI));
       image.drawCentered(draw_offset_x + car.getX(), draw_offset_y + car.getY());
     }
-    g.drawString("Welcome to Car Game ho", 10, 30);
+    g.drawString("Steer angle = " + mPlayerCar.getSteerAngle(), 10, 30);
   }
 
   @Override
