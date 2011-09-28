@@ -6,13 +6,15 @@ import org.newdawn.slick.SlickException;
 
 public class Car {
   private static final double accel_factor = 0.01;
-  private static final double brake_factor = 0.02;
+  private static final double decel_factor = 0.02;
   private static final double turn_factor = 0.005;
   private static final double steer_factor = 0.00029 * 4;
   private static final double speed_scalar = 0.05;
   private static final double max_speed = 10;
   private static final double max_steer_angle = 0.34907;
   private static final double steer_center_snap_angle = 0.06;
+  private static final double max_reverse_speed = -5;
+  private static final double speed_stop_snap = 0.01;
 
   private Image mImage;
   private double mX, mY;
@@ -41,16 +43,20 @@ public class Car {
     mSpeed += accel_factor * delta;
     if (mSpeed > max_speed)
       mSpeed = max_speed;
+    else if (Math.abs(mSpeed) < speed_stop_snap)
+      mSpeed = 0;
   }
 
-  public void brake(int delta) {
-    mSpeed -= brake_factor * delta;
-    if (mSpeed < 0)
+  public void decel(int delta) {
+    mSpeed -= decel_factor * delta;
+    if (mSpeed < max_reverse_speed)
+      mSpeed = max_reverse_speed;
+    else if (Math.abs(mSpeed) < speed_stop_snap)
       mSpeed = 0;
   }
 
   public void apply_turn(int delta) {
-    if (mSpeed < 0.01 || Math.abs(mSteerAngle) < steer_center_snap_angle)
+    if (Math.abs(mSpeed) < 0.01 || Math.abs(mSteerAngle) < steer_center_snap_angle)
       return;
     mAngle += delta * mSteerAngle * turn_factor;
     if (mAngle > Math.PI * 2)

@@ -5,7 +5,7 @@ public class PlayerCar extends Car {
   public static final int TURN_LEFT = 1;
   public static final int TURN_RIGHT = 2;
 
-  private boolean mIsBraking, mIsAccelerating;
+  private boolean mIsDecelerating, mIsAccelerating;
   private int mTurning;
 
   public PlayerCar(String graphicFile, float x, float y) {
@@ -22,7 +22,7 @@ public class PlayerCar extends Car {
   }
 
   public void setBraking(boolean brake) {
-    mIsBraking = brake;
+    mIsDecelerating = brake;
   }
 
   public void setAccelerating(boolean accel) {
@@ -31,8 +31,8 @@ public class PlayerCar extends Car {
 
   @Override
   public void think(int delta) {
-    if (mIsBraking)
-      brake(delta);
+    if (mIsDecelerating)
+      decel(delta);
     if (mIsAccelerating)
       accelerate(delta);
     switch (mTurning) {

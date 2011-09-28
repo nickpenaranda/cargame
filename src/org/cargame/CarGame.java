@@ -13,10 +13,11 @@ import org.newdawn.slick.SlickException;
 
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
-  public static final boolean MULTIPLAYER_MODE = true;
+  public static final boolean MULTIPLAYER_MODE = false;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   private ArrayList<Car> mCars;
-  private PlayerCar mPlayerCar,mOtherCar;
+  private ArrayList<Boundary> mWalls;
+  private PlayerCar mPlayerCar, mOtherCar;
   private static final int PLAYER_NUM = 1;
   private int[][] mMap;
   private Random r;
@@ -29,16 +30,18 @@ public class CarGame extends BasicGame {
     r = new Random();
     mCars = new ArrayList<Car>();
     mMap = new int[256][256];
-    mTiles = new Image[3];
+    mTiles = new Image[5];
+    mWalls = new ArrayList<Boundary>();
 
     genMap();
   }
 
   // Generates a map with grid roads.
   private void genMap() {
+    // Set tiles
     for (int x = 0; x < 256; ++x) {
       for (int y = 0; y < 256; ++y) {
-        mMap[x][y] = 1;
+        mMap[x][y] = r.nextInt(4) + 1;
       }
     }
     int roadWidth = 6;
@@ -49,12 +52,18 @@ public class CarGame extends BasicGame {
         flatLine(x, 0, 255, false, 0);
       }
     }
+
+    // Set boundaries
+    mWalls.add(new Boundary(-8192, -8192, 8192, -8192, 1));
+    mWalls.add(new Boundary(-8192, -8192, -8192, 8192, 1));
+    mWalls.add(new Boundary(8192, -8192, 8192, 8192, 1));
+    mWalls.add(new Boundary(-8192, 8192, 8192, 8192, 1));
   }
 
   private void flatLine(int offset, int start, int end, boolean horiz, int val) {
     int y = offset;
-    for (int x=start; x<=end; x++) {
-      if (horiz) 
+    for (int x = start; x <= end; x++) {
+      if (horiz)
         mMap[x][y] = val;
       else
         mMap[y][x] = val;
@@ -69,15 +78,17 @@ public class CarGame extends BasicGame {
     mOtherCar = (PlayerCar) mCars.get(0);
 
     mTiles[0] = null;
-    mTiles[1] = new Image("gfx/tile1.png");
-    mTiles[2] = new Image("gfx/tile2.png");
-    
+    mTiles[1] = new Image("gfx/wall1.png");
+    mTiles[2] = new Image("gfx/wall2.png");
+    mTiles[3] = new Image("gfx/wall3.png");
+    mTiles[4] = new Image("gfx/wall4.png");
+
     if (MULTIPLAYER_MODE) {
-        try {
-          mClient = new Client();
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
+      try {
+        mClient = new Client();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -86,17 +97,18 @@ public class CarGame extends BasicGame {
     if (MULTIPLAYER_MODE) {
       UpdateMessage message = null;
       try {
-        message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(), mPlayerCar.getAngle());
+        message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(),
+            mPlayerCar.getAngle());
       } catch (Exception e) {
         e.printStackTrace();
       }
-      
-      if(message != null) {
-        mOtherCar.moveTo((float)message.x, (float)message.y);
+
+      if (message != null) {
+        mOtherCar.moveTo((float) message.x, (float) message.y);
         mOtherCar.setAngle(message.angle);
       }
     }
-    
+
     // Think for all cars
     for (Car car : mCars) {
       car.think(delta);
@@ -109,15 +121,24 @@ public class CarGame extends BasicGame {
     int ty = (int) (8192 + mPlayerCar.getY() - (container.getHeight() / 2)) / 64;
     int oy = (int) (8192 + mPlayerCar.getY() - (container.getHeight() / 2)) % 64;
 
-
+    // Draw tiles
     for (int x = 0; x < 11; x++) {
       for (int y = 0; y < 9; y++) {
-        if (isInBounds(tx+x,ty+y) && mMap[tx + x][ty + y] != 0)
+        if (isInBounds(tx + x, ty + y) && mMap[tx + x][ty + y] != 0)
           g.drawImage(mTiles[mMap[tx + x][ty + y]], (x << 6) - ox, (y << 6)
               - oy);
       }
     }
 
+    // Draw boundaries
+    for (Boundary boundary : mWalls) {
+      g.drawLine((float) (draw_offset_x + boundary.a.x - mPlayerCar.getX()),
+          (float) (draw_offset_y + boundary.a.y - mPlayerCar.getY()),
+          (float) (draw_offset_x + boundary.b.x - mPlayerCar.getX()),
+          (float) (draw_offset_y + boundary.b.y - mPlayerCar.getY()));
+    }
+
+    // Draw cars
     for (Car car : mCars) {
       Image image = car.getImage();
       image.setRotation((float) (car.getAngle() * 180 / Math.PI));
@@ -125,6 +146,10 @@ public class CarGame extends BasicGame {
           draw_offset_y + car.getY() - mPlayerCar.getY());
     }
 
+    // g.setColor(Color.white);
+    g.drawOval(draw_offset_x - 31, draw_offset_y - 31, 62, 62);
+
+    // Info
     g.drawString("Steer angle = " + mPlayerCar.getSteerAngle(), 10, 30);
     g.drawString(
         String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
@@ -132,7 +157,7 @@ public class CarGame extends BasicGame {
   }
 
   private boolean isInBounds(int x, int y) {
-    return(x >= 0 && x < 256 && y >= 0 && y < 256);
+    return (x >= 0 && x < 256 && y >= 0 && y < 256);
   }
 
   @Override
