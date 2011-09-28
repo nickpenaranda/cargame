@@ -163,6 +163,12 @@ public class CarGame extends BasicGame {
             mPlayerCar.setDeadCount(1000);
       }
     }
+
+    for (int i=0; i<mWalls.size(); i++) {
+        if (mWalls.get(i).intersect(mPlayerCar.getX(), mPlayerCar.getY(), 31)) {
+          mPlayerCar.setDeadCount(1000);
+          }
+    }
   }
   
   static double distance(double x1,double y1,double x2,double y2) {
