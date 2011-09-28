@@ -160,7 +160,8 @@ public class CarGame extends BasicGame {
     
     if(collision > 0)
       collision -= delta;
-    else if(collision > 0 && delta > collision) {
+    
+    if(collision < 0) {
       mPlayerCar.moveTo(0,0);
       collision = 0;
     }
