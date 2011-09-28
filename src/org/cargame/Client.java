@@ -60,7 +60,7 @@ public class Client extends DynamicMessageAdapter {
 
     client.broadcast(message);
 
-    UpdateMessage response = nextMessage(seq, 4000);
+    UpdateMessage response = nextMessage(seq, 50);
     seq++;
     return response;
   }
@@ -73,6 +73,8 @@ public class Client extends DynamicMessageAdapter {
       if (newMessage != null) {
         UpdateMessage message = newMessage;
         newMessage = null;
+        //long latency = cur_time - start_time;
+        //System.out.println("latency: " + latency);
         return message;
       }
       Thread.sleep(1);

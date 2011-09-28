@@ -34,6 +34,7 @@ public class Server extends DynamicMessageAdapter {
       server.sendToAll(message);
     }
   }
+
   public void messageReceived(UpdateMessage message) {
     if (message.connecting)
       connected();

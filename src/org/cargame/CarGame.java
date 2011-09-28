@@ -13,7 +13,7 @@ import org.newdawn.slick.SlickException;
 
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
-  public static final boolean MULTIPLAYER_MODE = false;
+  public static final boolean MULTIPLAYER_MODE = true;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   private ArrayList<Car> mCars;
   private PlayerCar mPlayerCar,mOtherCar;
@@ -94,9 +94,6 @@ public class CarGame extends BasicGame {
       if(message != null) {
         mOtherCar.moveTo((float)message.x, (float)message.y);
         mOtherCar.setAngle(message.angle);
-      } else {
-        System.out.println("connection timed out");
-        System.exit(1);
       }
     }
     
