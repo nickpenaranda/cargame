@@ -137,7 +137,7 @@ public class CarGame extends BasicGame {
       UpdateMessage message = null;
       try {
         message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(),
-            mPlayerCar.getAngle(),mPlayerCar.getSpeed());
+            mPlayerCar.getAngle(),mPlayerCar.getSpeed(),mPlayerCar.getLives());
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -238,7 +238,14 @@ public class CarGame extends BasicGame {
     g.drawString(
         String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
-    
+
+    // Scoreboard
+    g.setColor(Color.green);
+    g.drawString("You: " + mPlayerCar.getLives(),10,container.getHeight()-15);
+
+    String dem = "Dem: " + mOtherCar.getLives();
+    g.setColor(Color.red);
+    g.drawString(dem,640 - g.getFont().getWidth(dem) - 10,container.getHeight()-15);
     if(mPlayerCar.isDead()) {
       g.setColor(Color.red);
       g.drawString("!!!!BOOM SUCKA!!!!",320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!")/2,240);

@@ -28,6 +28,7 @@ public class Car {
   private double mAngle;
   private double mSteerAngle;
   private double mSpeed;
+  private int mLives;
   private int mDeadCount;
   protected int mTurning;
 
@@ -47,6 +48,7 @@ public class Car {
     mSpeed = 0;
     mSteerAngle = 0;
     mDeadCount = 0;
+    mLives = 10;
   }
 
   public void accelerate(int delta) {
@@ -130,12 +132,11 @@ public class Car {
     if(mDeadCount > 0)
       mDeadCount -= delta;
     
-    if(mDeadCount < 0) {
+    if(mDeadCount < 0 && mLives-- > 0) {
       moveTo(-8192 + CarGame.roadWidth*32 + (CarGame.roadWidth + CarGame.buildingWidth)*(CarGame.r.nextInt(15)+1)*64,
           -8192 + CarGame.roadWidth*32 + (CarGame.roadWidth + CarGame.buildingWidth)*(CarGame.r.nextInt(15)+1)*64);
       mDeadCount = 0;
     }
-
   }
 
   public Image getImage() {
@@ -202,5 +203,9 @@ public class Car {
 
   public void setSpeed(double speed) {
     mSpeed = speed;
+  }
+
+  public int getLives() {
+    return(mLives);
   }
 }
