@@ -144,6 +144,7 @@ public class CarGame extends BasicGame {
 
       if (message != null) {
         mOtherCar.moveTo((float) message.x, (float) message.y);
+        mOtherCar.setSpeed(message.speed);
         mOtherCar.setAngle(message.angle);
       }
     }

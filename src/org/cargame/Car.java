@@ -199,4 +199,8 @@ public class Car {
   public void setBraking(boolean brake) {
     mIsBraking = brake;
   }
+
+  public void setSpeed(double speed) {
+    mSpeed = speed;
+  }
 }
