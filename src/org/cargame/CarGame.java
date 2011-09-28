@@ -160,13 +160,13 @@ public class CarGame extends BasicGame {
       for (Car other : otherCars) {
         if(distance(mPlayerCar.getX(),mPlayerCar.getY(),other.getX(),other.getY()) < 47 &&
           Math.abs(mPlayerCar.getSpeed()) < Math.abs(other.getSpeed()))
-            mPlayerCar.setDeadCount(1000);
+            mPlayerCar.kill();
       }
     }
 
     for (int i=0; i<mWalls.size(); i++) {
         if (mWalls.get(i).intersect(mPlayerCar.getX(), mPlayerCar.getY(), 31)) {
-          mPlayerCar.setDeadCount(1000);
+          mPlayerCar.kill();
           }
     }
   }

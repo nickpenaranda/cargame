@@ -20,6 +20,7 @@ public class Car {
   private static final double steer_center_snap_angle = Math.PI / 18;
   private static final double max_reverse_speed = -5;
   private static final double speed_stop_snap = 0.1;
+  private static final int RESPAWN_TIME = 1000;
 
   protected boolean mIsReversing=false, mIsAccelerating=false,mIsBraking=false;
   private Image mImage;
@@ -128,8 +129,8 @@ public class Car {
       mDeadCount -= delta;
     
     if(mDeadCount < 0) {
-      moveTo(-8192 + CarGame.roadWidth*32 + (CarGame.roadWidth + CarGame.buildingWidth)*(CarGame.r.nextInt(16)+1)*64,
-          -8192 + CarGame.roadWidth*32 + (CarGame.roadWidth + CarGame.buildingWidth)*(CarGame.r.nextInt(16)+1)*64);
+      moveTo(-8192 + CarGame.roadWidth*32 + (CarGame.roadWidth + CarGame.buildingWidth)*(CarGame.r.nextInt(15)+1)*64,
+          -8192 + CarGame.roadWidth*32 + (CarGame.roadWidth + CarGame.buildingWidth)*(CarGame.r.nextInt(15)+1)*64);
       mDeadCount = 0;
     }
 
@@ -170,9 +171,10 @@ public class Car {
     return(mDeadCount > 0);
   }
 
-  public void setDeadCount(int i) {
+  public void kill() {
     if(mDeadCount <= 0)
-      mDeadCount = i;
+      mDeadCount = RESPAWN_TIME;
+    mSpeed = 0;
   }
 
   public void setTurning(int turn) {
