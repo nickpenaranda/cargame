@@ -7,6 +7,7 @@ import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
@@ -150,6 +151,29 @@ public class CarGame extends BasicGame {
     g.drawOval(draw_offset_x - 31, draw_offset_y - 31, 62, 62);
 
     // Info
+    // draw indicator
+    int min_len = 33;
+    int max_len = 100;
+    double angle = Math.atan((mOtherCar.getY() - mPlayerCar.getY())
+                             / (mOtherCar.getX() - mPlayerCar.getX()));
+    if (mOtherCar.getX() > mPlayerCar.getX())
+        angle += Math.PI;
+
+    double car_dist = Math.sqrt(
+        Math.pow(mOtherCar.getY() - mPlayerCar.getY(), 2)
+        + Math.pow(mOtherCar.getX() - mPlayerCar.getX(), 2));
+    double len = min_len + car_dist / 100;
+    if (len > max_len)
+        len = max_len;
+
+    float x = (float) ((640/2) - len * Math.cos(angle));
+    float y = (float) ((480/2) - len * Math.sin(angle));
+
+    g.setColor(Color.red);
+    g.fillOval(x, y, (float) 5.0, (float) 5.0);
+    g.setColor(Color.orange);
+    g.drawOval(x, y, (float) 6.0, (float) 6.0);
+
     g.drawString("Steer angle = " + mPlayerCar.getSteerAngle(), 10, 30);
     g.drawString(
         String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
