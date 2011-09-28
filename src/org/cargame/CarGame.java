@@ -25,7 +25,7 @@ public class CarGame extends BasicGame {
   private Random r;
   private Image[] mTiles;
   private Client mClient;
-  private boolean collision = false;
+  private int collision = 0;
 
   public CarGame() {
     super("CAR GAME, SON");
@@ -154,8 +154,15 @@ public class CarGame extends BasicGame {
       otherCars.remove(car);
       for (Car other : otherCars) {
         if(distance(car.getX(),car.getY(),other.getX(),other.getY()) < 31)
-          collision  = true;
+          collision = 5000 + delta;
       }
+    }
+    
+    if(collision > 0)
+      collision -= delta;
+    else if(collision > 0 && delta > collision) {
+      mPlayerCar.moveTo(0,0);
+      collision = 0;
     }
   }
   
@@ -226,7 +233,7 @@ public class CarGame extends BasicGame {
         String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
     
-    if(collision) {
+    if(collision > 0) {
       g.setColor(Color.red);
       g.drawString("!!!!BOOM SUCKA!!!!",320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!")/2,240);
     }
