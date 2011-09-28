@@ -72,10 +72,12 @@ public class Car {
   }
 
   public void turn_none(int delta) {
-    mSteerAngle += mSteerAngle > 0 ? -(turn_factor * delta) : turn_factor
-        * delta;
-    if (Math.abs(mSteerAngle) < steer_center_snap_angle)
+    if (Math.abs(mSteerAngle) < steer_center_snap_angle) {
       mSteerAngle = 0;
+    } else {
+        mSteerAngle += mSteerAngle > 0 ? -(turn_factor * delta) : turn_factor
+            * delta;
+    }
   }
 
   public void think(int delta) {
