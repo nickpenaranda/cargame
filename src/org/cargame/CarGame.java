@@ -7,13 +7,14 @@ import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
-  public static final boolean MULTIPLAYER_MODE = true;
+  public static final boolean MULTIPLAYER_MODE = false;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   private ArrayList<Car> mCars;
   private PlayerCar mPlayerCar,mOtherCar;
@@ -124,6 +125,29 @@ public class CarGame extends BasicGame {
       image.drawCentered(draw_offset_x + car.getX() - mPlayerCar.getX(),
           draw_offset_y + car.getY() - mPlayerCar.getY());
     }
+
+    // draw indicator
+    int min_len = 33;
+    int max_len = 100;
+    double angle = Math.atan((mOtherCar.getY() - mPlayerCar.getY())
+                             / (mOtherCar.getX() - mPlayerCar.getX()));
+    if (mOtherCar.getX() > mPlayerCar.getX())
+        angle += Math.PI;
+
+    double car_dist = Math.sqrt(
+        Math.pow(mOtherCar.getY() - mPlayerCar.getY(), 2)
+        + Math.pow(mOtherCar.getX() - mPlayerCar.getX(), 2));
+    double len = min_len + car_dist / 100;
+    if (len > max_len)
+        len = max_len;
+
+    float x = (float) ((640/2) - len * Math.cos(angle));
+    float y = (float) ((480/2) - len * Math.sin(angle));
+
+    g.setColor(Color.red);
+    g.fillOval(x, y, (float) 5.0, (float) 5.0);
+    g.setColor(Color.orange);
+    g.drawOval(x, y, (float) 6.0, (float) 6.0);
 
     g.drawString("Steer angle = " + mPlayerCar.getSteerAngle(), 10, 30);
     g.drawString(
