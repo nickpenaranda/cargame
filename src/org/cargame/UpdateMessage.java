@@ -19,7 +19,8 @@ public class UpdateMessage extends Message implements CertifiedMessage, PlayerMe
     public double x, y;
 
 	public String toString() {
-		return "id=" + getId() + " playerId:" + getPlayerId() + " destPl:" + getDestinationPlayerId() + "seq: " + seq + " " + x + " " + y;
+	  return String.format("text=%s ready=%s connecting=%s seq=%d (%f,%f)",text,ready,connecting,seq,x,y);
+		//return "id=" + getId() + " playerId:" + getPlayerId() + " destPl:" + getDestinationPlayerId() + "seq: " + seq + " " + x + " " + y;
 	}
 }
 

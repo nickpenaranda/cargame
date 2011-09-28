@@ -65,7 +65,7 @@ public class Client extends DynamicMessageAdapter {
     // validate seq?
     while (true) {
       if (newMessage != null) {
-        // System.out.println("got it");
+         System.out.println("got it");
         UpdateMessage message = newMessage;
         newMessage = null;
         return message;
@@ -75,7 +75,7 @@ public class Client extends DynamicMessageAdapter {
   }
 
   public void messageReceived(UpdateMessage message) {
-    // System.out.println("RECEIVED MESSAGE: " + message);
-    // newMessage = message;
+     System.out.println("RECEIVED MESSAGE: " + message);
+     newMessage = message;
   }
 }
