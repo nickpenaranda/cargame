@@ -34,8 +34,6 @@ public class Client extends DynamicMessageAdapter {
         message.connecting = true;
         client.sendToServer(message);
         waitForPlayers();
-
-        doUpdate(15.0, 17.0);
 	}
 
     public void waitForPlayers() throws Exception {
@@ -66,7 +64,7 @@ public class Client extends DynamicMessageAdapter {
         // validate seq?
         while (true) {
             if (newMessage != null) {
-                System.out.println("got it");
+                //System.out.println("got it");
                 UpdateMessage message = newMessage;
                 newMessage = null;
                 return message;
@@ -76,11 +74,7 @@ public class Client extends DynamicMessageAdapter {
     }
 
 	public void messageReceived(UpdateMessage message) {
-		System.out.println("RECEIVED MESSAGE: " + message);
-        newMessage = message;
-	}
-
-	public static void main(String[] args) throws Exception {
-		new Client();
+//		System.out.println("RECEIVED MESSAGE: " + message);
+//        newMessage = message;
 	}
 }

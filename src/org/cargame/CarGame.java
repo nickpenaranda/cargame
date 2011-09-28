@@ -15,11 +15,12 @@ public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   private ArrayList<Car> mCars;
-  private PlayerCar mPlayerCar;
+  private PlayerCar mPlayerCar,mOtherCar;
   private static final int PLAYER_NUM = 1;
   private int[][] mMap;
   private Random r;
   private Image[] mTiles;
+  private Client mClient;
 
   public CarGame() {
     super("CAR GAME, SON");
@@ -42,14 +43,33 @@ public class CarGame extends BasicGame {
     mCars.add(new PlayerCar("gfx/car1.png", -100, 0));
     mCars.add(new PlayerCar("gfx/car2.png", 100, 0));
     mPlayerCar = (PlayerCar) mCars.get(PLAYER_NUM);
+    mOtherCar = (PlayerCar) mCars.get(PLAYER_NUM == 1 ? 0 : 1);
 
     mTiles[0] = null;
     mTiles[1] = new Image("gfx/tile1.png");
     mTiles[2] = new Image("gfx/tile2.png");
+    
+    try {
+      mClient = new Client();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   @Override
   public void update(GameContainer container, int delta) throws SlickException {
+    UpdateMessage message = null;
+    try {
+      message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY());
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    
+    if(message != null) {
+      mOtherCar.moveTo((float)message.x, (float)message.y);
+    }
+    
+    // Think for all cars
     for (Car car : mCars) {
       car.think(delta);
     }
