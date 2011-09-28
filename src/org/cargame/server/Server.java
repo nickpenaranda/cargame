@@ -1,8 +1,5 @@
 package org.cargame.server;
 
-import java.util.LinkedList;
-import java.util.Queue;
-
 import java.net.*;
 
 import org.cargame.UpdateMessage;
@@ -13,15 +10,12 @@ import com.captiveimagination.jgn.event.*;
 
 public class Server extends DynamicMessageAdapter {
   private static int NUM_PLAYERS = 2;
-  private boolean[] playersWhoSent = new boolean[NUM_PLAYERS];
-  private int cur_seq = 0;
   private int connected_players = 0;
 
-  Queue<UpdateMessage> prev_messages = new LinkedList<UpdateMessage>();
   JGNServer server;
 
   public Server() throws Exception {
-    InetAddress HOST_ADDRESS = InetAddress.getLocalHost();
+    InetAddress HOST_ADDRESS = InetAddress.getByName("192.168.0.4");
     JGN.register(UpdateMessage.class);
     InetSocketAddress reliableAddress = new InetSocketAddress(HOST_ADDRESS,
         2000);
@@ -40,37 +34,9 @@ public class Server extends DynamicMessageAdapter {
       server.sendToAll(message);
     }
   }
-
-  private void validateMessage(UpdateMessage message) {
-    // TODO: validate player isn't sending the same seq again
-    if (message.seq != cur_seq) {
-      assert (allPlayersSent());
-      assert (cur_seq + 1 == message.seq);
-      cur_seq++;
-      clearPlayersWhoSent();
-    }
-  }
-
-  private boolean allPlayersSent() {
-    for (int i = 0; i < playersWhoSent.length; i++)
-      if (!playersWhoSent[i])
-        return false;
-    return true;
-  }
-
-  private void clearPlayersWhoSent() {
-    for (int i = 0; i < playersWhoSent.length; i++)
-      playersWhoSent[i] = false;
-  }
-
   public void messageReceived(UpdateMessage message) {
-    if (message.connecting) {
+    if (message.connecting)
       connected();
-    } else {
-      validateMessage(message);
-      System.out.println("MESSAGE: " + message);
-      validateMessage(message);
-    }
   }
 
   public static void main(String[] args) throws Exception {

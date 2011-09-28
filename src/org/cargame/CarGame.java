@@ -43,7 +43,7 @@ public class CarGame extends BasicGame {
     mCars.add(new PlayerCar("gfx/car1.png", -100, 0));
     mCars.add(new PlayerCar("gfx/car2.png", 100, 0));
     mPlayerCar = (PlayerCar) mCars.get(PLAYER_NUM);
-    mOtherCar = (PlayerCar) mCars.get(PLAYER_NUM == 1 ? 0 : 1);
+    mOtherCar = (PlayerCar) mCars.get(0);
 
     mTiles[0] = null;
     mTiles[1] = new Image("gfx/tile1.png");
@@ -67,7 +67,10 @@ public class CarGame extends BasicGame {
     
     if(message != null) {
       mOtherCar.moveTo((float)message.x, (float)message.y);
-      mOtherCar.setAngle((double)message.angle);
+      mOtherCar.setAngle(message.angle);
+    } else {
+      System.out.println("connection timed out");
+      System.exit(1);
     }
     
     // Think for all cars
@@ -76,7 +79,6 @@ public class CarGame extends BasicGame {
     }
   }
 
-  @Override
   public void render(GameContainer container, Graphics g) throws SlickException {
     int tx = (int) (8192 + mPlayerCar.getX() - (container.getWidth() / 2)) / 64;
     int ox = (int) (8192 + mPlayerCar.getX() - (container.getWidth() / 2)) % 64;

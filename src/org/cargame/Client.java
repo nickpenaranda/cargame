@@ -1,6 +1,7 @@
 package org.cargame;
 
 import java.net.*;
+import java.util.Calendar;
 
 import com.captiveimagination.jgn.*;
 import com.captiveimagination.jgn.clientserver.*;
@@ -23,9 +24,9 @@ public class Client extends DynamicMessageAdapter {
     JGN.createThread(1, client).start();
 
     InetSocketAddress reliableServerAddress = new InetSocketAddress(InetAddress
-        .getLocalHost(), 2000);
+        .getByName("192.168.0.4"), 2000);
     InetSocketAddress fastServerAddress = new InetSocketAddress(InetAddress
-        .getLocalHost(), 2001);
+        .getByName("192.168.0.4"), 2001);
 
     System.out.println("connecting");
     client.connectAndWait(reliableServerAddress, fastServerAddress, 1000);
@@ -37,8 +38,9 @@ public class Client extends DynamicMessageAdapter {
     waitForPlayers();
   }
 
+  // Waits until the server sends us the ready message.
   public void waitForPlayers() throws Exception {
-    UpdateMessage message = nextMessage(0);
+    UpdateMessage message = nextMessage(0, 10000);
     System.out.println("WAITING");
     if (message.ready) {
       System.out.println("READY!");
@@ -47,6 +49,7 @@ public class Client extends DynamicMessageAdapter {
     }
   }
 
+  // Sends an update to the server, returns the other player's update.
   public UpdateMessage doUpdate(double x, double y, double angle) throws Exception {
     UpdateMessage message = new UpdateMessage();
     message.setPlayerId(client.getPlayerId());
@@ -57,26 +60,29 @@ public class Client extends DynamicMessageAdapter {
 
     client.broadcast(message);
 
-    UpdateMessage response = nextMessage(seq);
+    UpdateMessage response = nextMessage(seq, 4000);
     seq++;
     return response;
   }
 
-  private UpdateMessage nextMessage(int expected_seq) throws Exception {
-    // validate seq?
-    while (true) {
+  // Polls for next message.
+  private UpdateMessage nextMessage(int expected_seq, int timeout) throws Exception {
+    long start_time = Calendar.getInstance().getTimeInMillis();
+    long cur_time = start_time;
+    while (cur_time < start_time + timeout) {
       if (newMessage != null) {
-         System.out.println("got it");
         UpdateMessage message = newMessage;
         newMessage = null;
         return message;
       }
       Thread.sleep(1);
+      cur_time = Calendar.getInstance().getTimeInMillis();
     }
+    return null;
   }
 
   public void messageReceived(UpdateMessage message) {
-     System.out.println("RECEIVED MESSAGE: " + message);
+     // System.out.println("RECEIVED MESSAGE: " + message);
      newMessage = message;
   }
 }
