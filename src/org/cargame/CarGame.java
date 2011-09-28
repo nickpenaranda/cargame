@@ -17,6 +17,9 @@ public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
   private static boolean multiplayer_mode;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
+  static final int roadWidth = 6;
+  static final int buildingWidth = 10;
+
   private ArrayList<Car> mCars;
   private ArrayList<Boundary> mWalls;
   private PlayerCar mPlayerCar, mOtherCar;
@@ -54,8 +57,6 @@ public class CarGame extends BasicGame {
         mMap[x][y] = r.nextInt(4) + 1;
       }
     }
-    int roadWidth = 6;
-    int buildingWidth = 10;
     for (int x = 0; x < 256; ++x) {
       if (x % (roadWidth + buildingWidth) < roadWidth) {
         flatLine(x, 0, 255, true, 0);
@@ -124,8 +125,10 @@ public class CarGame extends BasicGame {
       }
     }
 
-    mCars.add(new PlayerCar("gfx/car1.png", -100, 0));
-    mCars.add(new PlayerCar("gfx/car2.png", 100, 0));
+    mCars.add(new PlayerCar("gfx/car1.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+        -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
+    mCars.add(new PlayerCar("gfx/car2.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+        -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
     mPlayerCar = (PlayerCar) mCars.get(player_num);
     mOtherCar = (PlayerCar) mCars.get(player_num == 0 ? 1 :0);
   }
@@ -162,7 +165,8 @@ public class CarGame extends BasicGame {
       collision -= delta;
     
     if(collision < 0) {
-      mPlayerCar.moveTo(0,0);
+      mPlayerCar.moveTo(-8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+          -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64);
       collision = 0;
     }
   }
