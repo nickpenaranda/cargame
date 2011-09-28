@@ -157,6 +157,12 @@ public class CarGame extends BasicGame {
           collision = 5000 + delta;
       }
     }
+
+    for (int i=0; i<mWalls.size(); i++) {
+        if (mWalls.get(i).intersect(mPlayerCar.getX(), mPlayerCar.getY(), 31)) {
+          collision = 5000 + delta;
+          }
+    }
     
     if(collision > 0)
       collision -= delta;

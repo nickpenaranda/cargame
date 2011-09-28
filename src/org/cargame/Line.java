@@ -12,7 +12,33 @@ public class Line {
     return ccw(this.a,other.a,other.b) != ccw(this.b,other.a,other.b) &&
       ccw(this.a,this.b,other.a) != ccw(this.a,this.b,other.b);
   }
-  
+
+  static double distance(Point p1,Point p2) {
+    return(Math.sqrt((p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y)));
+  }
+
+  public double distanceToPoint(Point other) {
+    double l2 = Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2);
+    if (l2 == 0.0)
+        return distance(other, a);   // v == w case
+    double t = (other.x - a.x) * (b.x - a.x) + (other.y - a.y) * (b.y - a.y);
+    t /= l2;
+    if (t < 0.0)
+        return distance(other, a);   // v == w case
+    if (t > 1.0)
+        return distance(other, b);   // v == w case
+
+    double proj_x = a.x + t * (b.x - a.x);
+    double proj_y = a.y + t * (b.y - a.y);
+
+    return distance(other, new Point(proj_x, proj_y));
+  }
+
+  public boolean intersect(double x, double y, float radius) {
+    double distance = distanceToPoint(new Point(x, y));
+    return distance < radius;
+  }
+
   public static class Point {
     public double x,y;
     
