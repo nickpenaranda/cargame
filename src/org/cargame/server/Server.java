@@ -21,7 +21,7 @@ public class Server extends DynamicMessageAdapter {
   JGNServer server;
 
   public Server() throws Exception {
-    InetAddress HOST_ADDRESS = InetAddress.getByName("192.168.0.6");
+    InetAddress HOST_ADDRESS = InetAddress.getLocalHost();
     JGN.register(UpdateMessage.class);
     InetSocketAddress reliableAddress = new InetSocketAddress(HOST_ADDRESS,
         2000);

@@ -23,9 +23,9 @@ public class Client extends DynamicMessageAdapter {
     JGN.createThread(1, client).start();
 
     InetSocketAddress reliableServerAddress = new InetSocketAddress(InetAddress
-        .getByName("192.168.0.6"), 2000);
+        .getLocalHost(), 2000);
     InetSocketAddress fastServerAddress = new InetSocketAddress(InetAddress
-        .getByName("192.168.0.6"), 2001);
+        .getLocalHost(), 2001);
 
     System.out.println("connecting");
     client.connectAndWait(reliableServerAddress, fastServerAddress, 1000);
