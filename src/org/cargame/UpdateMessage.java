@@ -16,7 +16,7 @@ public class UpdateMessage extends Message implements CertifiedMessage, PlayerMe
     // on sequence number.
     public int seq;
 
-    public double x, y, angle;
+    public double x, y, angle, speed;
 
 	public String toString() {
 	  return String.format("text=%s ready=%s connecting=%s seq=%d (%f,%f)",text,ready,connecting,seq,x,y);

@@ -1,6 +1,5 @@
 package org.cargame;
 
-import java.awt.List;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -17,18 +16,17 @@ public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
   private static boolean multiplayer_mode;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
-  static final int roadWidth = 6;
-  static final int buildingWidth = 10;
+  public static final int roadWidth = 6;
+  public static final int buildingWidth = 10;
+  public static Random r;
 
   private ArrayList<Car> mCars;
   private ArrayList<Boundary> mWalls;
   private PlayerCar mPlayerCar, mOtherCar;
   private static final int PLAYER_NUM = 1;
   private int[][] mMap;
-  private Random r;
   private Image[] mTiles;
   private Client mClient;
-  private int collision = 0;
 
   public CarGame() {
     super("CAR GAME, SON");
@@ -139,7 +137,7 @@ public class CarGame extends BasicGame {
       UpdateMessage message = null;
       try {
         message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(),
-            mPlayerCar.getAngle());
+            mPlayerCar.getAngle(),mPlayerCar.getSpeed());
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -153,21 +151,17 @@ public class CarGame extends BasicGame {
     // Think for all cars
     for (Car car : mCars) {
       car.think(delta);
-      ArrayList<Car> otherCars = new ArrayList<Car>(mCars);
-      otherCars.remove(car);
-      for (Car other : otherCars) {
-        if(distance(car.getX(),car.getY(),other.getX(),other.getY()) < 31)
-          collision = 5000 + delta;
-      }
     }
     
-    if(collision > 0)
-      collision -= delta;
-    
-    if(collision < 0) {
-      mPlayerCar.moveTo(-8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
-          -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64);
-      collision = 0;
+    // Check collision player car vs other cars
+    if(!mPlayerCar.isDead()) {
+      ArrayList<Car> otherCars = new ArrayList<Car>(mCars);
+      otherCars.remove(mPlayerCar);
+      for (Car other : otherCars) {
+        if(distance(mPlayerCar.getX(),mPlayerCar.getY(),other.getX(),other.getY()) < 47 &&
+          mPlayerCar.getSpeed() < other.getSpeed())
+            mPlayerCar.setDeadCount(1000);
+      }
     }
   }
   
@@ -238,7 +232,7 @@ public class CarGame extends BasicGame {
         String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
     
-    if(collision > 0) {
+    if(mPlayerCar.isDead()) {
       g.setColor(Color.red);
       g.drawString("!!!!BOOM SUCKA!!!!",320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!")/2,240);
     }
@@ -261,7 +255,7 @@ public class CarGame extends BasicGame {
       mPlayerCar.setAccelerating(true);
       break;
     case Input.KEY_S:
-      mPlayerCar.setBraking(true);
+      mPlayerCar.setReversing(true);
       break;
     case Input.KEY_A:
       mPlayerCar.setTurning(PlayerCar.TURN_LEFT);
@@ -269,6 +263,10 @@ public class CarGame extends BasicGame {
     case Input.KEY_D:
       mPlayerCar.setTurning(PlayerCar.TURN_RIGHT);
       break;
+    case Input.KEY_SPACE:
+      mPlayerCar.setBraking(true);
+      break;
+
     }
   }
 
@@ -280,7 +278,7 @@ public class CarGame extends BasicGame {
       mPlayerCar.setAccelerating(false);
       break;
     case Input.KEY_S:
-      mPlayerCar.setBraking(false);
+      mPlayerCar.setReversing(false);
       break;
     case Input.KEY_A:
       if (mPlayerCar.getTurning() == PlayerCar.TURN_LEFT)
@@ -289,6 +287,9 @@ public class CarGame extends BasicGame {
     case Input.KEY_D:
       if (mPlayerCar.getTurning() == PlayerCar.TURN_RIGHT)
         mPlayerCar.setTurning(PlayerCar.TURN_NONE);
+      break;
+    case Input.KEY_SPACE:
+      mPlayerCar.setBraking(false);
       break;
     }
   }
