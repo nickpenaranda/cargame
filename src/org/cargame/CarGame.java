@@ -30,12 +30,34 @@ public class CarGame extends BasicGame {
     mMap = new int[256][256];
     mTiles = new Image[3];
 
+    genMap();
+  }
+
+  // Generates a map with grid roads.
+  private void genMap() {
     for (int x = 0; x < 256; ++x) {
       for (int y = 0; y < 256; ++y) {
-        mMap[x][y] = r.nextInt(3);
+        mMap[x][y] = 1;
       }
     }
-    // TODO Auto-generated constructor stub
+    int roadWidth = 6;
+    int buildingWidth = 10;
+    for (int x = 0; x < 256; ++x) {
+      if (x % (roadWidth + buildingWidth) < roadWidth) {
+        flatLine(x, 0, 255, true, 0);
+        flatLine(x, 0, 255, false, 0);
+      }
+    }
+  }
+
+  private void flatLine(int offset, int start, int end, boolean horiz, int val) {
+    int y = offset;
+    for (int x=start; x<=end; x++) {
+      if (horiz) 
+        mMap[x][y] = val;
+      else
+        mMap[y][x] = val;
+    }
   }
 
   @Override
