@@ -119,11 +119,13 @@ public class Car {
         turn_none(delta);
         break;
       }
+      
+      apply_turn(delta);
+      mX += Math.sin(mAngle) * delta * mSpeed * speed_scalar;
+      mY -= Math.cos(mAngle) * delta * mSpeed * speed_scalar;
+
     }
     
-    apply_turn(delta);
-    mX += Math.sin(mAngle) * delta * mSpeed * speed_scalar;
-    mY -= Math.cos(mAngle) * delta * mSpeed * speed_scalar;
     
     if(mDeadCount > 0)
       mDeadCount -= delta;
@@ -175,6 +177,7 @@ public class Car {
     if(mDeadCount <= 0)
       mDeadCount = RESPAWN_TIME;
     mSpeed = 0;
+    mSteerAngle = 0;
   }
 
   public void setTurning(int turn) {
