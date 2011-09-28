@@ -13,6 +13,7 @@ import org.newdawn.slick.SlickException;
 
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
+  public static final boolean MULTIPLAYER_MODE = false;
   private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   private ArrayList<Car> mCars;
   private PlayerCar mPlayerCar,mOtherCar;
@@ -71,28 +72,32 @@ public class CarGame extends BasicGame {
     mTiles[1] = new Image("gfx/tile1.png");
     mTiles[2] = new Image("gfx/tile2.png");
     
-    try {
-      mClient = new Client();
-    } catch (Exception e) {
-      e.printStackTrace();
+    if (MULTIPLAYER_MODE) {
+        try {
+          mClient = new Client();
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
     }
   }
 
   @Override
   public void update(GameContainer container, int delta) throws SlickException {
-    UpdateMessage message = null;
-    try {
-      message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(), mPlayerCar.getAngle());
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    
-    if(message != null) {
-      mOtherCar.moveTo((float)message.x, (float)message.y);
-      mOtherCar.setAngle(message.angle);
-    } else {
-      System.out.println("connection timed out");
-      System.exit(1);
+    if (MULTIPLAYER_MODE) {
+      UpdateMessage message = null;
+      try {
+        message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(), mPlayerCar.getAngle());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      
+      if(message != null) {
+        mOtherCar.moveTo((float)message.x, (float)message.y);
+        mOtherCar.setAngle(message.angle);
+      } else {
+        System.out.println("connection timed out");
+        System.exit(1);
+      }
     }
     
     // Think for all cars
