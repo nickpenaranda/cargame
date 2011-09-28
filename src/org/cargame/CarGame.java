@@ -1,5 +1,6 @@
 package org.cargame;
 
+import java.awt.List;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -24,6 +25,7 @@ public class CarGame extends BasicGame {
   private Random r;
   private Image[] mTiles;
   private Client mClient;
+  private boolean collision = false;
 
   public CarGame() {
     super("CAR GAME, SON");
@@ -59,6 +61,31 @@ public class CarGame extends BasicGame {
     mWalls.add(new Boundary(-8192, -8192, -8192, 8192, 1));
     mWalls.add(new Boundary(8192, -8192, 8192, 8192, 1));
     mWalls.add(new Boundary(-8192, 8192, 8192, 8192, 1));
+    
+        for(int x=1; x <= 16; ++x) {
+      for(int y=1; y <= 16; ++y) {
+        mWalls.add(new Boundary(
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),1));
+        mWalls.add(new Boundary(
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),1));
+        mWalls.add(new Boundary(
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),1));
+        mWalls.add(new Boundary(
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),
+            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
+            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),1));
+      }
+    }
   }
 
   private void flatLine(int offset, int start, int end, boolean horiz, int val) {
@@ -113,7 +140,18 @@ public class CarGame extends BasicGame {
     // Think for all cars
     for (Car car : mCars) {
       car.think(delta);
+      ArrayList<Car> otherCars = new ArrayList<Car>(mCars);
+      otherCars.remove(car);
+      for (Car other : otherCars) {
+        if(distance(car.getX(),car.getY(),other.getX(),other.getY()) < 31)
+          collision  = true;
+      }
     }
+    
+  }
+  
+  static double distance(double x1,double y1,double x2,double y2) {
+    return(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
   }
 
   public void render(GameContainer container, Graphics g) throws SlickException {
@@ -155,19 +193,19 @@ public class CarGame extends BasicGame {
     int min_len = 33;
     int max_len = 100;
     double angle = Math.atan((mOtherCar.getY() - mPlayerCar.getY())
-                             / (mOtherCar.getX() - mPlayerCar.getX()));
+        / (mOtherCar.getX() - mPlayerCar.getX()));
     if (mOtherCar.getX() > mPlayerCar.getX())
-        angle += Math.PI;
+      angle += Math.PI;
 
-    double car_dist = Math.sqrt(
-        Math.pow(mOtherCar.getY() - mPlayerCar.getY(), 2)
+    double car_dist = Math.sqrt(Math.pow(mOtherCar.getY() - mPlayerCar.getY(),
+        2)
         + Math.pow(mOtherCar.getX() - mPlayerCar.getX(), 2));
     double len = min_len + car_dist / 100;
     if (len > max_len)
-        len = max_len;
+      len = max_len;
 
-    float x = (float) ((640/2) - len * Math.cos(angle));
-    float y = (float) ((480/2) - len * Math.sin(angle));
+    float x = (float) ((640 / 2) - len * Math.cos(angle));
+    float y = (float) ((480 / 2) - len * Math.sin(angle));
 
     g.setColor(Color.red);
     g.fillOval(x, y, (float) 5.0, (float) 5.0);
