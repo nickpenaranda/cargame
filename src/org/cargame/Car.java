@@ -171,7 +171,8 @@ public class Car {
   }
 
   public void setDeadCount(int i) {
-    mDeadCount = i;
+    if(mDeadCount <= 0)
+      mDeadCount = i;
   }
 
   public void setTurning(int turn) {
