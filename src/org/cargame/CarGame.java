@@ -149,7 +149,6 @@ public class CarGame extends BasicGame {
           collision  = true;
       }
     }
-    
   }
   
   static double distance(double x1,double y1,double x2,double y2) {
