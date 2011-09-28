@@ -100,24 +100,26 @@ public class CarGame extends BasicGame {
 
   @Override
   public void init(GameContainer container) throws SlickException {
-    mCars.add(new PlayerCar("gfx/car1.png", -100, 0));
-    mCars.add(new PlayerCar("gfx/car2.png", 100, 0));
-    mPlayerCar = (PlayerCar) mCars.get(PLAYER_NUM);
-    mOtherCar = (PlayerCar) mCars.get(0);
-
     mTiles[0] = null;
     mTiles[1] = new Image("gfx/wall1.png");
     mTiles[2] = new Image("gfx/wall2.png");
     mTiles[3] = new Image("gfx/wall3.png");
     mTiles[4] = new Image("gfx/wall4.png");
 
+    int player_num = PLAYER_NUM;
     if (MULTIPLAYER_MODE) {
       try {
         mClient = new Client();
+        player_num = mClient.getPlayerId();
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
+
+    mCars.add(new PlayerCar("gfx/car1.png", -100, 0));
+    mCars.add(new PlayerCar("gfx/car2.png", 100, 0));
+    mPlayerCar = (PlayerCar) mCars.get(player_num);
+    mOtherCar = (PlayerCar) mCars.get(player_num == 0 ? 1 :0);
   }
 
   @Override
