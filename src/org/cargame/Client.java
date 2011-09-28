@@ -47,12 +47,13 @@ public class Client extends DynamicMessageAdapter {
     }
   }
 
-  public UpdateMessage doUpdate(double x, double y) throws Exception {
+  public UpdateMessage doUpdate(double x, double y, double angle) throws Exception {
     UpdateMessage message = new UpdateMessage();
     message.setPlayerId(client.getPlayerId());
     message.seq = seq;
     message.x = x;
     message.y = y;
+    message.angle = angle;
 
     client.broadcast(message);
 

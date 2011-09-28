@@ -60,13 +60,14 @@ public class CarGame extends BasicGame {
   public void update(GameContainer container, int delta) throws SlickException {
     UpdateMessage message = null;
     try {
-      message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY());
+      message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(), mPlayerCar.getAngle());
     } catch (Exception e) {
       e.printStackTrace();
     }
     
     if(message != null) {
       mOtherCar.moveTo((float)message.x, (float)message.y);
+      mOtherCar.setAngle((double)message.angle);
     }
     
     // Think for all cars
