@@ -168,8 +168,10 @@ public class CarGame extends BasicGame {
       for (HoverCraft other : otherCars) {
         if (distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other.getX(),
             other.getY()) < 47
-            && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed()))
+            && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed())) {
           mPlayerCraft.kill();
+          Sounds.death.play();
+        }
       }
     }
 
