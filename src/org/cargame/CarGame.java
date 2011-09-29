@@ -352,7 +352,7 @@ public class CarGame extends BasicGame {
       g.setColor(Color.yellow);
     else
       g.setColor(Color.green);
-    g.fillRect(281,16, 79 * (1 - (mPlayerCraft.getBoostTimeout() / (float)2500)), 4);
+    g.fillRect(281,16, 79 * (1 - (mPlayerCraft.getBoostTimeout() / (float)HoverCraft.BOOST_TIMEOUT)), 4);
 
     g.drawString(String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft
         .getY()), 10, 45);
@@ -365,7 +365,7 @@ public class CarGame extends BasicGame {
       g.setColor(Color.gray);
     else
       g.setColor(Color.cyan);
-    g.fillRect(281,23, 79 * (1 - (mPlayerCraft.getJammerTimeout() / (float)7500)), 4);
+    g.fillRect(281,23, 79 * (1 - (mPlayerCraft.getJammerTimeout() / (float)HoverCraft.JAMMER_TIMEOUT)), 4);
     
     g.drawString("Speed = " + mPlayerCraft.getSpeed(), 10, 30);
     // Scoreboard

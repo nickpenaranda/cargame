@@ -21,6 +21,9 @@ public class HoverCraft {
   private static final int Y = 1;
 
   private static final int RESPAWN_TIME = 1000;
+  static final int JAMMER_TIMEOUT = 30000;
+  private static final int JAMMER_EFFECT = 10000;
+  public static final int BOOST_TIMEOUT = 2500;
 
   private Image mImage;
   private double mX, mY, mAngle;
@@ -239,15 +242,15 @@ public class HoverCraft {
       Sounds.boost.play();
       mVelocity[X] += Math.cos(mAngle - Math.PI / 2) * impulse_force;
       mVelocity[Y] += Math.sin(mAngle - Math.PI / 2) * impulse_force;
-      mBoostTimeout = 2500;
+      mBoostTimeout = BOOST_TIMEOUT;
     }
   }
   
   public void jammer() {
     if(mJammerTimeout <= 0) {
       Sounds.cloak.play();
-      mJammerTimeout = 7500;
-      mJammerEffect = 2500;
+      mJammerTimeout = JAMMER_TIMEOUT;
+      mJammerEffect = JAMMER_EFFECT;
     }
   }
 

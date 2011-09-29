@@ -1,6 +1,10 @@
 package org.cargame;
 
-public class Boundary extends Line {
+import java.io.Serializable;
+
+public class Boundary extends Line implements Serializable {
+
+  private static final long serialVersionUID = -7506671174053054681L;
   public int mType;
 
   public Boundary(double x1, double y1, double x2, double y2,int type, boolean flip) {

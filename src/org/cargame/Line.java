@@ -1,6 +1,10 @@
 package org.cargame;
 
-public class Line {
+import java.io.Serializable;
+
+public class Line implements Serializable {
+
+  private static final long serialVersionUID = 604467648457009354L;
   public Point a,b;
 
   public Line(double x1, double y1, double x2, double y2) {
@@ -53,7 +57,9 @@ public class Line {
     return distance < radius;
   }
 
-  public static class Point {
+  public static class Point implements Serializable {
+
+    private static final long serialVersionUID = -7510057822959662988L;
     public double x,y;
     
     public Point(double x,double y) {
