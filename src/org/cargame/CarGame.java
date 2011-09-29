@@ -133,6 +133,8 @@ public class CarGame extends BasicGame {
         * 64));
     mPlayerCraft = mCars.get(player_num);
     mOtherCar = mCars.get(player_num == 0 ? 1 : 0);
+    
+    Sounds.init();
   }
 
   @Override
@@ -174,6 +176,7 @@ public class CarGame extends BasicGame {
     for (int i = 0; i < mWalls.size(); i++) {
       if (mWalls.get(i).intersect(mPlayerCraft.getX(), mPlayerCraft.getY(), 31)) {
         mPlayerCraft.bounce(mWalls.get(i));
+        Sounds.bounce.play((float)(1 + r.nextGaussian()/5),1.0f);
       }
     }
   }
@@ -319,6 +322,10 @@ public class CarGame extends BasicGame {
       mPlayerCraft.setAngle(Math.atan(y / (double) x) + Math.PI / 2);
     else if (x < 0)
       mPlayerCraft.setAngle(Math.atan(y / (double) x) + Math.PI + Math.PI / 2);
+    else {
+      if(y < 0) mPlayerCraft.setAngle(0);
+      else mPlayerCraft.setAngle(Math.PI);
+    }
   }
 
   public static void main(String[] args) {

@@ -67,13 +67,14 @@ public class HoverCraft {
     mVelocity[X] *= friction;
     mVelocity[Y] *= friction;
 
-    if(Math.abs(mVelocity[X]) < min_speed_before_stiction)
+    if (Math.abs(mVelocity[X]) < min_speed_before_stiction)
       mVelocity[X] = 0;
-    if(Math.abs(mVelocity[Y]) < min_speed_before_stiction)
+    if (Math.abs(mVelocity[Y]) < min_speed_before_stiction)
       mVelocity[Y] = 0;
-    
-    mSpeed = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y] * mVelocity[Y]);
-    
+
+    mSpeed = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y]
+        * mVelocity[Y]);
+
     if (mDeadCount > 0)
       mDeadCount -= delta;
 
@@ -128,17 +129,20 @@ public class HoverCraft {
   public double getSpeed() {
     return mSpeed;
   }
-  
+
   public void setSpeed(double speed) {
     mSpeed = speed;
   }
-  
+
   public void bounce(Line l) {
     System.out.println("BOUNCE");
-      
-    double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y) * mVelocity[X];
-    double vec_length = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y] * mVelocity[Y]);
-    double a_dot_b = (l.a.x - l.b.x) * mVelocity[X] + (l.a.y - l.b.y) * mVelocity[Y];
+
+    double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y)
+        * mVelocity[X];
+    double vec_length = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y]
+        * mVelocity[Y]);
+    double a_dot_b = (l.a.x - l.b.x) * mVelocity[X] + (l.a.y - l.b.y)
+        * mVelocity[Y];
     double angleBetween = Math.acos(a_dot_b / (l.length() * vec_length));
 
     System.out.println("a . b " + a_dot_b);
@@ -146,9 +150,10 @@ public class HoverCraft {
     System.out.println("angle " + Math.toDegrees(angleBetween));
 
     if (angleBetween > Math.PI / 2)
-        angleBetween = Math.PI - angleBetween;
+      angleBetween = Math.PI - angleBetween;
+
     if (cross > 0)
-        angleBetween = -angleBetween;
+      angleBetween = -angleBetween;
 
     System.out.println("xformed angle " + Math.toDegrees(angleBetween));
 
@@ -161,6 +166,6 @@ public class HoverCraft {
     mVelocity[X] = vec_length * Math.cos(angleNew);
     mVelocity[Y] = vec_length * Math.sin(angleNew);
 
-    System.out.printf("new (%f,%f)\n",mVelocity[X],mVelocity[Y]);
+    System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
   }
 }
