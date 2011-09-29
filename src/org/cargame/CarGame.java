@@ -150,7 +150,7 @@ public class CarGame extends BasicGame {
   @Override
   public void init(GameContainer container) throws SlickException {
     mContainer = container;
-    mTiles[0] = null;
+    mTiles[0] = new Image("gfx/road.png");
     mTiles[1] = new Image("gfx/wall1.png");
     mTiles[2] = new Image("gfx/wall2.png");
     mTiles[3] = new Image("gfx/wall3.png");
@@ -278,7 +278,7 @@ public class CarGame extends BasicGame {
     
     for (int x = 0; x < 10 / scale_factor + 1; x++) {
       for (int y = 0; y < 8 / scale_factor + 1; y++) {
-        if (isInBounds(tx + x, ty + y) && mMap[tx + x][ty + y] != 0)
+        if (isInBounds(tx + x, ty + y) /*&& mMap[tx + x][ty + y] != 0 */)
           g.drawImage(mTiles[mMap[tx + x][ty + y]], 
               (x * s) - ox, 
               (y * s) - oy);
