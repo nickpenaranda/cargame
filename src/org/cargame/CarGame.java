@@ -99,6 +99,9 @@ public class CarGame extends BasicGame {
     int cityBlockWidth = roadWidth + buildingWidth;
     int numRoads = 256 / cityBlockWidth;
     int numBarriers = r.nextInt(40) + 10;
+
+    // Remove to reenable barriers once sending to server works.
+    numBarriers = 0;
     for (int i=0; i<numBarriers; i++) {
         // specifices intersection: (0, 0) topleft
         int barrierX = r.nextInt(numRoads-1);    
