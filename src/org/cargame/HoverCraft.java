@@ -135,7 +135,7 @@ public class HoverCraft {
   }
 
   public void bounce(Line l) {
-    System.out.println("BOUNCE");
+    //System.out.println("BOUNCE");
 
     double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y)
         * mVelocity[X];
@@ -145,9 +145,9 @@ public class HoverCraft {
         * mVelocity[Y];
     double angleBetween = Math.acos(a_dot_b / (l.length() * vec_length));
 
-    System.out.println("a . b " + a_dot_b);
-    System.out.println("cross " + cross);
-    System.out.println("angle " + Math.toDegrees(angleBetween));
+    //System.out.println("a . b " + a_dot_b);
+    //System.out.println("cross " + cross);
+    //System.out.println("angle " + Math.toDegrees(angleBetween));
 
     if (angleBetween > Math.PI / 2)
       angleBetween = Math.PI - angleBetween;
@@ -155,7 +155,7 @@ public class HoverCraft {
     if (cross > 0)
       angleBetween = -angleBetween;
 
-    System.out.println("xformed angle " + Math.toDegrees(angleBetween));
+    //System.out.println("xformed angle " + Math.toDegrees(angleBetween));
 
     double lVecY = l.a.y - l.b.y;
     double lVecX = l.a.x - l.b.x;
@@ -167,16 +167,20 @@ public class HoverCraft {
     //    angleL += 2 * Math.PI;
     //}
 
-    System.out.println("angleL " + Math.toDegrees(angleL));
+    //System.out.println("angleL " + Math.toDegrees(angleL));
 
-    double angleNew = angleL - angleBetween;
+    double angleNew;
+    if (a_dot_b < 0)
+        angleNew = angleL - angleBetween;
+    else
+        angleNew = angleL + (Math.PI + angleBetween);
 
-    System.out.println("angleNew " + Math.toDegrees(angleNew));
+    //System.out.println("angleNew " + Math.toDegrees(angleNew));
 
     mVelocity[X] = vec_length * Math.cos(angleNew);
     mVelocity[Y] = vec_length * Math.sin(angleNew);
 
-    System.out.printf("%f %f\n", lVecX, lVecY);
-    System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
+    //System.out.printf("%f %f\n", lVecX, lVecY);
+    //System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
   }
 }
