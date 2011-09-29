@@ -125,11 +125,11 @@ public class CarGame extends BasicGame {
 
     mCars.add(new HoverCraft("gfx/craft1.png", -8192 + roadWidth * 32
         + (roadWidth + buildingWidth) * (r.nextInt(16) + 1) * 64, -8192
-        + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(16) + 1)
+        + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(15) + 1)
         * 64));
     mCars.add(new HoverCraft("gfx/craft2.png", -8192 + roadWidth * 32
         + (roadWidth + buildingWidth) * (r.nextInt(16) + 1) * 64, -8192
-        + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(16) + 1)
+        + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(15) + 1)
         * 64));
     mPlayerCraft = mCars.get(player_num);
     mOtherCar = mCars.get(player_num == 0 ? 1 : 0);
