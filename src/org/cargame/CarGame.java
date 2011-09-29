@@ -33,9 +33,9 @@ public class CarGame extends BasicGame {
 
     String mmode = System.getProperty("cargame.multiplayer_mode");
     if (mmode != null)
-        multiplayer_mode = Boolean.valueOf(mmode);
+      multiplayer_mode = Boolean.valueOf(mmode);
     else
-        multiplayer_mode = false;
+      multiplayer_mode = false;
     System.out.println(multiplayer_mode);
 
     r = new Random();
@@ -67,29 +67,29 @@ public class CarGame extends BasicGame {
     mWalls.add(new Boundary(-8192, -8192, -8192, 8192, 1));
     mWalls.add(new Boundary(8192, -8192, 8192, 8192, 1));
     mWalls.add(new Boundary(-8192, 8192, 8192, 8192, 1));
-    
-        for(int x=1; x <= 16; ++x) {
-      for(int y=1; y <= 16; ++y) {
-        mWalls.add(new Boundary(
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),1));
-        mWalls.add(new Boundary(
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),1));
-        mWalls.add(new Boundary(
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y - 1)),
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),1));
-        mWalls.add(new Boundary(
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x - 1)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),
-            -8192 + (roadWidth * 64 * x) + (buildingWidth * 64 * (x)),
-            -8192 + (roadWidth * 64 * y) + (buildingWidth * 64 * (y)),1));
+
+    for (int x = 1; x <= 16; ++x) {
+      for (int y = 1; y <= 16; ++y) {
+        mWalls.add(new Boundary(-8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x - 1)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y - 1)), -8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y - 1)), 1));
+        mWalls.add(new Boundary(-8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x - 1)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y - 1)), -8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x - 1)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y)), 1));
+        mWalls.add(new Boundary(-8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y - 1)), -8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y)), 1));
+        mWalls.add(new Boundary(-8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x - 1)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y)), -8192 + (roadWidth * 64 * x)
+            + (buildingWidth * 64 * (x)), -8192 + (roadWidth * 64 * y)
+            + (buildingWidth * 64 * (y)), 1));
       }
     }
   }
@@ -123,12 +123,16 @@ public class CarGame extends BasicGame {
       }
     }
 
-    mCars.add(new HoverCraft("gfx/craft1.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
-        -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
-    mCars.add(new HoverCraft("gfx/craft2.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
-        -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
+    mCars.add(new HoverCraft("gfx/craft1.png", -8192 + roadWidth * 32
+        + (roadWidth + buildingWidth) * (r.nextInt(16) + 1) * 64, -8192
+        + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(16) + 1)
+        * 64));
+    mCars.add(new HoverCraft("gfx/craft2.png", -8192 + roadWidth * 32
+        + (roadWidth + buildingWidth) * (r.nextInt(16) + 1) * 64, -8192
+        + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(16) + 1)
+        * 64));
     mPlayerCraft = mCars.get(player_num);
-    mOtherCar = mCars.get(player_num == 0 ? 1 :0);
+    mOtherCar = mCars.get(player_num == 0 ? 1 : 0);
   }
 
   @Override
@@ -137,7 +141,8 @@ public class CarGame extends BasicGame {
       UpdateMessage message = null;
       try {
         message = mClient.doUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
-            mPlayerCraft.getAngle(),mPlayerCraft.getSpeed(),mPlayerCraft.getLives());
+            mPlayerCraft.getAngle(), mPlayerCraft.getSpeed(), mPlayerCraft
+                .getLives());
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -153,27 +158,28 @@ public class CarGame extends BasicGame {
     for (HoverCraft car : mCars) {
       car.think(delta);
     }
-    
+
     // Check collision player car vs other cars
-    if(!mPlayerCraft.isDead()) {
+    if (!mPlayerCraft.isDead()) {
       ArrayList<HoverCraft> otherCars = new ArrayList<HoverCraft>(mCars);
       otherCars.remove(mPlayerCraft);
       for (HoverCraft other : otherCars) {
-        if(distance(mPlayerCraft.getX(),mPlayerCraft.getY(),other.getX(),other.getY()) < 47 &&
-          Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed()))
-            mPlayerCraft.kill();
+        if (distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other.getX(),
+            other.getY()) < 47
+            && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed()))
+          mPlayerCraft.kill();
       }
     }
 
-    for (int i=0; i<mWalls.size(); i++) {
-        if (mWalls.get(i).intersect(mPlayerCraft.getX(), mPlayerCraft.getY(), 31)) {
-          mPlayerCraft.kill();
-          }
+    for (int i = 0; i < mWalls.size(); i++) {
+      if (mWalls.get(i).intersect(mPlayerCraft.getX(), mPlayerCraft.getY(), 31)) {
+        mPlayerCraft.bounce(mWalls.get(i));
+      }
     }
   }
-  
-  static double distance(double x1,double y1,double x2,double y2) {
-    return(Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2)));
+
+  static double distance(double x1, double y1, double x2, double y2) {
+    return (Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
   }
 
   public void render(GameContainer container, Graphics g) throws SlickException {
@@ -216,8 +222,8 @@ public class CarGame extends BasicGame {
     if (mOtherCar.getX() > mPlayerCraft.getX())
       angle += Math.PI;
 
-    double car_dist = Math.sqrt(Math.pow(mOtherCar.getY() - mPlayerCraft.getY(),
-        2)
+    double car_dist = Math.sqrt(Math.pow(
+        mOtherCar.getY() - mPlayerCraft.getY(), 2)
         + Math.pow(mOtherCar.getX() - mPlayerCraft.getX(), 2));
     double len = min_len + car_dist / 100;
     if (len > max_len)
@@ -231,20 +237,23 @@ public class CarGame extends BasicGame {
     g.setColor(Color.orange);
     g.drawOval(x, y, (float) 6.0, (float) 6.0);
 
-    g.drawString(
-        String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft.getY()), 10, 45);
+    g.drawString(String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft
+        .getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
 
     // Scoreboard
     g.setColor(Color.green);
-    g.drawString("You: " + mPlayerCraft.getLives(),10,container.getHeight()-15);
+    g.drawString("You: " + mPlayerCraft.getLives(), 10,
+        container.getHeight() - 15);
 
     String dem = "Dem: " + mOtherCar.getLives();
     g.setColor(Color.red);
-    g.drawString(dem,640 - g.getFont().getWidth(dem) - 10,container.getHeight()-15);
-    if(mPlayerCraft.isDead()) {
+    g.drawString(dem, 640 - g.getFont().getWidth(dem) - 10, container
+        .getHeight() - 15);
+    if (mPlayerCraft.isDead()) {
       g.setColor(Color.red);
-      g.drawString("!!!!BOOM SUCKA!!!!",320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!")/2,240);
+      g.drawString("!!!!BOOM SUCKA!!!!", 320 - g.getFont().getWidth(
+          "!!!!BOOM SUCKA!!!") / 2, 240);
     }
   }
 
@@ -262,20 +271,20 @@ public class CarGame extends BasicGame {
 
     // Player control stuff
     case Input.KEY_W:
-      mPlayerCraft.setBooster(HoverCraft.BOTTOM,true);
+      mPlayerCraft.setBooster(HoverCraft.BOTTOM, true);
       break;
     case Input.KEY_S:
-      mPlayerCraft.setBooster(HoverCraft.TOP,true);
+      mPlayerCraft.setBooster(HoverCraft.TOP, true);
       break;
     case Input.KEY_A:
-      mPlayerCraft.setBooster(HoverCraft.RIGHT,true);
+      mPlayerCraft.setBooster(HoverCraft.RIGHT, true);
       break;
     case Input.KEY_D:
-      mPlayerCraft.setBooster(HoverCraft.LEFT,true);
+      mPlayerCraft.setBooster(HoverCraft.LEFT, true);
       break;
-//    case Input.KEY_SPACE:
-//      mPlayerCraft.setBraking(true);
-//      break;
+    // case Input.KEY_SPACE:
+    // mPlayerCraft.setBraking(true);
+    // break;
     }
   }
 
@@ -284,32 +293,32 @@ public class CarGame extends BasicGame {
     switch (key) {
     // Player control stuff
     case Input.KEY_W:
-      mPlayerCraft.setBooster(HoverCraft.BOTTOM,false);
+      mPlayerCraft.setBooster(HoverCraft.BOTTOM, false);
       break;
     case Input.KEY_S:
-      mPlayerCraft.setBooster(HoverCraft.TOP,false);
+      mPlayerCraft.setBooster(HoverCraft.TOP, false);
       break;
     case Input.KEY_A:
-      mPlayerCraft.setBooster(HoverCraft.RIGHT,false);
+      mPlayerCraft.setBooster(HoverCraft.RIGHT, false);
       break;
     case Input.KEY_D:
-      mPlayerCraft.setBooster(HoverCraft.LEFT,false);
+      mPlayerCraft.setBooster(HoverCraft.LEFT, false);
       break;
-//    case Input.KEY_SPACE:
-//      mPlayerCraft.setBraking(false);
-//      break;
+    // case Input.KEY_SPACE:
+    // mPlayerCraft.setBraking(false);
+    // break;
     }
   }
-  
+
   @Override
   public void mouseMoved(int oldx, int oldy, int newx, int newy) {
     int x = newx - 320;
     int y = newy - 240;
-    
-    if(x > 0)
-      mPlayerCraft.setAngle(Math.atan(y/(double)x) + Math.PI/2);
-    else if(x < 0)
-      mPlayerCraft.setAngle(Math.atan(y/(double)x) + Math.PI + Math.PI/2);
+
+    if (x > 0)
+      mPlayerCraft.setAngle(Math.atan(y / (double) x) + Math.PI / 2);
+    else if (x < 0)
+      mPlayerCraft.setAngle(Math.atan(y / (double) x) + Math.PI + Math.PI / 2);
   }
 
   public static void main(String[] args) {

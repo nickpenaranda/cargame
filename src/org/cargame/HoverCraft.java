@@ -132,4 +132,35 @@ public class HoverCraft {
   public void setSpeed(double speed) {
     mSpeed = speed;
   }
+  
+  public void bounce(Line l) {
+    System.out.println("BOUNCE");
+      
+    double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y) * mVelocity[X];
+    double vec_length = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y] * mVelocity[Y]);
+    double a_dot_b = (l.a.x - l.b.x) * mVelocity[X] + (l.a.y - l.b.y) * mVelocity[Y];
+    double angleBetween = Math.acos(a_dot_b / (l.length() * vec_length));
+
+    System.out.println("a . b " + a_dot_b);
+    System.out.println("cross " + cross);
+    System.out.println("angle " + Math.toDegrees(angleBetween));
+
+    if (angleBetween > Math.PI / 2)
+        angleBetween = Math.PI - angleBetween;
+    if (cross > 0)
+        angleBetween = -angleBetween;
+
+    System.out.println("xformed angle " + Math.toDegrees(angleBetween));
+
+    double angleL = Math.atan((l.a.y - l.b.y) / (l.a.x - l.b.x));
+
+    System.out.println("angleL " + Math.toDegrees(angleL));
+
+    double angleNew = angleL - angleBetween;
+
+    mVelocity[X] = vec_length * Math.cos(angleNew);
+    mVelocity[Y] = vec_length * Math.sin(angleNew);
+
+    System.out.printf("new (%f,%f)\n",mVelocity[X],mVelocity[Y]);
+  }
 }
