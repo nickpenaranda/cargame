@@ -209,4 +209,8 @@ public class HoverCraft {
       mBoostTimeout = 2500;
     }
   }
+
+  public void setLives(int lives) {
+    mLives = lives;
+  }
 }
