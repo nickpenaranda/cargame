@@ -13,6 +13,7 @@ public class HoverCraft {
   private static final double base_booster_force = 0.02;
   private static final double min_speed_before_stiction = base_booster_force / 2;
   private static final double friction = 0.99; // This is actually 1 - friction
+  private static final double wall_elasticity = 0.4;
 
   private static final int X = 0;
   private static final int Y = 1;
@@ -21,6 +22,7 @@ public class HoverCraft {
 
   private Image mImage;
   private double mX, mY, mAngle;
+  private double mPrevX, mPrevY;
   private double mSpeed;
   private double[] mVelocity = new double[2];
   private boolean[] mBoosters = new boolean[4];
@@ -55,6 +57,8 @@ public class HoverCraft {
   public void think(int delta) {
     mBoostTimeout -= delta;
     
+    mPrevX = mX;
+    mPrevY = mY;
     mX += mVelocity[X] * delta;
     mY += mVelocity[Y] * delta;
     // Apply booster force
@@ -181,8 +185,8 @@ public class HoverCraft {
 
     //System.out.println("angleNew " + Math.toDegrees(angleNew));
 
-    mVelocity[X] = vec_length * Math.cos(angleNew);
-    mVelocity[Y] = vec_length * Math.sin(angleNew);
+    mVelocity[X] = vec_length * Math.cos(angleNew) * wall_elasticity;
+    mVelocity[Y] = vec_length * Math.sin(angleNew) * wall_elasticity;
 
     // actually give the player an extra move to get them out
     // of the wall if they are there. A hack certainly, but
@@ -190,7 +194,8 @@ public class HoverCraft {
     mX += mVelocity[X] * delta;
     mY += mVelocity[Y] * delta;
 
-    // add once to make sure
+    // HACK: move the player out of the wall to their previous spot.
+    moveTo((float)mPrevX, (float)mPrevY);
 
     //System.out.printf("%f %f\n", lVecX, lVecY);
     //System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
