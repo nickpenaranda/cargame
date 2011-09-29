@@ -23,6 +23,7 @@ public class CarGame extends BasicGame {
   private ArrayList<Boundary> mWalls;
   private HoverCraft mPlayerCraft, mOtherCar;
   private static final int PLAYER_NUM = 1;
+  private static final float cloak_alpha = 0.05f;
   private int[][] mMap;
   private Image[] mTiles;
   private Client mClient;
@@ -190,8 +191,10 @@ public class CarGame extends BasicGame {
   }
 
   public void render(GameContainer container, Graphics g) throws SlickException {
-    float scale_factor = 1 / (1 + (float)Math.pow(mPlayerCraft.getSpeed(),3));
+    float scale_factor = 1 / (1 + (float)Math.pow(mPlayerCraft.getAverageSpeed(),3));
     if(scale_factor < 0.25) scale_factor = 0.25f;
+    
+    
     float draw_offset_x = 320f / scale_factor, draw_offset_y = 240f / scale_factor;
 
 //    int tx = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) / 64;
@@ -234,6 +237,13 @@ public class CarGame extends BasicGame {
     for (HoverCraft car : mCars) {
       Image image = car.getImage();
       image.setRotation((float) (car.getAngle() * 180 / Math.PI));
+      int jammer = car.getJammer();
+      if(jammer > 500)
+        image.setAlpha(cloak_alpha);
+      else if(jammer > 0)
+        image.setAlpha(cloak_alpha + (500-jammer)/(float)500 * (1-cloak_alpha));
+      else
+        image.setAlpha(1.0f);
       image.drawCentered(draw_offset_x + car.getX() - mPlayerCraft.getX(),
           draw_offset_y + car.getY() - mPlayerCraft.getY());
     }
@@ -243,7 +253,7 @@ public class CarGame extends BasicGame {
     // draw indicator
     if(mOtherCar.getJammer() <= 0) {
       int min_len = 33;
-      int max_len = 100;
+      int max_len = 220;
       double angle = Math.atan((mOtherCar.getY() - mPlayerCraft.getY())
           / (mOtherCar.getX() - mPlayerCraft.getX()));
       if (mOtherCar.getX() > mPlayerCraft.getX())
@@ -252,7 +262,7 @@ public class CarGame extends BasicGame {
       double car_dist = Math.sqrt(Math.pow(
           mOtherCar.getY() - mPlayerCraft.getY(), 2)
           + Math.pow(mOtherCar.getX() - mPlayerCraft.getX(), 2));
-      double len = min_len + car_dist / 100;
+      double len = min_len + car_dist / 33;
       if (len > max_len)
         len = max_len;
   
