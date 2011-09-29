@@ -239,6 +239,15 @@ public class CarGame extends BasicGame {
     float x = (float) ((640 / 2) - len * Math.cos(angle));
     float y = (float) ((480 / 2) - len * Math.sin(angle));
 
+    // Draw boost indicator
+    g.setColor(Color.white);
+    g.drawRect(280, 15, 80, 5);
+    if(mPlayerCraft.getBoostTimeout() > 0)
+      g.setColor(Color.yellow);
+    else
+      g.setColor(Color.green);
+    g.fillRect(281,16, 79 * (1 - (mPlayerCraft.getBoostTimeout() / (float)2500)), 4);
+    
     g.setColor(Color.red);
     g.fillOval(x, y, (float) 5.0, (float) 5.0);
     g.setColor(Color.orange);
