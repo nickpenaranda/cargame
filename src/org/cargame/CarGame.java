@@ -423,6 +423,9 @@ public class CarGame extends BasicGame {
         e.printStackTrace();
       }
       break;
+    case Input.KEY_K:
+      mPlayerCraft.kill();
+      break;
     }
   }
 
