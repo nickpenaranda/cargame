@@ -27,6 +27,8 @@ public class HoverCraft {
 
   private int mLives;
   private int mDeadCount;
+  private int mBoostTimeout;
+  private double impulse_force = 2;
 
   public HoverCraft(String graphic_file, float x, float y) {
     try {
@@ -51,6 +53,8 @@ public class HoverCraft {
   }
 
   public void think(int delta) {
+    mBoostTimeout -= delta;
+    
     mX += mVelocity[X] * delta;
     mY += mVelocity[Y] * delta;
     // Apply booster force
@@ -193,7 +197,11 @@ public class HoverCraft {
   }
 
   public void boost() {
-    // TODO Auto-generated method stub
-    
+    if(mBoostTimeout <= 0) {
+      Sounds.boost.play();
+      mVelocity[X] += Math.cos(mAngle - Math.PI / 2) * impulse_force;
+      mVelocity[Y] += Math.sin(mAngle - Math.PI / 2) * impulse_force;
+      mBoostTimeout = 2500;
+    }
   }
 }
