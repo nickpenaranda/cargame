@@ -27,6 +27,7 @@ public class CarGame extends BasicGame {
   private int[][] mMap;
   private Image[] mTiles;
   private Client mClient;
+  private GameContainer mContainer;
 
   public CarGame() {
     super("CAR GAME, SON");
@@ -106,6 +107,7 @@ public class CarGame extends BasicGame {
 
   @Override
   public void init(GameContainer container) throws SlickException {
+    mContainer = container;
     mTiles[0] = null;
     mTiles[1] = new Image("gfx/wall1.png");
     mTiles[2] = new Image("gfx/wall2.png");
@@ -341,6 +343,14 @@ public class CarGame extends BasicGame {
       break;
     case Input.KEY_Q:
       mPlayerCraft.jammer();
+      break;
+    case Input.KEY_F1:
+      try {
+        mContainer.setFullscreen(!mContainer.isFullscreen());
+      } catch (SlickException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
       break;
     }
   }
