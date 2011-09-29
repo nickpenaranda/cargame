@@ -48,7 +48,6 @@ public class Line {
   }
   
   private static boolean ccw(Point a,Point b,Point c) {
-    return (c.y-a.y) * (b.x-a.x) > (b.y-a.y) * (c.x-a.x);
-    
+    return (c.y-a.y) * (b.x-a.x) > (b.y-a.y) * (c.x-a.x);  
   }
 }

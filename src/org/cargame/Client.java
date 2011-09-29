@@ -35,7 +35,7 @@ public class Client extends DynamicMessageAdapter {
     UpdateMessage message = new UpdateMessage();
     message.connecting = true;
     client.sendToServer(message);
-    //waitForPlayers();
+    // waitForPlayers();
   }
 
   public int getPlayerId() {
@@ -54,7 +54,8 @@ public class Client extends DynamicMessageAdapter {
   }
 
   // Sends an update to the server, returns the other player's update.
-  public UpdateMessage doUpdate(double x, double y, double angle, double speed,int lives) throws Exception {
+  public UpdateMessage doUpdate(double x, double y, double angle, double speed,
+      int lives) throws Exception {
     UpdateMessage message = new UpdateMessage();
     message.setPlayerId(client.getPlayerId());
     message.seq = seq;
@@ -72,15 +73,16 @@ public class Client extends DynamicMessageAdapter {
   }
 
   // Polls for next message.
-  private UpdateMessage nextMessage(int expected_seq, int timeout) throws Exception {
+  private UpdateMessage nextMessage(int expected_seq, int timeout)
+      throws Exception {
     long start_time = Calendar.getInstance().getTimeInMillis();
     long cur_time = start_time;
     while (cur_time < start_time + timeout) {
       if (newMessage != null) {
         UpdateMessage message = newMessage;
         newMessage = null;
-        //long latency = cur_time - start_time;
-        //System.out.println("latency: " + latency);
+        // long latency = cur_time - start_time;
+        // System.out.println("latency: " + latency);
         return message;
       }
       Thread.sleep(1);
@@ -90,7 +92,7 @@ public class Client extends DynamicMessageAdapter {
   }
 
   public void messageReceived(UpdateMessage message) {
-     // System.out.println("RECEIVED MESSAGE: " + message);
-     newMessage = message;
+    // System.out.println("RECEIVED MESSAGE: " + message);
+    newMessage = message;
   }
 }

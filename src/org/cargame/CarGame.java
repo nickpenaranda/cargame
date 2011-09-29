@@ -20,9 +20,9 @@ public class CarGame extends BasicGame {
   public static final int buildingWidth = 10;
   public static Random r;
 
-  private ArrayList<Car> mCars;
+  private ArrayList<HoverCraft> mCars;
   private ArrayList<Boundary> mWalls;
-  private Car mPlayerCar, mOtherCar;
+  private HoverCraft mPlayerCraft, mOtherCar;
   private static final int PLAYER_NUM = 1;
   private int[][] mMap;
   private Image[] mTiles;
@@ -39,7 +39,7 @@ public class CarGame extends BasicGame {
     System.out.println(multiplayer_mode);
 
     r = new Random();
-    mCars = new ArrayList<Car>();
+    mCars = new ArrayList<HoverCraft>();
     mMap = new int[256][256];
     mTiles = new Image[5];
     mWalls = new ArrayList<Boundary>();
@@ -123,11 +123,11 @@ public class CarGame extends BasicGame {
       }
     }
 
-    mCars.add(new Car("gfx/car1.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+    mCars.add(new HoverCraft("gfx/craft1.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
         -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
-    mCars.add(new Car("gfx/car2.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
+    mCars.add(new HoverCraft("gfx/craft2.png", -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64,
         -8192 + roadWidth*32 + (roadWidth + buildingWidth)*(r.nextInt(16)+1)*64));
-    mPlayerCar = mCars.get(player_num);
+    mPlayerCraft = mCars.get(player_num);
     mOtherCar = mCars.get(player_num == 0 ? 1 :0);
   }
 
@@ -136,8 +136,8 @@ public class CarGame extends BasicGame {
     if (multiplayer_mode) {
       UpdateMessage message = null;
       try {
-        message = mClient.doUpdate(mPlayerCar.getX(), mPlayerCar.getY(),
-            mPlayerCar.getAngle(),mPlayerCar.getSpeed(),mPlayerCar.getLives());
+        message = mClient.doUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
+            mPlayerCraft.getAngle(),mPlayerCraft.getSpeed(),mPlayerCraft.getLives());
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -150,24 +150,24 @@ public class CarGame extends BasicGame {
     }
 
     // Think for all cars
-    for (Car car : mCars) {
+    for (HoverCraft car : mCars) {
       car.think(delta);
     }
     
     // Check collision player car vs other cars
-    if(!mPlayerCar.isDead()) {
-      ArrayList<Car> otherCars = new ArrayList<Car>(mCars);
-      otherCars.remove(mPlayerCar);
-      for (Car other : otherCars) {
-        if(distance(mPlayerCar.getX(),mPlayerCar.getY(),other.getX(),other.getY()) < 47 &&
-          Math.abs(mPlayerCar.getSpeed()) < Math.abs(other.getSpeed()))
-            mPlayerCar.kill();
+    if(!mPlayerCraft.isDead()) {
+      ArrayList<HoverCraft> otherCars = new ArrayList<HoverCraft>(mCars);
+      otherCars.remove(mPlayerCraft);
+      for (HoverCraft other : otherCars) {
+        if(distance(mPlayerCraft.getX(),mPlayerCraft.getY(),other.getX(),other.getY()) < 47 &&
+          Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed()))
+            mPlayerCraft.kill();
       }
     }
 
     for (int i=0; i<mWalls.size(); i++) {
-        if (mWalls.get(i).intersect(mPlayerCar.getX(), mPlayerCar.getY(), 31)) {
-          mPlayerCar.kill();
+        if (mWalls.get(i).intersect(mPlayerCraft.getX(), mPlayerCraft.getY(), 31)) {
+          mPlayerCraft.kill();
           }
     }
   }
@@ -177,10 +177,10 @@ public class CarGame extends BasicGame {
   }
 
   public void render(GameContainer container, Graphics g) throws SlickException {
-    int tx = (int) (8192 + mPlayerCar.getX() - (container.getWidth() / 2)) / 64;
-    int ox = (int) (8192 + mPlayerCar.getX() - (container.getWidth() / 2)) % 64;
-    int ty = (int) (8192 + mPlayerCar.getY() - (container.getHeight() / 2)) / 64;
-    int oy = (int) (8192 + mPlayerCar.getY() - (container.getHeight() / 2)) % 64;
+    int tx = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) / 64;
+    int ox = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) % 64;
+    int ty = (int) (8192 + mPlayerCraft.getY() - (container.getHeight() / 2)) / 64;
+    int oy = (int) (8192 + mPlayerCraft.getY() - (container.getHeight() / 2)) % 64;
 
     // Draw tiles
     for (int x = 0; x < 11; x++) {
@@ -193,35 +193,32 @@ public class CarGame extends BasicGame {
 
     // Draw boundaries
     for (Boundary boundary : mWalls) {
-      g.drawLine((float) (draw_offset_x + boundary.a.x - mPlayerCar.getX()),
-          (float) (draw_offset_y + boundary.a.y - mPlayerCar.getY()),
-          (float) (draw_offset_x + boundary.b.x - mPlayerCar.getX()),
-          (float) (draw_offset_y + boundary.b.y - mPlayerCar.getY()));
+      g.drawLine((float) (draw_offset_x + boundary.a.x - mPlayerCraft.getX()),
+          (float) (draw_offset_y + boundary.a.y - mPlayerCraft.getY()),
+          (float) (draw_offset_x + boundary.b.x - mPlayerCraft.getX()),
+          (float) (draw_offset_y + boundary.b.y - mPlayerCraft.getY()));
     }
 
     // Draw cars
-    for (Car car : mCars) {
+    for (HoverCraft car : mCars) {
       Image image = car.getImage();
       image.setRotation((float) (car.getAngle() * 180 / Math.PI));
-      image.drawCentered(draw_offset_x + car.getX() - mPlayerCar.getX(),
-          draw_offset_y + car.getY() - mPlayerCar.getY());
+      image.drawCentered(draw_offset_x + car.getX() - mPlayerCraft.getX(),
+          draw_offset_y + car.getY() - mPlayerCraft.getY());
     }
-
-    // g.setColor(Color.white);
-    g.drawOval(draw_offset_x - 31, draw_offset_y - 31, 62, 62);
 
     // Info
     // draw indicator
     int min_len = 33;
     int max_len = 100;
-    double angle = Math.atan((mOtherCar.getY() - mPlayerCar.getY())
-        / (mOtherCar.getX() - mPlayerCar.getX()));
-    if (mOtherCar.getX() > mPlayerCar.getX())
+    double angle = Math.atan((mOtherCar.getY() - mPlayerCraft.getY())
+        / (mOtherCar.getX() - mPlayerCraft.getX()));
+    if (mOtherCar.getX() > mPlayerCraft.getX())
       angle += Math.PI;
 
-    double car_dist = Math.sqrt(Math.pow(mOtherCar.getY() - mPlayerCar.getY(),
+    double car_dist = Math.sqrt(Math.pow(mOtherCar.getY() - mPlayerCraft.getY(),
         2)
-        + Math.pow(mOtherCar.getX() - mPlayerCar.getX(), 2));
+        + Math.pow(mOtherCar.getX() - mPlayerCraft.getX(), 2));
     double len = min_len + car_dist / 100;
     if (len > max_len)
       len = max_len;
@@ -234,19 +231,18 @@ public class CarGame extends BasicGame {
     g.setColor(Color.orange);
     g.drawOval(x, y, (float) 6.0, (float) 6.0);
 
-    g.drawString("Steer angle = " + mPlayerCar.getSteerAngle(), 10, 30);
     g.drawString(
-        String.format("(%f,%f)", mPlayerCar.getX(), mPlayerCar.getY()), 10, 45);
+        String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft.getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
 
     // Scoreboard
     g.setColor(Color.green);
-    g.drawString("You: " + mPlayerCar.getLives(),10,container.getHeight()-15);
+    g.drawString("You: " + mPlayerCraft.getLives(),10,container.getHeight()-15);
 
     String dem = "Dem: " + mOtherCar.getLives();
     g.setColor(Color.red);
     g.drawString(dem,640 - g.getFont().getWidth(dem) - 10,container.getHeight()-15);
-    if(mPlayerCar.isDead()) {
+    if(mPlayerCraft.isDead()) {
       g.setColor(Color.red);
       g.drawString("!!!!BOOM SUCKA!!!!",320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!")/2,240);
     }
@@ -266,21 +262,20 @@ public class CarGame extends BasicGame {
 
     // Player control stuff
     case Input.KEY_W:
-      mPlayerCar.setAccelerating(true);
+      mPlayerCraft.setBooster(HoverCraft.BOTTOM,true);
       break;
     case Input.KEY_S:
-      mPlayerCar.setReversing(true);
+      mPlayerCraft.setBooster(HoverCraft.TOP,true);
       break;
     case Input.KEY_A:
-      mPlayerCar.setTurning(Car.TURN_LEFT);
+      mPlayerCraft.setBooster(HoverCraft.RIGHT,true);
       break;
     case Input.KEY_D:
-      mPlayerCar.setTurning(Car.TURN_RIGHT);
+      mPlayerCraft.setBooster(HoverCraft.LEFT,true);
       break;
-    case Input.KEY_SPACE:
-      mPlayerCar.setBraking(true);
-      break;
-
+//    case Input.KEY_SPACE:
+//      mPlayerCraft.setBraking(true);
+//      break;
     }
   }
 
@@ -289,23 +284,32 @@ public class CarGame extends BasicGame {
     switch (key) {
     // Player control stuff
     case Input.KEY_W:
-      mPlayerCar.setAccelerating(false);
+      mPlayerCraft.setBooster(HoverCraft.BOTTOM,false);
       break;
     case Input.KEY_S:
-      mPlayerCar.setReversing(false);
+      mPlayerCraft.setBooster(HoverCraft.TOP,false);
       break;
     case Input.KEY_A:
-      if (mPlayerCar.getTurning() == Car.TURN_LEFT)
-        mPlayerCar.setTurning(Car.TURN_NONE);
+      mPlayerCraft.setBooster(HoverCraft.RIGHT,false);
       break;
     case Input.KEY_D:
-      if (mPlayerCar.getTurning() == Car.TURN_RIGHT)
-        mPlayerCar.setTurning(Car.TURN_NONE);
+      mPlayerCraft.setBooster(HoverCraft.LEFT,false);
       break;
-    case Input.KEY_SPACE:
-      mPlayerCar.setBraking(false);
-      break;
+//    case Input.KEY_SPACE:
+//      mPlayerCraft.setBraking(false);
+//      break;
     }
+  }
+  
+  @Override
+  public void mouseMoved(int oldx, int oldy, int newx, int newy) {
+    int x = newx - 320;
+    int y = newy - 240;
+    
+    if(x > 0)
+      mPlayerCraft.setAngle(Math.atan(y/(double)x) + Math.PI/2);
+    else if(x < 0)
+      mPlayerCraft.setAngle(Math.atan(y/(double)x) + Math.PI + Math.PI/2);
   }
 
   public static void main(String[] args) {
