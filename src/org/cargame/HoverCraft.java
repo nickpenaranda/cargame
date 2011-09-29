@@ -150,6 +150,9 @@ public class HoverCraft {
         * mVelocity[X];
     double vec_length = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y]
         * mVelocity[Y]);
+    // divide by zero fix
+    if (vec_length == 0)
+        vec_length = .00001;
     double a_dot_b = (l.a.x - l.b.x) * mVelocity[X] + (l.a.y - l.b.y)
         * mVelocity[Y];
     double angleBetween = Math.acos(a_dot_b / (l.length() * vec_length));
