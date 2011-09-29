@@ -354,6 +354,8 @@ public class CarGame extends BasicGame {
     try {
       AppGameContainer appGameContainer = new AppGameContainer(new CarGame());
       appGameContainer.setDisplayMode(640, 480, !DEBUG_MODE);
+      appGameContainer.setMinimumLogicUpdateInterval(20);
+      appGameContainer.setMaximumLogicUpdateInterval(20);
       appGameContainer.setVSync(true);
       appGameContainer.start();
     } catch (SlickException e) {
