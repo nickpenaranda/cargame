@@ -168,8 +168,8 @@ public class CarGame extends BasicGame {
       ArrayList<HoverCraft> otherCars = new ArrayList<HoverCraft>(mCars);
       otherCars.remove(mPlayerCraft);
       for (HoverCraft other : otherCars) {
-        if (distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other.getX(),
-            other.getY()) < 47
+        if (CarGame.distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other.getX(),
+            other.getY()) < 64
             && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed())) {
           mPlayerCraft.kill();
           Sounds.death.play();
@@ -356,7 +356,7 @@ public class CarGame extends BasicGame {
       appGameContainer.setDisplayMode(640, 480, !DEBUG_MODE);
       appGameContainer.setMinimumLogicUpdateInterval(20);
       //appGameContainer.setMaximumLogicUpdateInterval(60);
-      appGameContainer.setVSync(true);
+      //appGameContainer.setVSync(true);
       appGameContainer.start();
     } catch (SlickException e) {
       e.printStackTrace();
