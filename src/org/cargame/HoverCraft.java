@@ -12,7 +12,7 @@ public class HoverCraft {
 
   private static final double base_booster_force = 0.02;
   private static final double min_speed_before_stiction = base_booster_force / 2;
-  private static final double friction = 0.99; // This is actually 1 - friction
+  private static final double friction = 0.999372; // This is actually 1 - friction
   private static final double wall_elasticity = 0.4;
 
   private static final int X = 0;
@@ -72,8 +72,8 @@ public class HoverCraft {
     if (mBoosters[LEFT])
       mVelocity[X] += base_booster_force;
 
-    mVelocity[X] *= friction;
-    mVelocity[Y] *= friction;
+    mVelocity[X] *= Math.pow(friction, delta);
+    mVelocity[Y] *= Math.pow(friction, delta);
 
     if (Math.abs(mVelocity[X]) < min_speed_before_stiction)
       mVelocity[X] = 0;
