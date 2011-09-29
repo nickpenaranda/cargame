@@ -27,6 +27,9 @@ public class CarGame extends BasicGame {
   private int[][] mMap;
   private Image[] mTiles;
   private Client mClient;
+  private ArrayList<BoostGhost> mGhosts;
+  private long ticks;
+  
   private GameContainer mContainer;
 
   public CarGame() {
@@ -44,7 +47,7 @@ public class CarGame extends BasicGame {
     mMap = new int[256][256];
     mTiles = new Image[5];
     mWalls = new ArrayList<Boundary>();
-
+    mGhosts = new ArrayList<BoostGhost>();
     genMap();
   }
 
@@ -114,6 +117,8 @@ public class CarGame extends BasicGame {
     mTiles[3] = new Image("gfx/wall3.png");
     mTiles[4] = new Image("gfx/wall4.png");
 
+    ticks = 0;
+
     int player_num = PLAYER_NUM;
     System.out.println(multiplayer_mode);
     if (multiplayer_mode) {
@@ -141,12 +146,17 @@ public class CarGame extends BasicGame {
 
   @Override
   public void update(GameContainer container, int delta) throws SlickException {
+    ++ticks;
+    
+    BoostGhost ghost = mPlayerCraft.getBoostTimeout() > 2000 && ticks % 3 == 0 ? new BoostGhost(mPlayerCraft.getX(),mPlayerCraft.getY(),mPlayerCraft.getAngle()) : null;
+    if(ghost != null)
+      mGhosts.add(ghost);
     if (multiplayer_mode) {
       UpdateMessage message = null;
       try {
         message = mClient.doUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
             mPlayerCraft.getAngle(), mPlayerCraft.getSpeed(), mPlayerCraft
-                .getLives(),mPlayerCraft.getJammer());
+                .getLives(),mPlayerCraft.getJammer(),ghost);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -157,6 +167,11 @@ public class CarGame extends BasicGame {
         mOtherCar.setAngle(message.angle);
         mOtherCar.setLives(message.lives);
         mOtherCar.setJammer(message.jammer);
+        if(message.ghost != null) {
+          ghost = message.ghost;
+          ghost.player = PLAYER_NUM == 0 ? 1 : 0;
+          mGhosts.add(ghost);
+        }
       }
     }
 
@@ -165,7 +180,13 @@ public class CarGame extends BasicGame {
 //      car.think(delta);
 //    }
     mPlayerCraft.think(delta);
-
+    
+    for(BoostGhost g:new ArrayList<BoostGhost>(mGhosts)) {
+      g.life -= delta;
+      if(g.life <= 0)
+        mGhosts.remove(g);
+    }
+    
     // Check collision player car vs other cars
     if (!mPlayerCraft.isDead()) {
       ArrayList<HoverCraft> otherCars = new ArrayList<HoverCraft>(mCars);
@@ -235,6 +256,16 @@ public class CarGame extends BasicGame {
           (float) (draw_offset_y + boundary.b.y - mPlayerCraft.getY()));
     }
 
+    // Draw boost ghosts
+    for (BoostGhost ghost : mGhosts) {
+      Image image = ghost.player == 0 ? mPlayerCraft.getImage() : mOtherCar.getImage();
+      image.setRotation((float) (ghost.angle * 180 / Math.PI));
+      int life = ghost.life;
+      image.setAlpha(life/(float)250 * 0.3f);
+      image.drawCentered(draw_offset_x + ghost.x - mPlayerCraft.getX(),
+          draw_offset_y + ghost.y - mPlayerCraft.getY());
+    }
+    
     // Draw cars
     for (HoverCraft car : mCars) {
       Image image = car.getImage();
