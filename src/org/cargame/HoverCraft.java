@@ -10,7 +10,7 @@ public class HoverCraft {
   public static final int BOTTOM = 2;
   public static final int LEFT = 3;
 
-  private static final double base_booster_force = 0.1;
+  private static final double base_booster_force = 0.01;
   private static final double min_speed_before_stiction = base_booster_force / 2;
   private static final double friction = 0.99; // This is actually 1 - friction
 
