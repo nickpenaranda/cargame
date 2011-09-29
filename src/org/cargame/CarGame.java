@@ -168,8 +168,8 @@ public class CarGame extends BasicGame {
       ArrayList<HoverCraft> otherCars = new ArrayList<HoverCraft>(mCars);
       otherCars.remove(mPlayerCraft);
       for (HoverCraft other : otherCars) {
-        if (distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other.getX(),
-            other.getY()) < 47
+        if (CarGame.distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other.getX(),
+            other.getY()) < 64
             && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed())) {
           mPlayerCraft.kill();
           Sounds.death.play();
