@@ -178,7 +178,7 @@ public class CarGame extends BasicGame {
 
     for (int i = 0; i < mWalls.size(); i++) {
       if (mWalls.get(i).intersect(mPlayerCraft.getX(), mPlayerCraft.getY(), 31)) {
-        mPlayerCraft.bounce(mWalls.get(i));
+        mPlayerCraft.bounce(mWalls.get(i), delta);
         Sounds.bounce.play((float)(1 + r.nextGaussian()/5),1.0f);
       }
     }
