@@ -134,7 +134,7 @@ public class HoverCraft {
     mSpeed = speed;
   }
 
-  public void bounce(Line l) {
+  public void bounce(Line l, int delta) {
     //System.out.println("BOUNCE");
 
     double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y)
@@ -179,6 +179,14 @@ public class HoverCraft {
 
     mVelocity[X] = vec_length * Math.cos(angleNew);
     mVelocity[Y] = vec_length * Math.sin(angleNew);
+
+    // actually give the player an extra move to get them out
+    // of the wall if they are there. A hack certainly, but
+    // shouldn't matter too much as long as delta stays low.
+    mX += mVelocity[X] * delta;
+    mY += mVelocity[Y] * delta;
+
+    // add once to make sure
 
     //System.out.printf("%f %f\n", lVecX, lVecY);
     //System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
