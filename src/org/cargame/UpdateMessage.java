@@ -18,7 +18,7 @@ public class UpdateMessage extends Message implements CertifiedMessage, PlayerMe
 
     public double x, y, angle, speed;
     
-    public int lives;
+    public int lives,jammer;
 
 	public String toString() {
 	  return String.format("text=%s ready=%s connecting=%s seq=%d (%f,%f)",text,ready,connecting,seq,x,y);

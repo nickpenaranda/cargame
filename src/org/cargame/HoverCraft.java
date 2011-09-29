@@ -30,7 +30,9 @@ public class HoverCraft {
   private int mLives;
   private int mDeadCount;
   private int mBoostTimeout;
+  private int mJammerTimeout;
   private double impulse_force = 2;
+  private int mJammerEffect;
 
   public HoverCraft(String graphic_file, float x, float y) {
     try {
@@ -56,7 +58,12 @@ public class HoverCraft {
 
   public void think(int delta) {
     mBoostTimeout -= delta;
+    mJammerTimeout -= delta;
+    mJammerEffect -= delta;
+    
     if(mBoostTimeout < 0) mBoostTimeout = 0;
+    if(mJammerTimeout < 0) mJammerTimeout = 0;
+    if(mJammerEffect < 0) mJammerEffect = 0;
     
     mPrevX = mX;
     mPrevY = mY;
@@ -215,6 +222,14 @@ public class HoverCraft {
       mBoostTimeout = 2500;
     }
   }
+  
+  public void jammer() {
+    if(mJammerTimeout <= 0) {
+      Sounds.cloak.play();
+      mJammerTimeout = 7500;
+      mJammerEffect = 2500;
+    }
+  }
 
   public void setLives(int lives) {
     mLives = lives;
@@ -222,5 +237,17 @@ public class HoverCraft {
 
   public int getBoostTimeout() {
     return mBoostTimeout;
+  }
+
+  public void setJammer(int jammer) {
+    mJammerEffect = jammer;
+  }
+
+  public int getJammer() {
+    return mJammerEffect;
+  }
+
+  public int getJammerTimeout() {
+    return mJammerTimeout;
   }
 }

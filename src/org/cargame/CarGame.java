@@ -154,6 +154,7 @@ public class CarGame extends BasicGame {
         mOtherCar.setSpeed(message.speed);
         mOtherCar.setAngle(message.angle);
         mOtherCar.setLives(message.lives);
+        mOtherCar.setJammer(message.jammer);
       }
     }
 
@@ -222,22 +223,29 @@ public class CarGame extends BasicGame {
 
     // Info
     // draw indicator
-    int min_len = 33;
-    int max_len = 100;
-    double angle = Math.atan((mOtherCar.getY() - mPlayerCraft.getY())
-        / (mOtherCar.getX() - mPlayerCraft.getX()));
-    if (mOtherCar.getX() > mPlayerCraft.getX())
-      angle += Math.PI;
-
-    double car_dist = Math.sqrt(Math.pow(
-        mOtherCar.getY() - mPlayerCraft.getY(), 2)
-        + Math.pow(mOtherCar.getX() - mPlayerCraft.getX(), 2));
-    double len = min_len + car_dist / 100;
-    if (len > max_len)
-      len = max_len;
-
-    float x = (float) ((640 / 2) - len * Math.cos(angle));
-    float y = (float) ((480 / 2) - len * Math.sin(angle));
+    if(mOtherCar.getJammer() > 0) {
+      int min_len = 33;
+      int max_len = 100;
+      double angle = Math.atan((mOtherCar.getY() - mPlayerCraft.getY())
+          / (mOtherCar.getX() - mPlayerCraft.getX()));
+      if (mOtherCar.getX() > mPlayerCraft.getX())
+        angle += Math.PI;
+  
+      double car_dist = Math.sqrt(Math.pow(
+          mOtherCar.getY() - mPlayerCraft.getY(), 2)
+          + Math.pow(mOtherCar.getX() - mPlayerCraft.getX(), 2));
+      double len = min_len + car_dist / 100;
+      if (len > max_len)
+        len = max_len;
+  
+      float x = (float) ((640 / 2) - len * Math.cos(angle));
+      float y = (float) ((480 / 2) - len * Math.sin(angle));
+    
+      g.setColor(Color.red);
+      g.fillOval(x, y, (float) 5.0, (float) 5.0);
+      g.setColor(Color.orange);
+      g.drawOval(x, y, (float) 6.0, (float) 6.0);
+    }
 
     // Draw boost indicator
     g.setColor(Color.white);
@@ -247,11 +255,21 @@ public class CarGame extends BasicGame {
     else
       g.setColor(Color.green);
     g.fillRect(281,16, 79 * (1 - (mPlayerCraft.getBoostTimeout() / (float)2500)), 4);
+
+    g.drawString(String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft
+        .getY()), 10, 45);
+    g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
+
+    // Draw jammer indicator
+    g.setColor(Color.white);
+    g.drawRect(280, 22, 80, 5);
+    if(mPlayerCraft.getJammerTimeout() > 0)
+      g.setColor(Color.gray);
+    else
+      g.setColor(Color.cyan);
+    g.fillRect(281,23, 79 * (1 - (mPlayerCraft.getJammerTimeout() / (float)7500)), 4);
     
-    g.setColor(Color.red);
-    g.fillOval(x, y, (float) 5.0, (float) 5.0);
-    g.setColor(Color.orange);
-    g.drawOval(x, y, (float) 6.0, (float) 6.0);
+    
 
     g.drawString(String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft
         .getY()), 10, 45);
@@ -298,9 +316,9 @@ public class CarGame extends BasicGame {
     case Input.KEY_D:
       mPlayerCraft.setBooster(HoverCraft.LEFT, true);
       break;
-    // case Input.KEY_SPACE:
-    // mPlayerCraft.setBraking(true);
-    // break;
+    case Input.KEY_Q:
+      mPlayerCraft.jammer();
+      break;
     }
   }
 
@@ -320,9 +338,6 @@ public class CarGame extends BasicGame {
     case Input.KEY_D:
       mPlayerCraft.setBooster(HoverCraft.LEFT, false);
       break;
-    // case Input.KEY_SPACE:
-    // mPlayerCraft.setBraking(false);
-    // break;
     }
   }
 
