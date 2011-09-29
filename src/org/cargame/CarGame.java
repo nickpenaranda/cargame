@@ -331,6 +331,15 @@ public class CarGame extends BasicGame {
     }
   }
 
+  @Override
+  public void mouseClicked(int button, int x, int y, int clickCount) {
+    switch(button) {
+    case 0: // Left
+      mPlayerCraft.boost();
+      break;
+    }
+  }
+
   public static void main(String[] args) {
     try {
       AppGameContainer appGameContainer = new AppGameContainer(new CarGame());

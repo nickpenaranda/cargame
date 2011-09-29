@@ -183,4 +183,9 @@ public class HoverCraft {
     //System.out.printf("%f %f\n", lVecX, lVecY);
     //System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
   }
+
+  public void boost() {
+    // TODO Auto-generated method stub
+    
+  }
 }
