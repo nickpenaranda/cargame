@@ -15,6 +15,8 @@ public class HoverCraft {
   private static final double friction = 0.99937; // This is actually 1 - friction
   private static final double wall_elasticity = 0.4;
 
+  private static final double distance_integral_millis = 2000;
+
   private static final int X = 0;
   private static final int Y = 1;
 
@@ -33,6 +35,10 @@ public class HoverCraft {
   private int mJammerTimeout;
   private double impulse_force = 2;
   private int mJammerEffect;
+
+  private double mDistanceLastNSecs;
+  private int mDistanceMillisSaved;
+  private double mAverageSpeed;
 
   public HoverCraft(String graphic_file, float x, float y) {
     try {
@@ -91,6 +97,16 @@ public class HoverCraft {
     mSpeed = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y]
         * mVelocity[Y]);
 
+    // average speed over last distance_integral_seconds
+    mDistanceLastNSecs += mSpeed * delta;
+    mDistanceMillisSaved += delta;
+    mAverageSpeed = mDistanceLastNSecs / mDistanceMillisSaved;
+    // This is an approximation but it should work.
+    if (mDistanceMillisSaved > distance_integral_millis) {
+        mDistanceLastNSecs -= mAverageSpeed * 200;
+        mDistanceMillisSaved -= 200;
+    }
+
     if (mDeadCount > 0)
       mDeadCount -= delta;
 
@@ -146,6 +162,10 @@ public class HoverCraft {
 
   public double getSpeed() {
     return mSpeed;
+  }
+
+  public double getAverageSpeed() {
+    return mAverageSpeed;
   }
 
   public void setSpeed(double speed) {
