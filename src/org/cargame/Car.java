@@ -208,4 +208,34 @@ public class Car {
   public int getLives() {
     return(mLives);
   }
+
+  public void reflect(double vecX, double vecY, Line l) {
+    double cross = (l.a.x - l.b.x) * vecY - (l.a.y - l.b.y) * vecX;
+    double vec_length = Math.sqrt(vecX * vecX + vecY * vecY);
+    double a_dot_b = (l.a.x - l.b.x) * vecX + (l.a.y - l.b.y) * vecY;
+    double angleBetween = Math.acos(a_dot_b / (l.length() * vec_length));
+
+    //System.out.println(a_dot_b);
+    //System.out.println(cross);
+    //System.out.println(Math.toDegrees(angleBetween));
+
+    if (angleBetween > Math.PI / 2)
+        angleBetween = Math.PI - angleBetween;
+    if (cross > 0)
+        angleBetween = -angleBetween;
+
+    //System.out.println(Math.toDegrees(angleBetween));
+
+    double angleL = Math.atan((l.a.y - l.b.y) / (l.a.x - l.b.x));
+
+    //System.out.println(Math.toDegrees(angleL));
+
+    double angleNew = angleL - angleBetween;
+
+    double newVecX = vec_length * Math.cos(angleNew);
+    double newVecY = vec_length * Math.sin(angleNew);
+
+    //System.out.println(newVecX);
+    //System.out.println(newVecY);
+  }
 }

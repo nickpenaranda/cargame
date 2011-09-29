@@ -7,7 +7,11 @@ public class Line {
     a = new Point(x1,y1);
     b = new Point(x2,y2);
   }
-  
+
+  public double length() {
+    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+  }
+
   public boolean intersect(Line other) {
     return ccw(this.a,other.a,other.b) != ccw(this.b,other.a,other.b) &&
       ccw(this.a,this.b,other.a) != ccw(this.a,this.b,other.b);
