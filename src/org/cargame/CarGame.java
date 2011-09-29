@@ -22,7 +22,7 @@ public class CarGame extends BasicGame {
   private ArrayList<HoverCraft> mCars;
   private ArrayList<Boundary> mWalls;
   private HoverCraft mPlayerCraft, mOtherCar;
-  private static final int PLAYER_NUM = 1;
+  private int player_num = 1;
   private static final float cloak_alpha = 0.05f;
   private int[][] mMap;
   private Image[] mTiles;
@@ -119,7 +119,6 @@ public class CarGame extends BasicGame {
 
     ticks = 0;
 
-    int player_num = PLAYER_NUM;
     System.out.println(multiplayer_mode);
     if (multiplayer_mode) {
       try {
@@ -169,7 +168,7 @@ public class CarGame extends BasicGame {
         mOtherCar.setJammer(message.jammer);
         if(message.ghost != null) {
           ghost = message.ghost;
-          ghost.player = PLAYER_NUM == 0 ? 1 : 0;
+          ghost.player = 1;
           mGhosts.add(ghost);
         }
       }
@@ -434,6 +433,7 @@ public class CarGame extends BasicGame {
       AppGameContainer appGameContainer = new AppGameContainer(new CarGame());
       appGameContainer.setDisplayMode(640, 480, !DEBUG_MODE);
       appGameContainer.setMinimumLogicUpdateInterval(20);
+      appGameContainer.setAlwaysRender(true);
       //appGameContainer.setMaximumLogicUpdateInterval(60);
       //appGameContainer.setVSync(true);
       appGameContainer.start();
