@@ -148,7 +148,7 @@ public class CarGame extends BasicGame {
       } catch (Exception e) {
         e.printStackTrace();
       }
-
+      
       if (message != null) {
         mOtherCar.moveTo((float) message.x, (float) message.y);
         mOtherCar.setSpeed(message.speed);
