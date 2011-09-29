@@ -51,8 +51,8 @@ public class HoverCraft {
   }
 
   public void think(int delta) {
-    mX += mVelocity[X];
-    mY += mVelocity[Y];
+    mX += mVelocity[X] * delta;
+    mY += mVelocity[Y] * delta;
     // Apply booster force
     if (mBoosters[TOP])
       mVelocity[Y] += base_booster_force;
