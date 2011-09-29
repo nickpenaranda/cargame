@@ -3,6 +3,11 @@ package org.cargame;
 public class Boundary extends Line {
   public int mType;
 
+  public Boundary(double x1, double y1, double x2, double y2,int type, boolean flip) {
+    super(x1, y1, x2, y2, flip);
+    mType = type;
+  }
+
   public Boundary(double x1, double y1, double x2, double y2,int type) {
     super(x1, y1, x2, y2);
     mType = type;

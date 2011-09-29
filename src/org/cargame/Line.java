@@ -8,6 +8,16 @@ public class Line {
     b = new Point(x2,y2);
   }
 
+  public Line(double x1, double y1, double x2, double y2, boolean flip) {
+    if (flip) {
+        a = new Point(y1,x1);
+        b = new Point(y2,x2);
+    } else {
+        a = new Point(x1,y1);
+        b = new Point(x2,y2);
+    }
+  }
+
   public double length() {
     return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
   }

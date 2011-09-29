@@ -96,11 +96,50 @@ public class CarGame extends BasicGame {
             + (buildingWidth * 64 * (y)), 1));
       }
     }
+    int cityBlockWidth = roadWidth + buildingWidth;
+    int numRoads = 256 / cityBlockWidth;
+    int numBarriers = r.nextInt(40) + 10;
+    for (int i=0; i<numBarriers; i++) {
+        // specifices intersection: (0, 0) topleft
+        int barrierX = r.nextInt(numRoads-1);    
+        int barrierY = r.nextInt(numRoads-1);    
+        boolean barrierHoriz = r.nextInt(2) == 1;
+        System.out.println(barrierX + " " + barrierY +  " " + barrierHoriz);
+
+        int barrierTop = barrierX * cityBlockWidth + cityBlockWidth / 2 + roadWidth/2 - 1;
+        int barrierLeft = barrierY * cityBlockWidth;
+        int barrierRight = barrierY * cityBlockWidth + roadWidth - 1;
+        int barrierBottom = barrierX * cityBlockWidth + cityBlockWidth / 2 + roadWidth/2;
+        flatLine(barrierBottom,
+                 barrierLeft,
+                 barrierRight,
+                 barrierHoriz,
+                 -1);
+        flatLine(barrierTop,
+                 barrierLeft,
+                 barrierRight,
+                 barrierHoriz,
+                 -1);
+        int boundStartX = tileToPixel(barrierLeft);
+        int boundStartY = tileToPixel(barrierTop);
+        int boundEndX = tileToPixel(barrierRight);
+        int boundEndY = tileToPixel(barrierTop);
+        mWalls.add(new Boundary(boundStartX, boundStartY, boundEndX+64, boundEndY, 1, !barrierHoriz));
+        mWalls.add(new Boundary(boundStartX, boundStartY+128, boundEndX+64, boundEndY+128, 1, !barrierHoriz));
+    }
+  }
+
+  private int tileToPixel(int tileNum) {
+    return -8192 + tileNum * 64;
   }
 
   private void flatLine(int offset, int start, int end, boolean horiz, int val) {
+    boolean random = val == -1;
     int y = offset;
     for (int x = start; x <= end; x++) {
+        if (random) {
+            val = r.nextInt(4)+1;
+        }
       if (horiz)
         mMap[x][y] = val;
       else
@@ -216,7 +255,6 @@ public class CarGame extends BasicGame {
   public void render(GameContainer container, Graphics g) throws SlickException {
     float scale_factor = 1 / (1 + (float)Math.pow(mPlayerCraft.getAverageSpeed(),3));
     if(scale_factor < 0.25) scale_factor = 0.25f;
-    
     
     float draw_offset_x = 320f / scale_factor, draw_offset_y = 240f / scale_factor;
 
