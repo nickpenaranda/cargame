@@ -55,7 +55,7 @@ public class Client extends DynamicMessageAdapter {
 
   // Sends an update to the server, returns the other player's update.
   public UpdateMessage doUpdate(double x, double y, double angle, double speed,
-      int lives) throws Exception {
+      int lives, int jammer) throws Exception {
     UpdateMessage message = new UpdateMessage();
     message.setPlayerId(client.getPlayerId());
     message.seq = seq;
@@ -64,7 +64,8 @@ public class Client extends DynamicMessageAdapter {
     message.angle = angle;
     message.speed = speed;
     message.lives = lives;
-
+    message.jammer = jammer;
+    
     client.broadcast(message);
 
     UpdateMessage response = nextMessage(seq, 50);

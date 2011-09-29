@@ -144,7 +144,7 @@ public class CarGame extends BasicGame {
       try {
         message = mClient.doUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
             mPlayerCraft.getAngle(), mPlayerCraft.getSpeed(), mPlayerCraft
-                .getLives());
+                .getLives(),mPlayerCraft.getJammer());
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -223,7 +223,7 @@ public class CarGame extends BasicGame {
 
     // Info
     // draw indicator
-    if(mOtherCar.getJammer() > 0) {
+    if(mOtherCar.getJammer() <= 0) {
       int min_len = 33;
       int max_len = 100;
       double angle = Math.atan((mOtherCar.getY() - mPlayerCraft.getY())
@@ -269,8 +269,6 @@ public class CarGame extends BasicGame {
       g.setColor(Color.cyan);
     g.fillRect(281,23, 79 * (1 - (mPlayerCraft.getJammerTimeout() / (float)7500)), 4);
     
-    
-
     g.drawString(String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft
         .getY()), 10, 45);
     g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
