@@ -152,14 +152,26 @@ public class HoverCraft {
 
     System.out.println("xformed angle " + Math.toDegrees(angleBetween));
 
-    double angleL = Math.atan((l.a.y - l.b.y) / (l.a.x - l.b.x));
+    double lVecY = l.a.y - l.b.y;
+    double lVecX = l.a.x - l.b.x;
+    double angleL = Math.atan(lVecY / lVecX);
+    if (angleL < 0) {
+        angleL += Math.PI;
+    }
+    //if (lVecY < 0 && lVecX < 0 || lVecY > 0 && lVecX < 0) {
+    //    angleL += 2 * Math.PI;
+    //}
 
     System.out.println("angleL " + Math.toDegrees(angleL));
 
     double angleNew = angleL - angleBetween;
 
+    System.out.println("angleNew " + Math.toDegrees(angleNew));
+
     mVelocity[X] = vec_length * Math.cos(angleNew);
     mVelocity[Y] = vec_length * Math.sin(angleNew);
+
+    System.out.printf("%f %f\n", lVecX, lVecY);
 
     System.out.printf("new (%f,%f)\n",mVelocity[X],mVelocity[Y]);
   }
