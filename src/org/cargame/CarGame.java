@@ -157,9 +157,10 @@ public class CarGame extends BasicGame {
     }
 
     // Think for all cars
-    for (HoverCraft car : mCars) {
-      car.think(delta);
-    }
+//    for (HoverCraft car : mCars) {
+//      car.think(delta);
+//    }
+    mPlayerCraft.think(delta);
 
     // Check collision player car vs other cars
     if (!mPlayerCraft.isDead()) {
