@@ -15,7 +15,6 @@ import org.newdawn.slick.SlickException;
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
   private static boolean multiplayer_mode;
-  private static final float draw_offset_x = 320f, draw_offset_y = 240f;
   public static final int roadWidth = 6;
   public static final int buildingWidth = 10;
   public static Random r;
@@ -191,17 +190,35 @@ public class CarGame extends BasicGame {
   }
 
   public void render(GameContainer container, Graphics g) throws SlickException {
-    int tx = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) / 64;
-    int ox = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) % 64;
-    int ty = (int) (8192 + mPlayerCraft.getY() - (container.getHeight() / 2)) / 64;
-    int oy = (int) (8192 + mPlayerCraft.getY() - (container.getHeight() / 2)) % 64;
+    float scale_factor = 1 / (1 + (float)Math.pow(mPlayerCraft.getSpeed(),3));
+    if(scale_factor < 0.25) scale_factor = 0.25f;
+    float draw_offset_x = 320f / scale_factor, draw_offset_y = 240f / scale_factor;
 
+//    int tx = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) / 64;
+//    int ox = (int) (8192 + mPlayerCraft.getX() - (container.getWidth() / 2)) % 64;
+//    int ty = (int) (8192 + mPlayerCraft.getY() - (container.getHeight() / 2)) / 64;
+//    int oy = (int) (8192 + mPlayerCraft.getY() - (container.getHeight() / 2)) % 64;
+    int tx = (int) (8192 + mPlayerCraft.getX() - draw_offset_x) / 64;
+    int ty = (int) (8192 + mPlayerCraft.getY() - draw_offset_y) / 64;
+    int ox = (int) (8192 + mPlayerCraft.getX() - draw_offset_x) % 64;
+    int oy = (int) (8192 + mPlayerCraft.getY() - draw_offset_y) % 64;
+    
+    g.scale(scale_factor,scale_factor);
+ 
+//    ox /= scale_factor;
+//    oy /= scale_factor;
+    
+    //float s = 64 * scale_factor;
+    float s = 64f;
+    
     // Draw tiles
-    for (int x = 0; x < 11; x++) {
-      for (int y = 0; y < 9; y++) {
+    
+    for (int x = 0; x < 10 / scale_factor + 1; x++) {
+      for (int y = 0; y < 8 / scale_factor + 1; y++) {
         if (isInBounds(tx + x, ty + y) && mMap[tx + x][ty + y] != 0)
-          g.drawImage(mTiles[mMap[tx + x][ty + y]], (x << 6) - ox, (y << 6)
-              - oy);
+          g.drawImage(mTiles[mMap[tx + x][ty + y]], 
+              (x * s) - ox, 
+              (y * s) - oy);
       }
     }
 
@@ -221,6 +238,7 @@ public class CarGame extends BasicGame {
           draw_offset_y + car.getY() - mPlayerCraft.getY());
     }
 
+    g.scale(1/scale_factor,1/scale_factor);
     // Info
     // draw indicator
     if(mOtherCar.getJammer() <= 0) {
@@ -269,10 +287,7 @@ public class CarGame extends BasicGame {
       g.setColor(Color.cyan);
     g.fillRect(281,23, 79 * (1 - (mPlayerCraft.getJammerTimeout() / (float)7500)), 4);
     
-    g.drawString(String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft
-        .getY()), 10, 45);
-    g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
-
+    g.drawString("Speed = " + mPlayerCraft.getSpeed(), 10, 30);
     // Scoreboard
     g.setColor(Color.green);
     g.drawString("You: " + mPlayerCraft.getLives(), 10,
