@@ -91,7 +91,7 @@ public class GameClient extends Listener {
     } else if (object instanceof ChatMessage) {
       System.out.println("Chat message received");
       ChatMessage msg = (ChatMessage) object;
-      mCarGame.mMessages.add(new Message(mCarGame.mCars.get(msg.id).getName() + ": " + msg.text));
+      mCarGame.mMessages.add(0,new Message(mCarGame.mCars.get(msg.id).getName() + ": " + msg.text));
       Sounds.chat.play();
       System.out.println("Chat message received");
     } else if (object instanceof CommandMessage) {
