@@ -25,7 +25,7 @@ public class CarGame extends BasicGame {
 
 	public static String playerName = "Player";
 	public static String HOST_NAME = "192.168.1.113";
-	
+
 	private Map<Integer, HoverCraft> mCars;
 	private ArrayList<Boundary> mWalls;
 	private HoverCraft mPlayerCraft;
@@ -36,6 +36,9 @@ public class CarGame extends BasicGame {
 	private ArrayList<BoostGhost> mGhosts;
 	ArrayList<Explosion> mExplosions;
 	private long ticks;
+	private StringBuffer mChatBuffer;
+	private int mChatBufferPos;
+	private boolean mChatMode;
 
 	private GameContainer mContainer;
 
@@ -43,14 +46,14 @@ public class CarGame extends BasicGame {
 		super("CAR GAME, SON");
 
 		String player_name = System.getProperty("cargame.player_name");
-		if(playerName != null)
-		  playerName = player_name;
-		
-    String host_name = System.getProperty("cargame.host_name");
-    if(host_name != null)
-      HOST_NAME = host_name;
+		if (playerName != null)
+			playerName = player_name;
 
-    String mmode = System.getProperty("cargame.multiplayer_mode");
+		String host_name = System.getProperty("cargame.host_name");
+		if (host_name != null)
+			HOST_NAME = host_name;
+
+		String mmode = System.getProperty("cargame.multiplayer_mode");
 		if (mmode != null)
 			multiplayer_mode = Boolean.valueOf(mmode);
 		else
@@ -65,6 +68,10 @@ public class CarGame extends BasicGame {
 		mWalls = new ArrayList<Boundary>();
 		mGhosts = new ArrayList<BoostGhost>();
 		mExplosions = new ArrayList<Explosion>();
+
+		mChatBuffer = new StringBuffer("");
+		mChatMode = false;
+		mChatBufferPos = 0;
 		genMap();
 	}
 
@@ -92,7 +99,7 @@ public class CarGame extends BasicGame {
 		mPlayerCraft = new HoverCraft("gfx/craft1.png", -8192 + roadWidth * 32
 				+ (roadWidth + buildingWidth) * (r.nextInt(15) + 1) * 64, -8192
 				+ roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(15) + 1)
-				* 64,"Nobody");
+				* 64, "Nobody");
 
 		if (multiplayer_mode) {
 			try {
@@ -145,7 +152,7 @@ public class CarGame extends BasicGame {
 			mClient.sendStateUpdate(Network.STATE_DEAD, false);
 			mPlayerCraft.restore();
 		}
-		
+
 		else if (mPlayerCraft.isDead())
 			return;
 
@@ -231,11 +238,12 @@ public class CarGame extends BasicGame {
 				image.setAlpha(cloak_alpha + (500 - jammer) / (float) 500
 						* (1 - cloak_alpha));
 			else {
-			  g.setColor(Color.white);
-			  if(car != mPlayerCraft)
-  			  g.drawString(car.getName(), draw_offset_x + car.getX() - mPlayerCraft.getX() -
-  			      g.getFont().getWidth(car.getName())/2,
-  			      draw_offset_y + car.getY() - mPlayerCraft.getY() + 40);
+				g.setColor(Color.white);
+				if (car != mPlayerCraft)
+					g.drawString(car.getName(),
+							draw_offset_x + car.getX() - mPlayerCraft.getX()
+									- g.getFont().getWidth(car.getName()) / 2, draw_offset_y
+									+ car.getY() - mPlayerCraft.getY() + 40);
 				image.setAlpha(1.0f);
 			}
 			image.drawCentered(draw_offset_x + car.getX() - mPlayerCraft.getX(),
@@ -320,6 +328,12 @@ public class CarGame extends BasicGame {
 			g.drawString("!!!!BOOM SUCKA!!!!",
 					320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!") / 2, 240);
 		}
+		
+		// Chat buffer
+		if(mChatMode) {
+			g.drawString("> " + mChatBuffer.toString(), 15, container.getHeight()-30);
+			g.fillRect(17 + g.getFont().getWidth("> " + mChatBuffer.toString()), container.getHeight()-26, 2, 12);
+		}
 	}
 
 	private boolean isInBounds(int x, int y) {
@@ -328,40 +342,66 @@ public class CarGame extends BasicGame {
 
 	@Override
 	public void keyPressed(int key, char c) {
-		switch (key) {
-		// Non player control stuff
-		case Input.KEY_ESCAPE:
-			System.exit(0);
-			break;
-
-		// Player control stuff
-		case Input.KEY_W:
-			mPlayerCraft.setBooster(HoverCraft.BOTTOM, true);
-			break;
-		case Input.KEY_S:
-			mPlayerCraft.setBooster(HoverCraft.TOP, true);
-			break;
-		case Input.KEY_A:
-			mPlayerCraft.setBooster(HoverCraft.RIGHT, true);
-			break;
-		case Input.KEY_D:
-			mPlayerCraft.setBooster(HoverCraft.LEFT, true);
-			break;
-		case Input.KEY_Q:
-			if (multiplayer_mode)
-				mClient.sendStateUpdate(Network.STATE_JAM, true);
-			mPlayerCraft.jammer();
-			break;
-		case Input.KEY_F1:
-			try {
-				mContainer.setFullscreen(!mContainer.isFullscreen());
-			} catch (SlickException e) {
-				e.printStackTrace();
+		if (mChatMode) {
+			switch(key) {
+			case Input.KEY_ESCAPE: // Close chat mode without sending, do not clear buffer 
+				mChatMode = false;
+				break;
+			case Input.KEY_ENTER: // Send message, clear buffer, close chat mode
+				if(mChatBuffer.length() > 0)
+					mClient.sendChatMessage(mChatBuffer.toString());
+				mChatBuffer.delete(0, mChatBuffer.length());
+				mChatMode = false;
+				break;
+			case Input.KEY_BACK:
+				if(mChatBuffer.length() > 0)
+					mChatBuffer.deleteCharAt(mChatBuffer.length()-1);
+				break;
+			default:
+				if(c >= 32 && c <= 126) // Sane characters
+					mChatBuffer.append(c);
+				break;
 			}
-			break;
-		case Input.KEY_K:
-			mPlayerCraft.kill();
-			break;
+		} else {
+			switch (key) {
+			// Non player control stuff
+			case Input.KEY_ESCAPE:
+				System.exit(0);
+				break;
+
+			// Player control stuff
+			case Input.KEY_W:
+				mPlayerCraft.setBooster(HoverCraft.BOTTOM, true);
+				break;
+			case Input.KEY_S:
+				mPlayerCraft.setBooster(HoverCraft.TOP, true);
+				break;
+			case Input.KEY_A:
+				mPlayerCraft.setBooster(HoverCraft.RIGHT, true);
+				break;
+			case Input.KEY_D:
+				mPlayerCraft.setBooster(HoverCraft.LEFT, true);
+				break;
+			case Input.KEY_Q:
+				if (multiplayer_mode)
+					mClient.sendStateUpdate(Network.STATE_JAM, true);
+				mPlayerCraft.jammer();
+				break;
+			case Input.KEY_F1:
+				try {
+					mContainer.setFullscreen(!mContainer.isFullscreen());
+				} catch (SlickException e) {
+					e.printStackTrace();
+				}
+				break;
+			case Input.KEY_K:
+				mPlayerCraft.kill();
+				break;
+			case Input.KEY_ENTER:
+				mChatMode = true;
+				mChatBufferPos = mChatBuffer.length() - 1;
+				break;
+			}
 		}
 	}
 
