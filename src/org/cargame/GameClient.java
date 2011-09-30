@@ -21,12 +21,13 @@ public class GameClient extends Listener {
     Network.registerClasses(mClient);
 
     mClient.start();
-    mClient.connect(5000, "192.168.1.113", Network.TCP_PORT, Network.UDP_PORT);
+    mClient.connect(5000, CarGame.HOST_NAME, Network.TCP_PORT, Network.UDP_PORT);
 
     mClient.addListener(this);
 
     ControlMessage msg = new ControlMessage();
     msg.type = Network.CONTROL_CONNECT;
+    msg.text = CarGame.playerName;
     mClient.sendTCP(msg);
     mConnected = true;
   }
@@ -45,7 +46,7 @@ public class GameClient extends Listener {
         mPlayers.get(connection.getID()).setImage(msg.value);
       } else if(msg.type == Network.CONTROL_NEW_PLAYER) {
         System.out.println("Received NEW_PLAYER: " + msg.value);
-        mPlayers.put(msg.value,new HoverCraft(msg.value2,0,0));
+        mPlayers.put(msg.value,new HoverCraft(msg.value2,0,0,msg.text));
       } else if(msg.type == Network.CONTROL_RM_PLAYER) {
         System.out.println("Received RM_PLAYER: " + msg.value);
         mPlayers.remove(msg.value);

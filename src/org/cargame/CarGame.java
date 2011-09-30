@@ -23,6 +23,9 @@ public class CarGame extends BasicGame {
 	public static final int buildingWidth = 10;
 	public static Random r;
 
+	public static String playerName = "Player";
+	public static String HOST_NAME = "192.168.1.113";
+	
 	private Map<Integer, HoverCraft> mCars;
 	private ArrayList<Boundary> mWalls;
 	private HoverCraft mPlayerCraft;
@@ -81,7 +84,7 @@ public class CarGame extends BasicGame {
 		mPlayerCraft = new HoverCraft("gfx/craft1.png", -8192 + roadWidth * 32
 				+ (roadWidth + buildingWidth) * (r.nextInt(15) + 1) * 64, -8192
 				+ roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(15) + 1)
-				* 64);
+				* 64,"Nobody");
 
 		if (multiplayer_mode) {
 			try {

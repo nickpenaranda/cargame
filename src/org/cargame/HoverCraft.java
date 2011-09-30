@@ -29,6 +29,7 @@ public class HoverCraft {
 	private static Image[] vehicleGraphics;
 
 	private Image mImage;
+	private String mName;
 	private double mX, mY, mAngle;
 	private double mPrevX, mPrevY;
 	private double mSpeed;
@@ -62,7 +63,7 @@ public class HoverCraft {
 		}
 	}
 
-	public HoverCraft(int graphic_index, double x, double y) {
+	public HoverCraft(int graphic_index, double x, double y, String name) {
 		mImage = vehicleGraphics[graphic_index];
 		mX = x;
 		mY = y;
@@ -72,9 +73,10 @@ public class HoverCraft {
 		mBoosters[TOP] = mBoosters[RIGHT] = mBoosters[BOTTOM] = mBoosters[LEFT] = false;
 		mDeadCount = 0;
 		mLives = 10;
+		mName = name;
 	}
 
-	public HoverCraft(String graphic_file, double x, double y) {
+	public HoverCraft(String graphic_file, double x, double y, String name) {
 		try {
 			mImage = new Image(graphic_file, Color.magenta);
 		} catch (SlickException e) {
@@ -90,6 +92,7 @@ public class HoverCraft {
 		mBoosters[TOP] = mBoosters[RIGHT] = mBoosters[BOTTOM] = mBoosters[LEFT] = false;
 		mDeadCount = 0;
 		mLives = 10;
+		mName = name;
 	}
 
 	public void setBooster(int which, boolean state) {
@@ -352,4 +355,6 @@ public class HoverCraft {
 	public int getDeadCount() {
 		return (mDeadCount);
 	}
+	
+	public String getName() { return mName; }
 }

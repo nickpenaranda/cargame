@@ -76,12 +76,12 @@ public class GameServer extends Listener {
         }
         
         // Add newly connected player to list of players
-        players.put(connection.getID(),new Player(connection.getID(),graphic,"Player " + connection.getID()));
+        players.put(connection.getID(),new Player(connection.getID(),graphic,msg.text));
 
         // Send NEW_PLAYER to all others
         resp.value = connection.getID();
         resp.value2 = graphic;
-        resp.text = "Player " + connection.getID();
+        resp.text = msg.text;
         mServer.sendToAllExceptTCP(connection.getID(), resp);
         break;
       }
