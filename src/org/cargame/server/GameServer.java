@@ -114,7 +114,13 @@ public class GameServer extends Listener {
     	System.out.println("MESSAGE FROM " + players.get(connection.getID()).name + ": " + msg.text);
     	if(msg.text.charAt(0) == Network.COMMAND_CHARACTER) {
     		List<String> parsedMsg = parseMessage(msg.text);
-    		// Do something
+    		System.out.println("RADMIN CMD: " + parsedMsg.get(0));
+    		String cmd = parsedMsg.get(0).substring(1).toLowerCase();
+    		if(cmd.equals("killall")) {
+    		  CommandMessage cmd_msg = new CommandMessage();
+    		  cmd_msg.type = Network.COMMAND_KILL_SELF;
+    		  mServer.sendToAllTCP(cmd_msg);
+    		}
     	} else { // Relay message to other clients
     	  msg.id = connection.getID();
     		mServer.sendToAllTCP(msg);

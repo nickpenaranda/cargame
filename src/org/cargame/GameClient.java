@@ -94,6 +94,13 @@ public class GameClient extends Listener {
       mCarGame.mMessages.add(new Message(mCarGame.mCars.get(msg.id).getName() + ": " + msg.text));
       Sounds.chat.play();
       System.out.println("Chat message received");
+    } else if (object instanceof CommandMessage) {
+      CommandMessage msg = (CommandMessage) object;
+      switch(msg.type) {
+      case Network.COMMAND_KILL_SELF:
+        mCarGame.mPlayerCraft.kill();
+        break;
+      }
     }
   }
 

@@ -29,7 +29,7 @@ public class CarGame extends BasicGame {
 
 	Map<Integer, HoverCraft> mCars;
 	private ArrayList<Boundary> mWalls;
-	private HoverCraft mPlayerCraft;
+	HoverCraft mPlayerCraft;
 	private static final float cloak_alpha = 0.05f;
 	private int[][] mMap;
 	private Image[] mTiles;
