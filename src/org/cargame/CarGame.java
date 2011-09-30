@@ -42,7 +42,15 @@ public class CarGame extends BasicGame {
 	public CarGame() {
 		super("CAR GAME, SON");
 
-		String mmode = System.getProperty("cargame.multiplayer_mode");
+		String player_name = System.getProperty("cargame.player_name");
+		if(playerName != null)
+		  playerName = player_name;
+		
+    String host_name = System.getProperty("cargame.host_name");
+    if(host_name != null)
+      HOST_NAME = host_name;
+
+    String mmode = System.getProperty("cargame.multiplayer_mode");
 		if (mmode != null)
 			multiplayer_mode = Boolean.valueOf(mmode);
 		else
@@ -148,7 +156,6 @@ public class CarGame extends BasicGame {
 					&& Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed())) {
 				mPlayerCraft.kill();
 				mClient.sendStateUpdate(Network.STATE_DEAD, true);
-				Sounds.death.play();
 			}
 		}
 
@@ -221,8 +228,14 @@ public class CarGame extends BasicGame {
 			else if (jammer > 0)
 				image.setAlpha(cloak_alpha + (500 - jammer) / (float) 500
 						* (1 - cloak_alpha));
-			else
+			else {
+			  g.setColor(Color.white);
+			  if(car != mPlayerCraft)
+  			  g.drawString(car.getName(), draw_offset_x + car.getX() - mPlayerCraft.getX() -
+  			      g.getFont().getWidth(car.getName())/2,
+  			      draw_offset_y + car.getY() - mPlayerCraft.getY() + 40);
 				image.setAlpha(1.0f);
+			}
 			image.drawCentered(draw_offset_x + car.getX() - mPlayerCraft.getX(),
 					draw_offset_y + car.getY() - mPlayerCraft.getY());
 		}

@@ -182,6 +182,7 @@ public class HoverCraft {
 			mVelocity[X] = 0;
 			mVelocity[Y] = 0;
 			mCarGame.mExplosions.add(new Explosion(mX, mY));
+			Sounds.death.play();
 		}
 	}
 
