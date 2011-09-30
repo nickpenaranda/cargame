@@ -309,4 +309,17 @@ public class HoverCraft {
   public void setImage(int index) {
     mImage = vehicleGraphics[index];
   }
+
+  public void setVel(double vx, double vy) {
+    mVelocity[X] = vx;
+    mVelocity[Y] = vy;
+  }
+
+  public double getVX() {
+    return mVelocity[X];
+  }
+  
+  public double getVY() {
+    return mVelocity[Y];
+  }
 }

@@ -21,7 +21,7 @@ public class GameClient extends Listener {
     Network.registerClasses(mClient);
 
     mClient.start();
-    mClient.connect(5000, "localhost", Network.TCP_PORT, Network.UDP_PORT);
+    mClient.connect(5000, "192.168.1.113", Network.TCP_PORT, Network.UDP_PORT);
 
     mClient.addListener(this);
 
@@ -55,7 +55,7 @@ public class GameClient extends Listener {
       HoverCraft craft = mPlayers.get(msg.id);
       if(craft != null) {
         craft.moveTo(msg.x, msg.y);
-        craft.setSpeed(msg.speed);
+        craft.setVel(msg.vx,msg.vy);
         craft.setAngle(msg.angle);
       }
     } else if (object instanceof StateMessage) {
@@ -76,13 +76,14 @@ public class GameClient extends Listener {
     }
   }
 
-  public void sendMoveUpdate(double x, double y, double angle, double speed) {
+  public void sendMoveUpdate(double x, double y, double vx, double vy, double angle) {
     if (mConnected) {
       MoveMessage msg = new MoveMessage();
       msg.x = x;
       msg.y = y;
+      msg.vx = vx;
+      msg.vy = vy;
       msg.angle = angle;
-      msg.speed = speed;
       mClient.sendUDP(msg);
     }
   }

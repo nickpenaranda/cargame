@@ -18,7 +18,7 @@ import org.newdawn.slick.SlickException;
 public class CarGame extends BasicGame {
   public static final boolean DEBUG_MODE = true;
   public static final int NUM_VEHICLES = 5;
-  private static boolean multiplayer_mode;
+  public static boolean multiplayer_mode;
   public static final int roadWidth = 6;
   public static final int buildingWidth = 10;
   public static Random r;
@@ -63,7 +63,7 @@ public class CarGame extends BasicGame {
     mTiles[2] = new Image("gfx/wall2.png");
     mTiles[3] = new Image("gfx/wall3.png");
     mTiles[4] = new Image("gfx/wall4.png");
-    
+
     HoverCraft.init();
     ticks = 0;
 
@@ -78,7 +78,7 @@ public class CarGame extends BasicGame {
         + (roadWidth + buildingWidth) * (r.nextInt(15) + 1) * 64, -8192
         + roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(15) + 1)
         * 64);
-    
+
     if (multiplayer_mode) {
       try {
         mClient = new GameClient(mCars);
@@ -88,7 +88,7 @@ public class CarGame extends BasicGame {
       }
     } else
       mCars.put(0, mPlayerCraft);
-    
+
     Sounds.init();
   }
 
@@ -102,13 +102,13 @@ public class CarGame extends BasicGame {
     if (ghost != null)
       mGhosts.add(ghost);
 
-    for(HoverCraft c:mCars.values()) {
+    for (HoverCraft c : mCars.values()) {
       c.think(delta);
     }
-    
+
     if (multiplayer_mode) {
       mClient.sendMoveUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
-          mPlayerCraft.getAngle(), mPlayerCraft.getSpeed());
+          mPlayerCraft.getVX(), mPlayerCraft.getVY(), mPlayerCraft.getAngle());
     }
 
     for (BoostGhost g : new ArrayList<BoostGhost>(mGhosts)) {
@@ -179,14 +179,14 @@ public class CarGame extends BasicGame {
     }
 
     // Draw boost ghosts
-//    for (BoostGhost ghost : mGhosts) {
-//      Image image = mCars.get(ghost.player).getImage();
-//      image.setRotation((float) (ghost.angle * 180 / Math.PI));
-//      int life = ghost.life;
-//      image.setAlpha(life / (float) 250 * 0.3f);
-//      image.drawCentered(draw_offset_x + ghost.x - mPlayerCraft.getX(),
-//          draw_offset_y + ghost.y - mPlayerCraft.getY());
-//    }
+    // for (BoostGhost ghost : mGhosts) {
+    // Image image = mCars.get(ghost.player).getImage();
+    // image.setRotation((float) (ghost.angle * 180 / Math.PI));
+    // int life = ghost.life;
+    // image.setAlpha(life / (float) 250 * 0.3f);
+    // image.drawCentered(draw_offset_x + ghost.x - mPlayerCraft.getX(),
+    // draw_offset_y + ghost.y - mPlayerCraft.getY());
+    // }
 
     // Draw cars
     for (HoverCraft car : mCars.values()) {
@@ -304,8 +304,8 @@ public class CarGame extends BasicGame {
       mPlayerCraft.setBooster(HoverCraft.LEFT, true);
       break;
     case Input.KEY_Q:
-      if(multiplayer_mode)
-        mClient.sendStateUpdate(Network.STATE_JAM,true);
+      if (multiplayer_mode)
+        mClient.sendStateUpdate(Network.STATE_JAM, true);
       mPlayerCraft.jammer();
       break;
     case Input.KEY_F1:

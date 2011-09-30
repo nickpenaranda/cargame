@@ -24,7 +24,7 @@ public class Network {
   }
   
   public static class MoveMessage {
-    public double x,y,angle,speed;
+    public double x,y,vx,vy,angle;
     public int id;
   }
   
