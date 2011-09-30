@@ -3,6 +3,7 @@ package org.cargame;
 import java.io.IOException;
 import java.util.Map;
 
+import org.cargame.Network.ChatMessage;
 import org.cargame.Network.*;
 
 import com.esotericsoftware.kryonet.Client;
@@ -117,4 +118,13 @@ public class GameClient extends Listener {
       mClient.sendUDP(msg);
     }
   }
+
+	public void sendChatMessage(String text) {
+		if (mConnected) {
+			ChatMessage msg = new ChatMessage();
+			msg.text = text;
+			mClient.sendTCP(msg);
+			System.out.println("Message sent.");
+		}
+	}
 }
