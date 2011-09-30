@@ -148,7 +148,7 @@ public class HoverCraft {
       mDistanceMillisSaved -= 200;
     }
 
-    if (mDeadCount > 0)
+    if (mDeadCount >= 0)
       mDeadCount -= delta;
   }
 
