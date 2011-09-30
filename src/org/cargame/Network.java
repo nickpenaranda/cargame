@@ -9,6 +9,7 @@ public class Network {
   
   public static final byte STATE_DEAD = 1;
   public static final byte STATE_JAM = 2;
+  public static final byte STATE_BOOST = 3;
   
   public static final byte CONTROL_ERR = -1;
   public static final byte CONTROL_ACK = 1;

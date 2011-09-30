@@ -1,10 +1,12 @@
-package org.cargame;
+package org.cargame.server;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.cargame.CarGame;
+import org.cargame.Network;
 import org.cargame.Network.*;
 
 import com.esotericsoftware.kryonet.Connection;

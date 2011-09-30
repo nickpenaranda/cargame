@@ -75,6 +75,8 @@ public class GameClient extends Listener {
           if(msg.setting) craft.setJammer(HoverCraft.JAMMER_EFFECT);
           else craft.setJammer(0);
           break;
+        case Network.STATE_BOOST:
+          if(msg.setting) craft.setBoostTimeout(HoverCraft.BOOST_TIMEOUT);
         }
       }
     }

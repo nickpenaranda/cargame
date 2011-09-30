@@ -41,12 +41,15 @@ public class HoverCraft {
   private int mJammerTimeout;
   private double impulse_force = 2;
   private int mJammerEffect;
+  
+  private static CarGame mCarGame;
 
   private double mDistanceLastNSecs;
   private int mDistanceMillisSaved;
   private double mAverageSpeed;
 
-  public static void init() {
+  public static void init(CarGame context) {
+    mCarGame = context;
     try {
       vehicleGraphics = new Image[] {
           new Image("gfx/craft1.png",Color.magenta),
@@ -172,10 +175,12 @@ public class HoverCraft {
   }
 
   public void kill() {
-    if (mDeadCount <= 0)
+    if (mDeadCount <= 0) {
       mDeadCount = RESPAWN_TIME;
-    mVelocity[X] = 0;
-    mVelocity[Y] = 0;
+      mVelocity[X] = 0;
+      mVelocity[Y] = 0;
+      mCarGame.mExplosions.add(new Explosion(mX,mY));
+    }
   }
 
   public int getLives() {
@@ -337,5 +342,9 @@ public class HoverCraft {
 
   public boolean getThrustL() {
     return(mBoosters[LEFT]);
+  }
+
+  public void setBoostTimeout(int boostTimeout) {
+    mBoostTimeout = boostTimeout;
   }
 }

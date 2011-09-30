@@ -31,6 +31,7 @@ public class CarGame extends BasicGame {
   private Image[] mTiles;
   private GameClient mClient;
   private ArrayList<BoostGhost> mGhosts;
+  ArrayList<Explosion> mExplosions;
   private long ticks;
 
   private GameContainer mContainer;
@@ -52,6 +53,7 @@ public class CarGame extends BasicGame {
     mTiles = new Image[5];
     mWalls = new ArrayList<Boundary>();
     mGhosts = new ArrayList<BoostGhost>();
+    mExplosions = new ArrayList<Explosion>();
     genMap();
   }
 
@@ -64,7 +66,9 @@ public class CarGame extends BasicGame {
     mTiles[3] = new Image("gfx/wall3.png");
     mTiles[4] = new Image("gfx/wall4.png");
 
-    HoverCraft.init();
+    HoverCraft.init(this);
+    Explosion.init();
+    
     ticks = 0;
 
     // mCars.put(1, new HoverCraft("gfx/craft2.png", -8192 + roadWidth * 32
@@ -96,27 +100,32 @@ public class CarGame extends BasicGame {
   public void update(GameContainer container, int delta) throws SlickException {
     ++ticks;
 
-    BoostGhost ghost = mPlayerCraft.getBoostTimeout() > 2000 && ticks % 3 == 0 ? new BoostGhost(
-        mPlayerCraft.getX(), mPlayerCraft.getY(), mPlayerCraft.getAngle())
-        : null;
-    if (ghost != null)
-      mGhosts.add(ghost);
-
     for (HoverCraft c : mCars.values()) {
       c.think(delta);
+      BoostGhost ghost = c.getBoostTimeout() > 2000 && ticks % 3 == 0 ? new BoostGhost(
+          c.getX(), c.getY(), c.getAngle(), c.getImage())
+          : null;
+      if (ghost != null)
+        mGhosts.add(ghost);
     }
 
     if (multiplayer_mode) {
       mClient.sendMoveUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
           mPlayerCraft.getVX(), mPlayerCraft.getVY(), mPlayerCraft.getAngle(),
-          mPlayerCraft.getThrustT(),mPlayerCraft.getThrustR(),mPlayerCraft.getThrustB(),
-          mPlayerCraft.getThrustL());
+          mPlayerCraft.getThrustT(), mPlayerCraft.getThrustR(), mPlayerCraft
+              .getThrustB(), mPlayerCraft.getThrustL());
     }
 
     for (BoostGhost g : new ArrayList<BoostGhost>(mGhosts)) {
       g.life -= delta;
       if (g.life <= 0)
         mGhosts.remove(g);
+    }
+
+    for (Explosion e : new ArrayList<Explosion>(mExplosions)) {
+      e.life -= delta;
+      if (e.life <= 0)
+        mExplosions.remove(e);
     }
 
     // Check collision player car vs other cars
@@ -129,6 +138,7 @@ public class CarGame extends BasicGame {
             .getX(), other.getY()) < 64
             && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed())) {
           mPlayerCraft.kill();
+          mClient.sendStateUpdate(Network.STATE_DEAD, true);
           Sounds.death.play();
         }
       }
@@ -181,17 +191,18 @@ public class CarGame extends BasicGame {
     }
 
     // Draw boost ghosts
-    // for (BoostGhost ghost : mGhosts) {
-    // Image image = mCars.get(ghost.player).getImage();
-    // image.setRotation((float) (ghost.angle * 180 / Math.PI));
-    // int life = ghost.life;
-    // image.setAlpha(life / (float) 250 * 0.3f);
-    // image.drawCentered(draw_offset_x + ghost.x - mPlayerCraft.getX(),
-    // draw_offset_y + ghost.y - mPlayerCraft.getY());
-    // }
+    for (BoostGhost ghost : mGhosts) {
+      Image image = ghost.image;
+      image.setRotation((float) (ghost.angle * 180 / Math.PI));
+      int life = ghost.life;
+      image.setAlpha(life / (float) 250 * 0.3f);
+      image.drawCentered(draw_offset_x + ghost.x - mPlayerCraft.getX(),
+          draw_offset_y + ghost.y - mPlayerCraft.getY());
+    }
 
     // Draw cars
     for (HoverCraft car : mCars.values()) {
+      if(car.isDead()) continue;
       Image image = car.getImage();
       image.setRotation((float) (car.getAngle() * 180 / Math.PI));
       int jammer = car.getJammer();
@@ -204,6 +215,12 @@ public class CarGame extends BasicGame {
         image.setAlpha(1.0f);
       image.drawCentered(draw_offset_x + car.getX() - mPlayerCraft.getX(),
           draw_offset_y + car.getY() - mPlayerCraft.getY());
+    }
+
+    // Draw explosions
+    for (Explosion e: mExplosions) {
+      e.getImage().drawCentered(draw_offset_x + (float)e.x - mPlayerCraft.getX(),
+          draw_offset_y + (float)e.y - mPlayerCraft.getY());
     }
 
     g.scale(1 / scale_factor, 1 / scale_factor);
@@ -363,6 +380,8 @@ public class CarGame extends BasicGame {
   public void mouseClicked(int button, int x, int y, int clickCount) {
     switch (button) {
     case 0: // Left
+      if (multiplayer_mode)
+        mClient.sendStateUpdate(Network.STATE_BOOST, true);
       mPlayerCraft.boost();
       break;
     }
