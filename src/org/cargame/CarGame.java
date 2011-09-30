@@ -141,8 +141,10 @@ public class CarGame extends BasicGame {
 				mExplosions.remove(e);
 		}
 
-		if (mPlayerCraft.isDead() && mPlayerCraft.getDeadCount() < 0)
+		if (mPlayerCraft.isDead() && mPlayerCraft.getDeadCount() < 0) {
+			mClient.sendStateUpdate(Network.STATE_DEAD, false);
 			mPlayerCraft.restore();
+		}
 		
 		else if (mPlayerCraft.isDead())
 			return;
