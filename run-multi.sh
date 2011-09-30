@@ -3,5 +3,7 @@
 ./compile.sh && java \
     -Djava.library.path=lib/native \
     -Dcargame.multiplayer_mode=true \
-    -classpath lib/lwjgl.jar:lib/slick.jar:src:lib/JGN_20110725.jar \
+    -Dcargame.host_name=intis.dyndns.org \
+    -Dcargame.player_name=shawn \
+    -classpath lib/lwjgl.jar:lib/slick.jar:src:lib/kryonet-1.04-all.jar \
     org.cargame.CarGame
