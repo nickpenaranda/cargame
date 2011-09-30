@@ -322,4 +322,20 @@ public class HoverCraft {
   public double getVY() {
     return mVelocity[Y];
   }
+
+  public boolean getThrustT() {
+    return(mBoosters[TOP]);
+  }
+
+  public boolean getThrustR() {
+    return(mBoosters[RIGHT]);
+  }
+
+  public boolean getThrustB() {
+    return(mBoosters[BOTTOM]);
+  }
+
+  public boolean getThrustL() {
+    return(mBoosters[LEFT]);
+  }
 }

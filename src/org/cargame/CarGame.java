@@ -108,7 +108,9 @@ public class CarGame extends BasicGame {
 
     if (multiplayer_mode) {
       mClient.sendMoveUpdate(mPlayerCraft.getX(), mPlayerCraft.getY(),
-          mPlayerCraft.getVX(), mPlayerCraft.getVY(), mPlayerCraft.getAngle());
+          mPlayerCraft.getVX(), mPlayerCraft.getVY(), mPlayerCraft.getAngle(),
+          mPlayerCraft.getThrustT(),mPlayerCraft.getThrustR(),mPlayerCraft.getThrustB(),
+          mPlayerCraft.getThrustL());
     }
 
     for (BoostGhost g : new ArrayList<BoostGhost>(mGhosts)) {

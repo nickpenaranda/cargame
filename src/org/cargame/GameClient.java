@@ -57,6 +57,10 @@ public class GameClient extends Listener {
         craft.moveTo(msg.x, msg.y);
         craft.setVel(msg.vx,msg.vy);
         craft.setAngle(msg.angle);
+        craft.setBooster(HoverCraft.TOP, msg.t);
+        craft.setBooster(HoverCraft.RIGHT, msg.r);
+        craft.setBooster(HoverCraft.BOTTOM, msg.b);
+        craft.setBooster(HoverCraft.LEFT, msg.l);
       }
     } else if (object instanceof StateMessage) {
       StateMessage msg = (StateMessage) object;
@@ -76,7 +80,8 @@ public class GameClient extends Listener {
     }
   }
 
-  public void sendMoveUpdate(double x, double y, double vx, double vy, double angle) {
+  public void sendMoveUpdate(double x, double y, double vx, double vy, double angle,
+      boolean t,boolean r,boolean b,boolean l) {
     if (mConnected) {
       MoveMessage msg = new MoveMessage();
       msg.x = x;
@@ -84,6 +89,11 @@ public class GameClient extends Listener {
       msg.vx = vx;
       msg.vy = vy;
       msg.angle = angle;
+      msg.t = t;
+      msg.r = r;
+      msg.b = b;
+      msg.l = l;
+      
       mClient.sendUDP(msg);
     }
   }
