@@ -2,6 +2,7 @@ package org.cargame;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
@@ -26,7 +27,7 @@ public class CarGame extends BasicGame {
 	public static String playerName = "Player";
 	public static String HOST_NAME = "192.168.1.113";
 
-	private Map<Integer, HoverCraft> mCars;
+	Map<Integer, HoverCraft> mCars;
 	private ArrayList<Boundary> mWalls;
 	private HoverCraft mPlayerCraft;
 	private static final float cloak_alpha = 0.05f;
@@ -35,6 +36,7 @@ public class CarGame extends BasicGame {
 	private GameClient mClient;
 	private ArrayList<BoostGhost> mGhosts;
 	ArrayList<Explosion> mExplosions;
+	List<Message> mMessages;
 	private long ticks;
 	private StringBuffer mChatBuffer;
 	private int mChatBufferPos;
@@ -69,6 +71,7 @@ public class CarGame extends BasicGame {
 		mGhosts = new ArrayList<BoostGhost>();
 		mExplosions = new ArrayList<Explosion>();
 
+		mMessages = (List<Message>) Collections.synchronizedList(new ArrayList<Message>());
 		mChatBuffer = new StringBuffer("");
 		mChatMode = false;
 		mChatBufferPos = 0;
@@ -99,11 +102,11 @@ public class CarGame extends BasicGame {
 		mPlayerCraft = new HoverCraft("gfx/craft1.png", -8192 + roadWidth * 32
 				+ (roadWidth + buildingWidth) * (r.nextInt(15) + 1) * 64, -8192
 				+ roadWidth * 32 + (roadWidth + buildingWidth) * (r.nextInt(15) + 1)
-				* 64, "Nobody");
+				* 64, playerName);
 
 		if (multiplayer_mode) {
 			try {
-				mClient = new GameClient(mCars);
+				mClient = new GameClient(this);
 				mCars.put(mClient.getPlayerId(), mPlayerCraft);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -146,6 +149,12 @@ public class CarGame extends BasicGame {
 			e.life -= delta;
 			if (e.life <= 0)
 				mExplosions.remove(e);
+		}
+		
+		for (Message m : new ArrayList<Message>(mMessages)) {
+		  m.life -= delta;
+		  if (m.life <= 0)
+		    mMessages.remove(m);
 		}
 
 		if (mPlayerCraft.isDead() && mPlayerCraft.getDeadCount() < 0) {
@@ -320,13 +329,20 @@ public class CarGame extends BasicGame {
 
 		// Scoreboard
 		g.setColor(Color.green);
-		g.drawString("You: " + mPlayerCraft.getLives(), 10,
-				container.getHeight() - 15);
+		g.drawString("You: " + mPlayerCraft.getLives(), container.getWidth() - 100,
+				15);
 
 		if (mPlayerCraft.isDead()) {
 			g.setColor(Color.red);
 			g.drawString("!!!!BOOM SUCKA!!!!",
 					320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!") / 2, 240);
+		}
+		
+		// Chat log
+		int i=0;
+		for(Message m:new ArrayList<Message>(mMessages)) {
+		  g.drawString(m.text, 15, container.getHeight() - 45 - (i * 15));
+		  ++i;
 		}
 		
 		// Chat buffer
@@ -348,7 +364,7 @@ public class CarGame extends BasicGame {
 				mChatMode = false;
 				break;
 			case Input.KEY_ENTER: // Send message, clear buffer, close chat mode
-				if(mChatBuffer.length() > 0)
+				if(multiplayer_mode && mChatBuffer.length() > 0)
 					mClient.sendChatMessage(mChatBuffer.toString());
 				mChatBuffer.delete(0, mChatBuffer.length());
 				mChatMode = false;
@@ -554,10 +570,22 @@ public class CarGame extends BasicGame {
 			appGameContainer.setMinimumLogicUpdateInterval(20);
 			appGameContainer.setAlwaysRender(true);
 			// appGameContainer.setMaximumLogicUpdateInterval(60);
-			// appGameContainer.setVSync(true);
+			appGameContainer.setVSync(true);
 			appGameContainer.start();
 		} catch (SlickException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static class Message {
+	  private static final int MESSAGE_DURATION = 5000;
+	  
+    public int life;
+	  public String text;
+	  
+	  public Message(String text) {
+	    this.text = text;
+	    life = MESSAGE_DURATION;
+	  }
 	}
 }

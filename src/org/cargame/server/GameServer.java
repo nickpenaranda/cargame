@@ -116,7 +116,8 @@ public class GameServer extends Listener {
     		List<String> parsedMsg = parseMessage(msg.text);
     		// Do something
     	} else { // Relay message to other clients
-    		mServer.sendToAllExceptTCP(connection.getID(), msg);
+    	  msg.id = connection.getID();
+    		mServer.sendToAllTCP(msg);
     	}
     		
     }

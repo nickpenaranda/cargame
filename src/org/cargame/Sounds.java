@@ -4,7 +4,7 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.Sound;
 
 public class Sounds {
-  public static Sound death,bounce,boost,cloak;
+  public static Sound death,bounce,boost,cloak,chat;
   
   private Sounds() {
     
@@ -16,6 +16,7 @@ public class Sounds {
     bounce = new Sound("sound/bounce.wav");
     boost = new Sound("sound/boost.wav");
     cloak = new Sound("sound/cloak.wav");
+    chat = new Sound("sound/chat.wav");
     } catch(SlickException e) {
       e.printStackTrace();
     }

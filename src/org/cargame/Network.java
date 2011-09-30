@@ -47,5 +47,6 @@ public class Network {
   
   public static class ChatMessage {
   	public String text;
+  	public int id;
   }
 }
