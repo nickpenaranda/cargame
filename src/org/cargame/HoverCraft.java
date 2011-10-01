@@ -28,7 +28,7 @@ public class HoverCraft {
   static final int JAMMER_TIMEOUT = 30000;
   static final int JAMMER_EFFECT = 10000;
   public static final int BOOST_TIMEOUT = 2500;
-  public static final int ROCKET_TIMEOUT = 250;
+  public static final int ROCKET_TIMEOUT = 500;
 
   private static Image[] vehicleGraphics;
 
