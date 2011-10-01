@@ -12,10 +12,12 @@ public class WorldMap {
 	public static class Wall {
 		private Polygon polygon;
 		private Image texture;
+		private float tex_scale;
 		
-		Wall(Polygon polygon, Image texture) {
+		Wall(Polygon polygon, Image texture, float scale) {
 			this.polygon = polygon;
 			this.texture = texture;
+			this.tex_scale = scale;
 		}
 		
 		public Polygon getPolygon() {
@@ -30,6 +32,10 @@ public class WorldMap {
 			return (polygon.intersects(rect)
 					|| polygon.contains(rect)
 					|| rect.contains(polygon));
+		}
+		
+		public float getScale() {
+		  return(tex_scale);
 		}
 	}
 	
@@ -50,7 +56,7 @@ public class WorldMap {
 	
 	public void render(Graphics g, Rectangle clip) {
 		for (Wall wall : getWallsWithin(clip)) {
-			g.texture(wall.getPolygon(), wall.getTexture());
+			g.texture(wall.getPolygon(), wall.getTexture(), wall.getScale(), wall.getScale(), true);
 		}
 	}
 }

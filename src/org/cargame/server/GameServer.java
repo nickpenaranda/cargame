@@ -93,7 +93,7 @@ public class GameServer extends Listener {
       }
     } 
     
-    //--- MOVEMENT AND STATE MESSAGES (SIMPLE RELAY) ---
+    //--- MOVEMENT, STATE, ROCKET MESSAGES (SIMPLE RELAY) ---
     else if(object instanceof MoveMessage) {
       MoveMessage msg = (MoveMessage)object;
       
@@ -106,6 +106,10 @@ public class GameServer extends Listener {
       // Tag incoming message with connection ID and broadcast to others UDP
       msg.id = connection.getID();
       mServer.sendToAllExceptUDP(connection.getID(), msg);
+    } else if(object instanceof RocketMessage) {
+      RocketMessage msg = (RocketMessage) object;
+      msg.id = connection.getID();
+      mServer.sendToAllExceptTCP(connection.getID(),msg);
     }
     
     //--- CHAT MESSAGES ---

@@ -1,8 +1,6 @@
 package org.cargame;
 
 import java.io.IOException;
-import java.util.Map;
-
 import org.cargame.CarGame.Message;
 import org.cargame.Network.*;
 
@@ -101,6 +99,9 @@ public class GameClient extends Listener {
         mCarGame.mPlayerCraft.kill();
         break;
       }
+    } else if(object instanceof RocketMessage) {
+      RocketMessage msg = (RocketMessage) object;
+      mCarGame.mRockets.add(new Rocket(mCarGame.mCars.get(msg.id),msg.x,msg.y,msg.vx,msg.vy,msg.angle));
     }
   }
 
@@ -145,6 +146,18 @@ public class GameClient extends Listener {
       msg.text = text;
       mClient.sendTCP(msg);
       System.out.println("Message sent.");
+    }
+  }
+
+  public void sendRocket(Rocket rk) {
+    if (mConnected) {
+      RocketMessage msg = new RocketMessage();
+      msg.x = rk.x;
+      msg.y = rk.y;
+      msg.vx = rk.vx;
+      msg.vy = rk.vy;
+      msg.angle = rk.angle;
+      mClient.sendTCP(msg);
     }
   }
 }

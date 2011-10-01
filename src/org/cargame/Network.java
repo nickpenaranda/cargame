@@ -27,6 +27,7 @@ public class Network {
     kryo.register(ControlMessage.class);
     kryo.register(ChatMessage.class);
     kryo.register(CommandMessage.class);
+    kryo.register(RocketMessage.class);
   }
   
   public static class MoveMessage {
@@ -57,5 +58,10 @@ public class Network {
   public static class ChatMessage {
   	public String text;
   	public int id;
+  }
+  
+  public static class RocketMessage {
+    public double x,y,vx,vy,angle;
+    public int id;
   }
 }
