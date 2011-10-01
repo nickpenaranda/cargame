@@ -17,9 +17,12 @@ public class Rocket {
     this.vx = vx;
     this.vy = vy;
     //double speed = Math.sqrt(vx * vx + vy * vy);
-    if (x >= 0)
+    if(vx == 0)
+      vx += 0.000001;
+    
+    if (vx > 0)
       this.angle = Math.atan(vy / vx) + Math.PI / 2;
-    else if (x < 0)
+    else if (vx < 0)
       this.angle = Math.atan(vy / vx) + Math.PI + Math.PI / 2;
     this.life = 5000;
   }
