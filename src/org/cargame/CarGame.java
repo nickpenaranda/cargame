@@ -573,7 +573,6 @@ public class CarGame extends BasicGame {
         int buildingT = ((j - offset) * cityBlockWidth + roadWidth) * tileSize;
         Rectangle rect = new Rectangle(buildingL, buildingT, buildingWidth
             * tileSize, buildingWidth * tileSize);
-        // TODO: create random texture for each building.
         WorldMap.Wall wall = new WorldMap.Wall(
             new Polygon(rect.getPoints()),
             textures[r.nextInt(8)],
