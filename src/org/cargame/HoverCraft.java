@@ -307,7 +307,7 @@ public class HoverCraft {
           mVelocity[X] + Math.cos(mAngle - Math.PI / 2) * rocket_speed_factor,
           mVelocity[Y] + Math.sin(mAngle - Math.PI / 2) * rocket_speed_factor);
       mCarGame.mRockets.add(rk);
-      if(mCarGame.multiplayer_mode)
+      if(CarGame.multiplayer_mode)
         mCarGame.mClient.sendRocket(rk); 
       mRocketTimeout = ROCKET_TIMEOUT;
     }
