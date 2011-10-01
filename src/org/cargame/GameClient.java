@@ -1,8 +1,6 @@
 package org.cargame;
 
 import java.io.IOException;
-import java.util.Map;
-
 import org.cargame.CarGame.Message;
 import org.cargame.Network.*;
 

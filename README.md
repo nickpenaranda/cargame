@@ -38,6 +38,6 @@ TODO
 ====
 
 * Level editor
-* Chat console
-  * Remote server administration through chat console
+* Chat console [DONE!]
+  * Remote server administration through chat console [DONE!]
 

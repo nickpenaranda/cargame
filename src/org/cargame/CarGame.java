@@ -34,7 +34,6 @@ public class CarGame extends BasicGame {
   private ArrayList<Boundary> mWalls;
   HoverCraft mPlayerCraft;
   private static final float cloak_alpha = 0.05f;
-  private int[][] mMap;
   private Image[] mTiles;
   private WorldMap mWorldMap;
   private GameClient mClient;
@@ -43,7 +42,6 @@ public class CarGame extends BasicGame {
   List<Message> mMessages;
   private long ticks;
   private StringBuffer mChatBuffer;
-  private int mChatBufferPos;
   private boolean mChatMode;
 
   private GameContainer mContainer;
@@ -79,7 +77,6 @@ public class CarGame extends BasicGame {
         .synchronizedList(new ArrayList<Message>());
     mChatBuffer = new StringBuffer("");
     mChatMode = false;
-    mChatBufferPos = 0;
   }
 
   @Override
@@ -205,6 +202,8 @@ public class CarGame extends BasicGame {
       scale_factor = 0.25f;
 
     g.scale(scale_factor, scale_factor);
+    
+    g.setColor(Color.white);
 
     // //////////////////
     // World Relative //
@@ -351,10 +350,6 @@ public class CarGame extends BasicGame {
     }
   }
 
-  private boolean isInBounds(int x, int y) {
-    return (x >= 0 && x < 256 && y >= 0 && y < 256);
-  }
-
   @Override
   public void keyPressed(int key, char c) {
     if (mChatMode) {
@@ -419,7 +414,6 @@ public class CarGame extends BasicGame {
         break;
       case Input.KEY_ENTER:
         mChatMode = true;
-        mChatBufferPos = mChatBuffer.length() - 1;
         break;
       }
     }
@@ -488,7 +482,7 @@ public class CarGame extends BasicGame {
             * tileSize, buildingWidth * tileSize);
         // TODO: create random texture for each building.
         WorldMap.Wall wall = new WorldMap.Wall(new Polygon(rect.getPoints()),
-            mTiles[3]);
+            mTiles[3],10.0f);
         mWorldMap.AddWall(wall);
       }
     }
@@ -539,8 +533,6 @@ public class CarGame extends BasicGame {
           + roadWidth / 2 - 1;
       int barrierLeft = barrierY * cityBlockWidth;
       int barrierRight = barrierY * cityBlockWidth + roadWidth - 1;
-      int barrierBottom = barrierX * cityBlockWidth + cityBlockWidth / 2
-          + roadWidth / 2;
       // flatLine(barrierBottom, barrierLeft, barrierRight, barrierHoriz, -1);
       // flatLine(barrierTop, barrierLeft, barrierRight, barrierHoriz, -1);
       int boundStartX = tileToPixel(barrierLeft);
