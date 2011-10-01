@@ -101,7 +101,7 @@ public class GameClient extends Listener {
       }
     } else if(object instanceof RocketMessage) {
       RocketMessage msg = (RocketMessage) object;
-      mCarGame.mRockets.add(new Rocket(mCarGame.mCars.get(msg.id),msg.x,msg.y,msg.vx,msg.vy,msg.angle));
+      mCarGame.mRockets.add(new Rocket(mCarGame.mCars.get(msg.id),msg.x,msg.y,msg.vx,msg.vy));
     }
   }
 
