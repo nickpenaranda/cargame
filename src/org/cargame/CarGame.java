@@ -15,6 +15,9 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
+import org.newdawn.slick.geom.Polygon;
+import org.newdawn.slick.geom.Rectangle;
+
 public class CarGame extends BasicGame {
 	public static final boolean DEBUG_MODE = true;
 	public static final int NUM_VEHICLES = 5;
@@ -25,13 +28,13 @@ public class CarGame extends BasicGame {
 
 	public static String playerName = "Player";
 	public static String HOST_NAME = "192.168.1.113";
-	
+
 	private Map<Integer, HoverCraft> mCars;
 	private ArrayList<Boundary> mWalls;
 	private HoverCraft mPlayerCraft;
 	private static final float cloak_alpha = 0.05f;
-	private int[][] mMap;
 	private Image[] mTiles;
+	private WorldMap mWorldMap;
 	private GameClient mClient;
 	private ArrayList<BoostGhost> mGhosts;
 	ArrayList<Explosion> mExplosions;
@@ -60,12 +63,11 @@ public class CarGame extends BasicGame {
 		r = new Random();
 		mCars = (Map<Integer, HoverCraft>) Collections
 				.synchronizedMap(new TreeMap<Integer, HoverCraft>());
-		mMap = new int[256][256];
 		mTiles = new Image[5];
 		mWalls = new ArrayList<Boundary>();
 		mGhosts = new ArrayList<BoostGhost>();
 		mExplosions = new ArrayList<Explosion>();
-		genMap();
+		mWorldMap = new WorldMap();
 	}
 
 	@Override
@@ -76,6 +78,8 @@ public class CarGame extends BasicGame {
 		mTiles[2] = new Image("gfx/wall2.png");
 		mTiles[3] = new Image("gfx/wall3.png");
 		mTiles[4] = new Image("gfx/wall4.png");
+		
+		genMap();
 
 		HoverCraft.init(this);
 		Explosion.init();
@@ -162,6 +166,7 @@ public class CarGame extends BasicGame {
 		}
 
 		// Collision vs walls
+		// TODO: Do collisions against mWorldMap instead of mWalls
 		for (int i = 0; i < mWalls.size(); i++) {
 			if (mWalls.get(i).intersect(mPlayerCraft.getX(), mPlayerCraft.getY(), 31)) {
 				mPlayerCraft.bounce(mWalls.get(i), delta);
@@ -180,32 +185,28 @@ public class CarGame extends BasicGame {
 		if (scale_factor < 0.25)
 			scale_factor = 0.25f;
 
-		float draw_offset_x = 320f / scale_factor, draw_offset_y = 240f / scale_factor;
-
-		int tx = (int) (8192 + mPlayerCraft.getX() - draw_offset_x) / 64;
-		int ty = (int) (8192 + mPlayerCraft.getY() - draw_offset_y) / 64;
-		int ox = (int) (8192 + mPlayerCraft.getX() - draw_offset_x) % 64;
-		int oy = (int) (8192 + mPlayerCraft.getY() - draw_offset_y) % 64;
-
 		g.scale(scale_factor, scale_factor);
-
-		float s = 64f;
-
-		// Draw tiles
-
-		for (int x = 0; x < 10 / scale_factor + 1; x++) {
-			for (int y = 0; y < 8 / scale_factor + 1; y++) {
-				if (isInBounds(tx + x, ty + y) /* && mMap[tx + x][ty + y] != 0 */)
-					g.drawImage(mTiles[mMap[tx + x][ty + y]], (x * s) - ox, (y * s) - oy);
-			}
-		}
+		
+		////////////////////
+		// World Relative //
+		////////////////////
+		
+		g.translate(-(mPlayerCraft.getX() - 320/scale_factor),
+				    -(mPlayerCraft.getY() - 240/scale_factor));
+		
+		Rectangle viewPort = new Rectangle(
+				mPlayerCraft.getX() - 320 / scale_factor,
+		        mPlayerCraft.getY() - 240 / scale_factor,
+				640 / scale_factor,
+				480 / scale_factor);
+		mWorldMap.render(g, viewPort);
 
 		// Draw boundaries
 		for (Boundary boundary : mWalls) {
-			g.drawLine((float) (draw_offset_x + boundary.a.x - mPlayerCraft.getX()),
-					(float) (draw_offset_y + boundary.a.y - mPlayerCraft.getY()),
-					(float) (draw_offset_x + boundary.b.x - mPlayerCraft.getX()),
-					(float) (draw_offset_y + boundary.b.y - mPlayerCraft.getY()));
+			g.drawLine((float) boundary.a.x,
+					(float) boundary.a.y,
+					(float) boundary.b.x,
+					(float) boundary.b.y);
 		}
 
 		// Draw boost ghosts
@@ -214,8 +215,7 @@ public class CarGame extends BasicGame {
 			image.setRotation((float) (ghost.angle * 180 / Math.PI));
 			int life = ghost.life;
 			image.setAlpha(life / (float) 250 * 0.3f);
-			image.drawCentered(draw_offset_x + ghost.x - mPlayerCraft.getX(),
-					draw_offset_y + ghost.y - mPlayerCraft.getY());
+			image.drawCentered(ghost.x, ghost.y);
 		}
 
 		// Draw cars
@@ -233,24 +233,24 @@ public class CarGame extends BasicGame {
 			else {
 			  g.setColor(Color.white);
 			  if(car != mPlayerCraft)
-  			  g.drawString(car.getName(), draw_offset_x + car.getX() - mPlayerCraft.getX() -
-  			      g.getFont().getWidth(car.getName())/2,
-  			      draw_offset_y + car.getY() - mPlayerCraft.getY() + 40);
+  			  g.drawString(car.getName(),
+  					       car.getX() - g.getFont().getWidth(car.getName())/2,
+	  			           car.getY() + 40);
 				image.setAlpha(1.0f);
 			}
-			image.drawCentered(draw_offset_x + car.getX() - mPlayerCraft.getX(),
-					draw_offset_y + car.getY() - mPlayerCraft.getY());
+			image.drawCentered(car.getX(), car.getY());
 		}
 
 		// Draw explosions
 		for (Explosion e : mExplosions) {
-			e.getImage().drawCentered(
-					draw_offset_x + (float) e.x - mPlayerCraft.getX(),
-					draw_offset_y + (float) e.y - mPlayerCraft.getY());
+			e.getImage().drawCentered((float) e.x, (float) e.y);
 		}
 
-		g.scale(1 / scale_factor, 1 / scale_factor);
-		// Info
+		/////////////////////
+		// Screen relative //
+		/////////////////////
+		g.resetTransform();
+		
 		// draw indicator
 		for (HoverCraft craft : mCars.values()) {
 			if (craft.getJammer() <= 0) {
@@ -308,7 +308,6 @@ public class CarGame extends BasicGame {
 		g.drawString(
 				String.format("(%f,%f)", mPlayerCraft.getX(), mPlayerCraft.getY()), 10,
 				45);
-		g.drawString(String.format("Tile: (%d,%d)", tx, ty), 10, 60);
 
 		// Scoreboard
 		g.setColor(Color.green);
@@ -320,10 +319,6 @@ public class CarGame extends BasicGame {
 			g.drawString("!!!!BOOM SUCKA!!!!",
 					320 - g.getFont().getWidth("!!!!BOOM SUCKA!!!") / 2, 240);
 		}
-	}
-
-	private boolean isInBounds(int x, int y) {
-		return (x >= 0 && x < 256 && y >= 0 && y < 256);
 	}
 
 	@Override
@@ -415,15 +410,21 @@ public class CarGame extends BasicGame {
 	// Generates a map with grid roads.
 	private void genMap() {
 		// Set tiles
-		for (int x = 0; x < 256; ++x) {
-			for (int y = 0; y < 256; ++y) {
-				mMap[x][y] = r.nextInt(4) + 1;
-			}
-		}
-		for (int x = 0; x < 256; ++x) {
-			if (x % (roadWidth + buildingWidth) < roadWidth) {
-				flatLine(x, 0, 255, true, 0);
-				flatLine(x, 0, 255, false, 0);
+		int numBuildingsAcross=16;
+		int cityBlockWidth = roadWidth + buildingWidth;
+		int tileSize = 64;
+		int offset = numBuildingsAcross / 2; // center city at (0, 0)
+		
+		for (int i=0; i<numBuildingsAcross; i++) {
+			int buildingL = ((i-offset) * cityBlockWidth + roadWidth) * tileSize;
+			for (int j=0; j<numBuildingsAcross; j++) {
+				int buildingT = ((j-offset) * cityBlockWidth + roadWidth) * tileSize;
+				Rectangle rect = new Rectangle(buildingL, buildingT,
+						                       buildingWidth * tileSize,
+						                       buildingWidth * tileSize);
+				WorldMap.Wall wall = new WorldMap.Wall(
+					new Polygon(rect.getPoints()), mTiles[3]);
+				mWorldMap.AddWall(wall);
 			}
 		}
 
@@ -457,7 +458,6 @@ public class CarGame extends BasicGame {
 						+ (buildingWidth * 64 * (y)), 1));
 			}
 		}
-		int cityBlockWidth = roadWidth + buildingWidth;
 		int numRoads = 256 / cityBlockWidth;
 		int numBarriers = r.nextInt(40) + 10;
 
@@ -476,8 +476,8 @@ public class CarGame extends BasicGame {
 			int barrierRight = barrierY * cityBlockWidth + roadWidth - 1;
 			int barrierBottom = barrierX * cityBlockWidth + cityBlockWidth / 2
 					+ roadWidth / 2;
-			flatLine(barrierBottom, barrierLeft, barrierRight, barrierHoriz, -1);
-			flatLine(barrierTop, barrierLeft, barrierRight, barrierHoriz, -1);
+//			flatLine(barrierBottom, barrierLeft, barrierRight, barrierHoriz, -1);
+//			flatLine(barrierTop, barrierLeft, barrierRight, barrierHoriz, -1);
 			int boundStartX = tileToPixel(barrierLeft);
 			int boundStartY = tileToPixel(barrierTop);
 			int boundEndX = tileToPixel(barrierRight);
@@ -493,19 +493,19 @@ public class CarGame extends BasicGame {
 		return -8192 + tileNum * 64;
 	}
 
-	private void flatLine(int offset, int start, int end, boolean horiz, int val) {
-		boolean random = val == -1;
-		int y = offset;
-		for (int x = start; x <= end; x++) {
-			if (random) {
-				val = r.nextInt(4) + 1;
-			}
-			if (horiz)
-				mMap[x][y] = val;
-			else
-				mMap[y][x] = val;
-		}
-	}
+//	private void flatLine(int offset, int start, int end, boolean horiz, int val) {
+//		boolean random = val == -1;
+//		int y = offset;
+//		for (int x = start; x <= end; x++) {
+//			if (random) {
+//				val = r.nextInt(4) + 1;
+//			}
+//			if (horiz)
+//				mMap[x][y] = val;
+//			else
+//				mMap[y][x] = val;
+//		}
+//	}
 
 	public static void main(String[] args) {
 		try {
