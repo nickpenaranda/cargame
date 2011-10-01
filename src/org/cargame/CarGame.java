@@ -580,7 +580,7 @@ public class CarGame extends BasicGame {
       appGameContainer.setMinimumLogicUpdateInterval(20);
       appGameContainer.setAlwaysRender(true);
       // appGameContainer.setMaximumLogicUpdateInterval(60);
-      appGameContainer.setVSync(true);
+      //appGameContainer.setVSync(true);
       appGameContainer.start();
     } catch (SlickException e) {
       e.printStackTrace();
