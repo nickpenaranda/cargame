@@ -19,7 +19,7 @@ public class HoverCraft {
   // friction
   private static final double wall_elasticity = 0.4;
 
-  private static final double distance_integral_millis = 1000;
+  private static final double distance_integral_millis = 500;
 
   private static final int X = 0;
   private static final int Y = 1;

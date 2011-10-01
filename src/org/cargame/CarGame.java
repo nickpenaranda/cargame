@@ -25,6 +25,7 @@ public class CarGame extends BasicGame {
   public static boolean multiplayer_mode;
   public static final int roadWidth = 6;
   public static final int buildingWidth = 10;
+  public static final int tileSize = 64;
   public static Random r;
 
   public static String playerName = "Player";
@@ -535,14 +536,36 @@ public class CarGame extends BasicGame {
       break;
     }
   }
+  
+  private Image genRandomTexture(int numTilesWidth, int numTilesHeight) {
+    Image texture = null;
+    Graphics g = null;
+    System.out.println("CALLED");
+    try {
+      texture = new Image(numTilesWidth * tileSize, numTilesHeight * tileSize);
+      g = texture.getGraphics();
+    } catch (SlickException e) {
+      e.printStackTrace();
+    }
+    for (int i=0; i<numTilesWidth; i++) {
+      for (int j=0; j<numTilesHeight; j++) {
+        g.drawImage(mTiles[r.nextInt(4)+1], i * tileSize, j * tileSize);
+      }
+    }
+    return texture;
+  }
 
   // Generates a map with grid roads.
   private void genMap() {
     // Set tiles
     int numBuildingsAcross = 16;
     int cityBlockWidth = roadWidth + buildingWidth;
-    int tileSize = 64;
     int offset = numBuildingsAcross / 2; // center city at (0, 0)
+    
+    Image textures[] = new Image[8];
+    for (int i=0; i<textures.length;i++) {
+      textures[i] = genRandomTexture(8, 8);
+    }
 
     for (int i = 0; i < numBuildingsAcross; i++) {
       int buildingL = ((i - offset) * cityBlockWidth + roadWidth) * tileSize;
@@ -550,9 +573,10 @@ public class CarGame extends BasicGame {
         int buildingT = ((j - offset) * cityBlockWidth + roadWidth) * tileSize;
         Rectangle rect = new Rectangle(buildingL, buildingT, buildingWidth
             * tileSize, buildingWidth * tileSize);
-        // TODO: create random texture for each building.
-        WorldMap.Wall wall = new WorldMap.Wall(new Polygon(rect.getPoints()),
-            mTiles[3],10.0f);
+        WorldMap.Wall wall = new WorldMap.Wall(
+            new Polygon(rect.getPoints()),
+            textures[r.nextInt(8)],
+            1.0f);
         mWorldMap.AddWall(wall);
       }
     }
@@ -642,7 +666,7 @@ public class CarGame extends BasicGame {
       appGameContainer.setMinimumLogicUpdateInterval(20);
       appGameContainer.setAlwaysRender(true);
       // appGameContainer.setMaximumLogicUpdateInterval(60);
-      appGameContainer.setVSync(true);
+      // appGameContainer.setVSync(true);
       appGameContainer.start();
     } catch (SlickException e) {
       e.printStackTrace();
