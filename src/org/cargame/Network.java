@@ -16,12 +16,17 @@ public class Network {
   public static final byte CONTROL_CONNECT = 2;
   public static final byte CONTROL_NEW_PLAYER = 3;
   public static final byte CONTROL_RM_PLAYER = 4;
+  
+	public static final char COMMAND_CHARACTER = '/';
+	public static final byte COMMAND_KILL_SELF = 1;
 
   public static void registerClasses(EndPoint context) {
     Kryo kryo = context.getKryo();
     kryo.register(MoveMessage.class);
     kryo.register(StateMessage.class);
     kryo.register(ControlMessage.class);
+    kryo.register(ChatMessage.class);
+    kryo.register(CommandMessage.class);
   }
   
   public static class MoveMessage {
@@ -41,5 +46,16 @@ public class Network {
     public int value = 0;
     public int value2 = 0;
     public String text = null;
+  }
+  
+  public static class CommandMessage {
+    public byte type = 0;
+    public int value = 0;
+    public int value2 = 0;
+  }
+  
+  public static class ChatMessage {
+  	public String text;
+  	public int id;
   }
 }

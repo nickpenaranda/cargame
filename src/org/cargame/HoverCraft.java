@@ -1,10 +1,13 @@
 package org.cargame;
 
+import java.util.Random;
+
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 public class HoverCraft {
+  private static final Random r = new Random();
   public static final int TOP = 0;
   public static final int RIGHT = 1;
   public static final int BOTTOM = 2;
@@ -183,6 +186,8 @@ public class HoverCraft {
       mDead = true;
       mVelocity[X] = 0;
       mVelocity[Y] = 0;
+      for(int i=0;i<5;i++)
+        mCarGame.mExplosions.add(new Explosion(mX+32*r.nextGaussian(),mY+32*r.nextGaussian()));
       mCarGame.mExplosions.add(new Explosion(mX, mY));
       Sounds.death.play();
     }
