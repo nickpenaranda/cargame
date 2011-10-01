@@ -255,8 +255,11 @@ public class CarGame extends BasicGame {
     
     float scale_factor = 1 / (1 + (float) Math.pow(
         mPlayerCraft.getAverageSpeed(), 3));
-    if (scale_factor < 0.25)
-      scale_factor = 0.25f;
+    
+    if (scale_factor < 0.2)
+      scale_factor = 0.2f;
+    else if(scale_factor > 0.5f)
+      scale_factor = 0.5f;
 
     g.scale(scale_factor, scale_factor);
     
