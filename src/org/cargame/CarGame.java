@@ -36,9 +36,10 @@ public class CarGame extends BasicGame {
   private static final float cloak_alpha = 0.05f;
   private Image[] mTiles;
   private WorldMap mWorldMap;
-  private GameClient mClient;
+  GameClient mClient;
   private ArrayList<BoostGhost> mGhosts;
   ArrayList<Explosion> mExplosions;
+  ArrayList<Rocket> mRockets;
   List<Message> mMessages;
   private long ticks;
   private StringBuffer mChatBuffer;
@@ -71,6 +72,7 @@ public class CarGame extends BasicGame {
     mWalls = new ArrayList<Boundary>();
     mGhosts = new ArrayList<BoostGhost>();
     mExplosions = new ArrayList<Explosion>();
+    mRockets = new ArrayList<Rocket>();
     mWorldMap = new WorldMap();
 
     mMessages = (List<Message>) Collections
@@ -92,6 +94,7 @@ public class CarGame extends BasicGame {
 
     HoverCraft.init(this);
     Explosion.init();
+    Rocket.init();
 
     ticks = 0;
 
@@ -160,6 +163,51 @@ public class CarGame extends BasicGame {
       if (m.life <= 0)
         mMessages.remove(m);
     }
+    
+    for (Rocket rk : new ArrayList<Rocket>(mRockets)) {
+      rk.life -= delta;
+      if (rk.life <= 0) {
+        mRockets.remove(rk);
+        continue;
+      }
+      rk.x += rk.vx * delta;
+      rk.y += rk.vy * delta;
+      
+      boolean rk_removed = false;
+      // Check collision player car vs other cars
+      if (rk.owner != mPlayerCraft) {
+        for (HoverCraft other : new ArrayList<HoverCraft>(mCars.values())) {
+          if(other == rk.owner)
+            continue;
+          if (CarGame.distance(rk.x, rk.y, other.getX(), other.getY()) < 32) {
+            if (other == mPlayerCraft)
+              mPlayerCraft.kill();
+            mRockets.remove(rk);
+            rk_removed = true;
+
+            for (int i = 0; i < 5; i++)
+              mExplosions.add(new Explosion(rk.x + 32 * r.nextGaussian(), rk.y
+                  + 32 * r.nextGaussian()));
+
+            break;
+          }
+        }
+      }
+      
+      if(!rk_removed) {
+        // Collision vs walls
+        // TODO: Do collisions against mWorldMap instead of mWalls
+        for (int i = 0; i < mWalls.size(); i++) {
+          if (mWalls.get(i).intersect(rk.x, rk.y, 16)) {
+            mRockets.remove(rk);
+            for (int j = 0; j < 5; j++)
+              mExplosions.add(new Explosion(rk.x + 32 * r.nextGaussian(), rk.y
+                  + 32 * r.nextGaussian()));
+            break;
+          }
+        }
+      }
+    }
 
     if (mPlayerCraft.isDead() && mPlayerCraft.getDeadCount() < 0) {
       mClient.sendStateUpdate(Network.STATE_DEAD, false);
@@ -196,6 +244,9 @@ public class CarGame extends BasicGame {
   }
 
   public void render(GameContainer container, Graphics g) throws SlickException {
+    
+    g.setAntiAlias(true);
+    
     float scale_factor = 1 / (1 + (float) Math.pow(
         mPlayerCraft.getAverageSpeed(), 3));
     if (scale_factor < 0.25)
@@ -232,6 +283,13 @@ public class CarGame extends BasicGame {
       image.drawCentered(ghost.x, ghost.y);
     }
 
+    // Draw rockets
+    for (Rocket rk : mRockets) {
+      Rocket.image.setRotation((float) (rk.angle * 180 / Math.PI));
+      Rocket.image.drawCentered((float)rk.x,(float)rk.y);
+    }
+
+
     // Draw cars
     for (HoverCraft car : mCars.values()) {
       if (car.isDead())
@@ -254,7 +312,7 @@ public class CarGame extends BasicGame {
       }
       image.drawCentered(car.getX(), car.getY());
     }
-
+    
     // Draw explosions
     for (Explosion e : mExplosions) {
       e.getImage().drawCentered((float) e.x, (float) e.y);
@@ -397,6 +455,9 @@ public class CarGame extends BasicGame {
         if (multiplayer_mode)
           mClient.sendStateUpdate(Network.STATE_JAM, true);
         mPlayerCraft.jammer();
+        break;
+      case Input.KEY_E:
+        mPlayerCraft.rocket();
         break;
       case Input.KEY_F1:
         try {
@@ -572,7 +633,7 @@ public class CarGame extends BasicGame {
       appGameContainer.setMinimumLogicUpdateInterval(20);
       appGameContainer.setAlwaysRender(true);
       // appGameContainer.setMaximumLogicUpdateInterval(60);
-      //appGameContainer.setVSync(true);
+      appGameContainer.setVSync(true);
       appGameContainer.start();
     } catch (SlickException e) {
       e.printStackTrace();
