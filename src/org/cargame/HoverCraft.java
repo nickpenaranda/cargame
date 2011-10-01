@@ -28,7 +28,7 @@ public class HoverCraft {
   static final int JAMMER_TIMEOUT = 30000;
   static final int JAMMER_EFFECT = 10000;
   public static final int BOOST_TIMEOUT = 2500;
-  public static final int ROCKET_TIMEOUT = 5000;
+  public static final int ROCKET_TIMEOUT = 250;
 
   private static Image[] vehicleGraphics;
 
@@ -109,6 +109,7 @@ public class HoverCraft {
   public void think(int delta) {
     mBoostTimeout -= delta;
     mJammerTimeout -= delta;
+    mRocketTimeout -= delta;
     mJammerEffect -= delta;
 
     if (mBoostTimeout < 0)
@@ -304,10 +305,11 @@ public class HoverCraft {
       Sounds.rocket.play();
       Rocket rk = new Rocket(this,mX,mY,
           mVelocity[X] + Math.cos(mAngle - Math.PI / 2) * rocket_speed_factor,
-          mVelocity[Y] + Math.sin(mAngle - Math.PI / 2) * rocket_speed_factor,
-          mAngle);
+          mVelocity[Y] + Math.sin(mAngle - Math.PI / 2) * rocket_speed_factor);
       mCarGame.mRockets.add(rk);
-      mCarGame.mClient.sendRocket(rk);
+      if(mCarGame.multiplayer_mode)
+        mCarGame.mClient.sendRocket(rk); 
+      mRocketTimeout = ROCKET_TIMEOUT;
     }
   }
 
