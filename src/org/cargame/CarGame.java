@@ -552,6 +552,7 @@ public class CarGame extends BasicGame {
         g.drawImage(mTiles[r.nextInt(4)+1], i * tileSize, j * tileSize);
       }
     }
+    g.flush();
     return texture;
   }
 
