@@ -70,8 +70,10 @@ public class GameClient extends Listener {
       if (craft != null) {
         switch (msg.state) {
         case Network.STATE_DEAD:
-          if (msg.setting)
+          if (msg.setting) {
             craft.kill();
+            mCarGame.mMessages.add(new Message(craft.getName() + " DIED"));
+          }
           else
             craft.restore();
           break;
@@ -97,6 +99,7 @@ public class GameClient extends Listener {
       switch(msg.type) {
       case Network.COMMAND_KILL_SELF:
         mCarGame.mPlayerCraft.kill();
+        mCarGame.mMessages.add(new Message("KILLED BY SERVER. RIP SUCKA"));
         break;
       }
     } else if(object instanceof RocketMessage) {

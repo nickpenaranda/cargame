@@ -181,7 +181,10 @@ public class CarGame extends BasicGame {
             continue;
           if (CarGame.distance(rk.x, rk.y, other.getX(), other.getY()) < 32) {
             if (other == mPlayerCraft)
+              mMessages.add(new Message("BLOWN UP BY " + rk.owner.getName()));
               mPlayerCraft.kill();
+              if(multiplayer_mode)
+                mClient.sendStateUpdate(Network.STATE_DEAD, true);
             mRockets.remove(rk);
             rk_removed = true;
 
@@ -210,7 +213,8 @@ public class CarGame extends BasicGame {
     }
 
     if (mPlayerCraft.isDead() && mPlayerCraft.getDeadCount() < 0) {
-      mClient.sendStateUpdate(Network.STATE_DEAD, false);
+      if(multiplayer_mode)
+        mClient.sendStateUpdate(Network.STATE_DEAD, false);
       mPlayerCraft.restore();
     }
 
@@ -224,8 +228,10 @@ public class CarGame extends BasicGame {
       if (CarGame.distance(mPlayerCraft.getX(), mPlayerCraft.getY(), other
           .getX(), other.getY()) < 64
           && Math.abs(mPlayerCraft.getSpeed()) < Math.abs(other.getSpeed())) {
+        mMessages.add(new Message("RUN OVER BY " + other.getName()));
         mPlayerCraft.kill();
-        mClient.sendStateUpdate(Network.STATE_DEAD, true);
+        if(multiplayer_mode)
+          mClient.sendStateUpdate(Network.STATE_DEAD, true);
       }
     }
 
