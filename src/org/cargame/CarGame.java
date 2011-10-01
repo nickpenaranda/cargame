@@ -284,7 +284,7 @@ public class CarGame extends BasicGame {
     }
 
     // Draw rockets
-    for (Rocket rk : mRockets) {
+    for (Rocket rk : new ArrayList<Rocket>(mRockets)) {
       Rocket.image.setRotation((float) (rk.angle * 180 / Math.PI));
       Rocket.image.drawCentered((float)rk.x,(float)rk.y);
     }
