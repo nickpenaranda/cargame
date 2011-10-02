@@ -234,7 +234,8 @@ public class CarGame extends BasicGame {
             mGameClient.sendStateUpdate( Network.STATE_JAM, true );
           break;
         case Input.KEY_SPACE:
-          player.rocket();
+          if (player.boost() && multiplayerMode)
+            mGameClient.sendStateUpdate( Network.STATE_BOOST, true );
           break;
         case Input.KEY_F1:
           try {
@@ -301,8 +302,7 @@ public class CarGame extends BasicGame {
   public void mouseClicked( int button, int x, int y, int clickCount ) {
     switch (button) {
       case 0: // Left
-        if (player.boost() && multiplayerMode)
-          mGameClient.sendStateUpdate( Network.STATE_BOOST, true );
+        player.rocket();
         break;
     }
   }
