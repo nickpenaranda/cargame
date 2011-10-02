@@ -7,6 +7,7 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 public class HoverCraft {
+
   private static final Random r = new Random();
   public static final int TOP = 0;
   public static final int RIGHT = 1;
@@ -56,15 +57,13 @@ public class HoverCraft {
   private int mDistanceMillisSaved;
   private double mAverageSpeed;
 
-  public static void init(CarGame context) {
+  public static void init( CarGame context ) {
     mCarGame = context;
     try {
-      vehicleGraphics = new Image[] {
-          new Image("gfx/craft1.png", Color.magenta),
-          new Image("gfx/craft2.png", Color.magenta),
-          new Image("gfx/craft3.png", Color.magenta),
-          new Image("gfx/craft4.png", Color.magenta),
-          new Image("gfx/craft5.png", Color.magenta) };
+      vehicleGraphics = new Image[] { new Image( "gfx/craft1.png", Color.magenta ),
+          new Image( "gfx/craft2.png", Color.magenta ),
+          new Image( "gfx/craft3.png", Color.magenta ),
+          new Image( "gfx/craft4.png", Color.magenta ), new Image( "gfx/craft5.png", Color.magenta ) };
     } catch (SlickException e) {
       e.printStackTrace();
     }
@@ -85,7 +84,7 @@ public class HoverCraft {
 
   public HoverCraft(String graphic_file, double x, double y, String name) {
     try {
-      mImage = new Image(graphic_file, Color.magenta);
+      mImage = new Image( graphic_file, Color.magenta );
     } catch (SlickException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -102,11 +101,11 @@ public class HoverCraft {
     mName = name;
   }
 
-  public void setBooster(int which, boolean state) {
+  public void setBooster( int which, boolean state ) {
     mBoosters[which] = state;
   }
 
-  public void think(int delta) {
+  public void think( int delta ) {
     mBoostTimeout -= delta;
     mJammerTimeout -= delta;
     mRocketTimeout -= delta;
@@ -134,16 +133,15 @@ public class HoverCraft {
     if (mBoosters[LEFT])
       mVelocity[X] += base_booster_force * delta;
 
-    mVelocity[X] *= Math.pow(friction, delta);
-    mVelocity[Y] *= Math.pow(friction, delta);
+    mVelocity[X] *= Math.pow( friction, delta );
+    mVelocity[Y] *= Math.pow( friction, delta );
 
-    if (Math.abs(mVelocity[X]) < min_speed_before_stiction)
+    if (Math.abs( mVelocity[X] ) < min_speed_before_stiction)
       mVelocity[X] = 0;
-    if (Math.abs(mVelocity[Y]) < min_speed_before_stiction)
+    if (Math.abs( mVelocity[Y] ) < min_speed_before_stiction)
       mVelocity[Y] = 0;
 
-    mSpeed = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y]
-        * mVelocity[Y]);
+    mSpeed = Math.sqrt( mVelocity[X] * mVelocity[X] + mVelocity[Y] * mVelocity[Y] );
 
     // average speed over last distance_integral_seconds
     mDistanceLastNSecs += mSpeed * delta;
@@ -164,24 +162,24 @@ public class HoverCraft {
   }
 
   public float getX() {
-    return (float) mX;
+    return (float)mX;
   }
 
   public float getY() {
-    return (float) mY;
+    return (float)mY;
   }
 
-  public void moveTo(double x, double y) {
+  public void moveTo( double x, double y ) {
     mX = x;
     mY = y;
   }
 
-  public void setAngle(double angle) {
+  public void setAngle( double angle ) {
     mAngle = angle;
   }
 
   public boolean isDead() {
-    return (mDead);
+    return(mDead);
   }
 
   public void kill() {
@@ -190,27 +188,26 @@ public class HoverCraft {
       mDead = true;
       mVelocity[X] = 0;
       mVelocity[Y] = 0;
-      for(int i=0;i<5;i++)
-        mCarGame.mExplosions.add(new Explosion(mX+32*r.nextGaussian(),mY+32*r.nextGaussian()));
-      mCarGame.mExplosions.add(new Explosion(mX, mY));
+      for (int i = 0; i < 5; i++)
+        mCarGame.mExplosions.add( new Explosion( mX + 32 * r.nextGaussian(), mY + 32
+            * r.nextGaussian() ) );
+      mCarGame.mExplosions.add( new Explosion( mX, mY ) );
       Sounds.death.play();
     }
   }
 
   public void restore() {
-    System.out.println("Restoring");
-    moveTo(-8192 + CarGame.roadWidth * 32
-        + (CarGame.roadWidth + CarGame.buildingWidth)
-        * (CarGame.r.nextInt(15) + 1) * 64, -8192 + CarGame.roadWidth * 32
-        + (CarGame.roadWidth + CarGame.buildingWidth)
-        * (CarGame.r.nextInt(15) + 1) * 64);
+    System.out.println( "Restoring" );
+    moveTo( -8192 + CarGame.roadWidth * 32 + (CarGame.roadWidth + CarGame.buildingWidth)
+        * (CarGame.r.nextInt( 15 ) + 1) * 64, -8192 + CarGame.roadWidth * 32
+        + (CarGame.roadWidth + CarGame.buildingWidth) * (CarGame.r.nextInt( 15 ) + 1) * 64 );
     --mLives;
     mDeadCount = 0;
     mDead = false;
   }
 
   public int getLives() {
-    return (mLives);
+    return(mLives);
   }
 
   public double getAngle() {
@@ -225,23 +222,20 @@ public class HoverCraft {
     return mAverageSpeed;
   }
 
-  public void setSpeed(double speed) {
+  public void setSpeed( double speed ) {
     mSpeed = speed;
   }
 
-  public void bounce(Line l, int delta) {
+  public void bounce( Line l, int delta ) {
     // System.out.println("BOUNCE");
 
-    double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y)
-        * mVelocity[X];
-    double vec_length = Math.sqrt(mVelocity[X] * mVelocity[X] + mVelocity[Y]
-        * mVelocity[Y]);
+    double cross = (l.a.x - l.b.x) * mVelocity[Y] - (l.a.y - l.b.y) * mVelocity[X];
+    double vec_length = Math.sqrt( mVelocity[X] * mVelocity[X] + mVelocity[Y] * mVelocity[Y] );
     // divide by zero fix
     if (vec_length == 0)
       vec_length = .00001;
-    double a_dot_b = (l.a.x - l.b.x) * mVelocity[X] + (l.a.y - l.b.y)
-        * mVelocity[Y];
-    double angleBetween = Math.acos(a_dot_b / (l.length() * vec_length));
+    double a_dot_b = (l.a.x - l.b.x) * mVelocity[X] + (l.a.y - l.b.y) * mVelocity[Y];
+    double angleBetween = Math.acos( a_dot_b / (l.length() * vec_length) );
 
     // System.out.println("a . b " + a_dot_b);
     // System.out.println("cross " + cross);
@@ -257,7 +251,7 @@ public class HoverCraft {
 
     double lVecY = l.a.y - l.b.y;
     double lVecX = l.a.x - l.b.x;
-    double angleL = Math.atan(lVecY / lVecX);
+    double angleL = Math.atan( lVecY / lVecX );
     if (angleL < 0) {
       angleL += Math.PI;
     }
@@ -275,8 +269,8 @@ public class HoverCraft {
 
     // System.out.println("angleNew " + Math.toDegrees(angleNew));
 
-    mVelocity[X] = vec_length * Math.cos(angleNew) * wall_elasticity;
-    mVelocity[Y] = vec_length * Math.sin(angleNew) * wall_elasticity;
+    mVelocity[X] = vec_length * Math.cos( angleNew ) * wall_elasticity;
+    mVelocity[Y] = vec_length * Math.sin( angleNew ) * wall_elasticity;
 
     // actually give the player an extra move to get them out
     // of the wall if they are there. A hack certainly, but
@@ -285,7 +279,7 @@ public class HoverCraft {
     mY += mVelocity[Y] * delta;
 
     // HACK: move the player out of the wall to their previous spot.
-    moveTo(mPrevX, mPrevY);
+    moveTo( mPrevX, mPrevY );
 
     // System.out.printf("%f %f\n", lVecX, lVecY);
     // System.out.printf("new (%f,%f)\n", mVelocity[X], mVelocity[Y]);
@@ -294,21 +288,21 @@ public class HoverCraft {
   public void boost() {
     if (mBoostTimeout <= 0) {
       Sounds.boost.play();
-      mVelocity[X] += Math.cos(mAngle - Math.PI / 2) * impulse_force;
-      mVelocity[Y] += Math.sin(mAngle - Math.PI / 2) * impulse_force;
+      mVelocity[X] += Math.cos( mAngle - Math.PI / 2 ) * impulse_force;
+      mVelocity[Y] += Math.sin( mAngle - Math.PI / 2 ) * impulse_force;
       mBoostTimeout = BOOST_TIMEOUT;
     }
   }
-  
+
   public void rocket() {
     if (mRocketTimeout <= 0) {
       Sounds.rocket.play();
-      Rocket rk = new Rocket(this,mX,mY,
-          mVelocity[X] + Math.cos(mAngle - Math.PI / 2) * rocket_speed_factor,
-          mVelocity[Y] + Math.sin(mAngle - Math.PI / 2) * rocket_speed_factor);
-      mCarGame.mRockets.add(rk);
-      if(CarGame.multiplayer_mode)
-        mCarGame.mClient.sendRocket(rk); 
+      Rocket rk = new Rocket( this, mX, mY, mVelocity[X] + Math.cos( mAngle - Math.PI / 2 )
+          * rocket_speed_factor, mVelocity[Y] + Math.sin( mAngle - Math.PI / 2 )
+          * rocket_speed_factor );
+      mCarGame.mRockets.add( rk );
+      if (CarGame.multiplayer_mode)
+        mCarGame.mClient.sendRocket( rk );
       mRocketTimeout = ROCKET_TIMEOUT;
     }
   }
@@ -321,7 +315,7 @@ public class HoverCraft {
     }
   }
 
-  public void setLives(int lives) {
+  public void setLives( int lives ) {
     mLives = lives;
   }
 
@@ -329,7 +323,7 @@ public class HoverCraft {
     return mBoostTimeout;
   }
 
-  public void setJammer(int jammer) {
+  public void setJammer( int jammer ) {
     mJammerEffect = jammer;
   }
 
@@ -341,11 +335,11 @@ public class HoverCraft {
     return mJammerTimeout;
   }
 
-  public void setImage(int index) {
+  public void setImage( int index ) {
     mImage = vehicleGraphics[index];
   }
 
-  public void setVel(double vx, double vy) {
+  public void setVel( double vx, double vy ) {
     mVelocity[X] = vx;
     mVelocity[Y] = vy;
   }
@@ -359,27 +353,27 @@ public class HoverCraft {
   }
 
   public boolean getThrustT() {
-    return (mBoosters[TOP]);
+    return(mBoosters[TOP]);
   }
 
   public boolean getThrustR() {
-    return (mBoosters[RIGHT]);
+    return(mBoosters[RIGHT]);
   }
 
   public boolean getThrustB() {
-    return (mBoosters[BOTTOM]);
+    return(mBoosters[BOTTOM]);
   }
 
   public boolean getThrustL() {
-    return (mBoosters[LEFT]);
+    return(mBoosters[LEFT]);
   }
 
-  public void setBoostTimeout(int boostTimeout) {
+  public void setBoostTimeout( int boostTimeout ) {
     mBoostTimeout = boostTimeout;
   }
 
   public int getDeadCount() {
-    return (mDeadCount);
+    return(mDeadCount);
   }
 
   public String getName() {
