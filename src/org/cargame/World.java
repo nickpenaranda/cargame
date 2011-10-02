@@ -142,46 +142,63 @@ public class World {
     float x = mPlayer.getX();
     float y = mPlayer.getY();
     for (Region rg : mRegions) {
-      Polygon p = rg.getPolygon();
-      float pdx = p.getCenterX() - x;
-      float pdy = p.getCenterY() - y;
-      if (p.getBoundingCircleRadius() + PLAYER_RADIUS >= Math.sqrt( pdx * pdx + pdy * pdy )) {
-
-        //System.out.println( "In range of poly" );
-        int numVerts = p.getPointCount();
-        float points[] = p.getPoints();
-
-        for (int i = 0; i < numVerts; i++) {
-          // Select clockwise line segment
-          float ax = points[i * 2];
-          float ay = points[i * 2 + 1];
-          float bx, by;
-          if (i != numVerts - 1) {
-            bx = points[(i + 1) * 2];
-            by = points[(i + 1) * 2 + 1];
-          } else {
-            bx = points[0];
-            by = points[1];
+      if(rg.hasFlag( Region.IMPASSABLE )) {
+        Polygon p = rg.getPolygon();
+        float cdx = p.getCenterX() - x;
+        float cdy = p.getCenterY() - y;
+        if (p.getBoundingCircleRadius() + PLAYER_RADIUS >= Math.sqrt( cdx * cdx + cdy * cdy )) {
+  
+          //System.out.println( "In range of poly" );
+          int numVerts = p.getPointCount();
+          float points[] = p.getPoints();
+  
+          // Check all verts first
+          for (int i = 0; i < numVerts; i++) {
+            float ax = points[i * 2];
+            float ay = points[i * 2 + 1];
+            
+            float adx = ax - x;
+            float ady = ay - y;
+            if(Math.sqrt( adx * adx + ady * ady) < PLAYER_RADIUS) {
+              float n[] = p.getNormal( i );
+              mPlayer.bounce( new Line(ax + n[1],ay - n[0] ,ax - n[1],ay + n[0]), delta );
+              Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
+            }
           }
-
-          // Find slope,
-          float dx = bx - ax;
-          float dy = by - ay;
-
-          // Calculate unit length internal normal vector
-          float len = (float)Math.sqrt( dx * dx + dy * dy );
-          float nx = -dy / len;
-          float ny = dx / len;
-
-          // If (x,y) + normal vector * radius projects into polygon, collision!
-          if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
-            System.out.printf("Bouncing off of (%.2f,%.2f) -> (%.2f,%.2f)\n",ax,ay,bx,by);
-            mPlayer.bounce( new Line( ax, ay, bx, by ), delta );
-            Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
+          
+          // Then check segments
+          for (int i = 0; i < numVerts; i++) {
+            // Select clockwise line segment
+            float ax = points[i * 2];
+            float ay = points[i * 2 + 1];
+            
+            float bx, by;
+            if (i != numVerts - 1) {
+              bx = points[(i + 1) * 2];
+              by = points[(i + 1) * 2 + 1];
+            } else {
+              bx = points[0];
+              by = points[1];
+            }
+  
+            // Find slope,
+            float dx = bx - ax;
+            float dy = by - ay;
+  
+            // Calculate unit length internal normal vector
+            float len = (float)Math.sqrt( dx * dx + dy * dy );
+            float nx = -dy / len;
+            float ny = dx / len;
+  
+            // If (x,y) + normal vector * radius projects into polygon, collision!
+            if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
+              System.out.printf("Bouncing off of (%.2f,%.2f) -> (%.2f,%.2f)\n",ax,ay,bx,by);
+              mPlayer.bounce( new Line( ax, ay, bx, by ), delta );
+              Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
+            }
           }
         }
       }
-
     }
   }
 

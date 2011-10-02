@@ -5,15 +5,24 @@ import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.Image;
 
 public class Region {
-
+  public static final int IMPASSABLE = 1;
+  public static final int OVERHEAD   = 2;
+    
   private Polygon mPolygon;
   private Image mTexture;
   private float mScale;
+  private int mFlags;
 
+  // Default regions are impassable
   Region(Polygon polygon, Image texture, float scale) {
+    this(polygon,texture,scale,IMPASSABLE);
+  }
+  
+  Region(Polygon polygon, Image texture, float scale, int flags) {
     this.mPolygon = polygon;
     this.mTexture = texture;
     this.mScale = scale;
+    this.mFlags = flags;
   }
 
   public boolean overLaps( Rectangle rect ) {
@@ -32,6 +41,9 @@ public class Region {
     return(mScale);
   }
 
+  /*
+   * General collision method, useful for checking collision against small objects 
+   */
   public boolean checkForCollision( float x, float y, double radius ) {
     int numVerts = mPolygon.getPointCount();
     float points[] = mPolygon.getPoints();
@@ -64,4 +76,21 @@ public class Region {
     }   
     return false;
   }
+  
+  public boolean hasFlag(int flagmask) {
+    return (mFlags & flagmask) == flagmask;
+  }
+  
+  public void setFlag(int flagmask, boolean state) {
+    if(state)
+      mFlags |= flagmask;
+    else
+      mFlags &= flagmask;
+  }
+    
+  public boolean toggleFlag(int flagmask) {
+    mFlags ^= flagmask;
+    return((mFlags & flagmask) == flagmask);
+  }
+
 }

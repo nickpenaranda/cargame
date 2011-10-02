@@ -8,7 +8,7 @@ import org.newdawn.slick.SlickException;
 
 public class HoverCraft {
 
-  private static final Random r = new Random();
+  //private static final Random r = new Random();
 
   // === Class properties ===
   // --- Thruster indices ---

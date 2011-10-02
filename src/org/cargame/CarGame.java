@@ -29,7 +29,6 @@ public class CarGame extends BasicGame {
   private HoverCraft player;
 
   private List<BoostGhost> mGhosts;
-  private List<Explosion> mExplosions;
   
   private List<Message> mMessages;
 
