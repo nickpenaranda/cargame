@@ -61,7 +61,6 @@ public class Sounds {
       if(vol < 0)
         vol = 0;
       vol = (float) Math.pow( vol, 6 );
-      System.out.println("Playing sound at " + vol + " volume");
       if (!Sounds.mute)
         play(pitch, vol);
     }

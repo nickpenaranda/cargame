@@ -46,7 +46,7 @@ public class GameClient extends Listener {
       } else if (msg.type == Network.CONTROL_NEW_PLAYER) {
         System.out.println( "Received NEW_PLAYER: " + msg.value );
         mCarGame.getWorld().getCars().put( msg.value, 
-                                           new HoverCraft( msg.value2, 0, 0, msg.text ) );
+                                           new Car( msg.value2, 0, 0, msg.text ) );
         mCarGame.message( msg.text + " JOINS THE GAME" );
       } else if (msg.type == Network.CONTROL_RM_PLAYER) {
         System.out.println( "Received RM_PLAYER: " + msg.value );
@@ -56,19 +56,19 @@ public class GameClient extends Listener {
       }
     } else if (object instanceof MoveMessage) {
       MoveMessage msg = (MoveMessage)object;
-      HoverCraft craft = mCarGame.getWorld().getCars().get( msg.id );
+      Car craft = mCarGame.getWorld().getCars().get( msg.id );
       if (craft != null) {
         craft.setPosition( msg.x, msg.y );
         craft.setVel( msg.vx, msg.vy );
         craft.setAngle( msg.angle );
-        craft.setBooster( HoverCraft.TOP, msg.t );
-        craft.setBooster( HoverCraft.RIGHT, msg.r );
-        craft.setBooster( HoverCraft.BOTTOM, msg.b );
-        craft.setBooster( HoverCraft.LEFT, msg.l );
+        craft.setBooster( Car.TOP, msg.t );
+        craft.setBooster( Car.RIGHT, msg.r );
+        craft.setBooster( Car.BOTTOM, msg.b );
+        craft.setBooster( Car.LEFT, msg.l );
       }
     } else if (object instanceof StateMessage) {
       StateMessage msg = (StateMessage)object;
-      HoverCraft craft = mCarGame.getWorld().getCars().get( msg.id );
+      Car craft = mCarGame.getWorld().getCars().get( msg.id );
       if (craft != null) {
         switch (msg.state) {
           case Network.STATE_DEAD:
@@ -86,7 +86,7 @@ public class GameClient extends Listener {
             break;
           case Network.STATE_BOOST:
             if (msg.setting) {
-              craft.setBoostTimeout( HoverCraft.BOOST_TIMEOUT );
+              craft.setBoostTimeout( Car.BOOST_TIMEOUT );
               Sounds.boost.playWorld(craft.getX(),craft.getY());
             }
             break;

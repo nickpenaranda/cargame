@@ -27,7 +27,7 @@ public class CarGame extends BasicGame {
 
   private World mWorld;
   
-  private HoverCraft player;
+  private Car player;
 
   private List<BoostGhost> mGhosts;
   
@@ -75,13 +75,13 @@ public class CarGame extends BasicGame {
     mContainer = container;
     
     // These init() functions MUST be called from within a Game init()
-    HoverCraft.init();
+    Car.init();
     Explosion.init();
     Rocket.init();
     Engine.init( this );
 
     mWorld = new World(this);
-    HoverCraft.attachTo(mWorld);
+    Car.attachTo(mWorld);
     Sounds.init( this.mWorld );
 
     if (multiplayerMode) {
@@ -103,7 +103,7 @@ public class CarGame extends BasicGame {
   public void update( GameContainer container, int delta ) throws SlickException {
     mWorld.update(delta);
     
-    HoverCraft player = mWorld.getPlayer();
+    Car player = mWorld.getPlayer();
 
     // Send updates if applicable
     if (multiplayerMode) {
@@ -123,9 +123,9 @@ public class CarGame extends BasicGame {
       return;
 
     // Check collision player car vs other cars
-    ArrayList<HoverCraft> otherCars = new ArrayList<HoverCraft>( mWorld.getCars().values() );
+    ArrayList<Car> otherCars = new ArrayList<Car>( mWorld.getCars().values() );
     otherCars.remove( player );
-    for (HoverCraft other : otherCars) {
+    for (Car other : otherCars) {
       if (CarGame.distance( player.getX(), player.getY(), other.getX(), other.getY() ) < 64
           && Math.abs( player.getSpeed() ) < Math.abs( other.getSpeed() )) {
         
@@ -141,7 +141,7 @@ public class CarGame extends BasicGame {
     mWorld.checkPlayerCollision(delta);
     
     // If stuck, die
-    if(player.getStuckCount() > 5) {// Stuck for 5 consecutive updates
+    if(player.getStuckCount() > 10) {// Stuck for N consecutive updates
       player.kill();
       if (multiplayerMode)
         mGameClient.sendStateUpdate( Network.STATE_DEAD, true);
@@ -163,7 +163,7 @@ public class CarGame extends BasicGame {
     
     ghostTimeout += renderDelta;
     if(ghostTimeout >= 75) {
-      for(HoverCraft c:new ArrayList<HoverCraft>(mWorld.getCars().values())) {
+      for(Car c:new ArrayList<Car>(mWorld.getCars().values())) {
         if(c.getBoostTimeout() > 2000) {
           mGhosts.add( new BoostGhost(c.getX(),c.getY(),c.getAngle(),c.getImage()) );
         }
@@ -218,16 +218,16 @@ public class CarGame extends BasicGame {
 
         // Player control stuff
         case Input.KEY_W:
-          player.setBooster( HoverCraft.BOTTOM, true );
+          player.setBooster( Car.BOTTOM, true );
           break;
         case Input.KEY_S:
-          player.setBooster( HoverCraft.TOP, true );
+          player.setBooster( Car.TOP, true );
           break;
         case Input.KEY_A:
-          player.setBooster( HoverCraft.RIGHT, true );
+          player.setBooster( Car.RIGHT, true );
           break;
         case Input.KEY_D:
-          player.setBooster( HoverCraft.LEFT, true );
+          player.setBooster( Car.LEFT, true );
           break;
         case Input.KEY_Q:
           if (player.jammer() && multiplayerMode)
@@ -267,16 +267,16 @@ public class CarGame extends BasicGame {
     switch (key) {
       // Player control stuff
       case Input.KEY_W:
-        player.setBooster( HoverCraft.BOTTOM, false );
+        player.setBooster( Car.BOTTOM, false );
         break;
       case Input.KEY_S:
-        player.setBooster( HoverCraft.TOP, false );
+        player.setBooster( Car.TOP, false );
         break;
       case Input.KEY_A:
-        player.setBooster( HoverCraft.RIGHT, false );
+        player.setBooster( Car.RIGHT, false );
         break;
       case Input.KEY_D:
-        player.setBooster( HoverCraft.LEFT, false );
+        player.setBooster( Car.LEFT, false );
         break;
     }
   }
@@ -297,16 +297,17 @@ public class CarGame extends BasicGame {
         player.setAngle( Math.PI );
     }
   }
+  
+  
 
   @Override
-  public void mouseClicked( int button, int x, int y, int clickCount ) {
+  public void mousePressed( int button, int x, int y ) {
     switch (button) {
       case 0: // Left
         player.rocket();
         break;
     }
   }
-
 
   // private void flatLine(int offset, int start, int end, boolean horiz, int
   // val) {

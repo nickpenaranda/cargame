@@ -1,13 +1,12 @@
 package org.cargame;
 
-import java.util.Random;
-
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
-public class HoverCraft {
-
+public class Car {
+  public static final boolean _ROCKETS_INHERIT_SPEED = false;
+  
   // private static final Random r = new Random();
 
   // === Class properties ===
@@ -34,7 +33,7 @@ public class HoverCraft {
   public static final int BOOST_TIMEOUT = 2500;
   public static final int ROCKET_TIMEOUT = 500;
 
-  private static final double ROCKET_LAUNCH_FACTOR = 1.5;
+  private static final double ROCKET_LAUNCH_FACTOR = 2.5;
   private static final double IMPULSE_FORCE = 2;
 
   public static final int NUM_VEHICLES = 5;
@@ -79,7 +78,7 @@ public class HoverCraft {
     }
   }
 
-  public HoverCraft(int graphic_index, double x, double y, String name) {
+  public Car(int graphic_index, double x, double y, String name) {
     mImage = vehicleGraphics[graphic_index];
     mX = x;
     mY = y;
@@ -233,8 +232,8 @@ public class HoverCraft {
     return mAverageSpeed;
   }
 
-  public void bounce( Line l, Region rg, int delta ) {
-    double ldx = l.a.x - l.b.x, ldy = l.a.y - l.b.y;
+  public void bounce( double x1, double y1, double x2, double y2, Region rg, int delta ) {
+    double ldx = x1 - x2, ldy = y1 - y2;
 
     double line_length = Math.sqrt( ldx * ldx + ldy * ldy );
     double ndx = ldx / line_length, ndy = ldy / line_length;
@@ -248,7 +247,7 @@ public class HoverCraft {
     if (mWorld.movingRegions && rg.hasFlag( Region.MOVABLE )) {// Movable region, must add linear and angular velocities
       double rdvx = 0, rdvy = 0;
       double impulseF = Math.sqrt( delta );
-      double magicHackF = 1.2;
+      double magicHackF = 1.2; // Anti-sticking coefficient
 
       rdvx = rg.getVX() * impulseF; // Linear vel
       rdvy = rg.getVY() * impulseF;
@@ -261,14 +260,9 @@ public class HoverCraft {
       double dy = mY - rg.getPivotY();
       // double dlen = Math.sqrt(dx * dx + dy * dy);
 
-      rdvx -= dy * rg.getDTheta() * impulseF;
-      rdvy -= -dx * rg.getDTheta() * impulseF;
-
-      rdvx *= magicHackF;
-      rdvy *= magicHackF;
+      rdvx -= dy * rg.getDTheta() * impulseF * magicHackF;
+      rdvy -= -dx * rg.getDTheta() * impulseF * magicHackF;
       
-      System.out.printf( "Region delta V: (%f,%f)\n", rdvx, rdvy );
-
       mVX += rdvx;
       mVY += rdvy;
     }
@@ -357,9 +351,14 @@ public class HoverCraft {
       return false;
     
     //Sounds.rocket.play();
-    mWorld.createRocket( this, mX, mY, mVX + Math.cos( mAngle - Math.PI / 2 )
-        * ROCKET_LAUNCH_FACTOR, mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
-
+    if(_ROCKETS_INHERIT_SPEED)
+      mWorld.createRocket( this, mX, mY, mVX + Math.cos( mAngle - Math.PI / 2 )
+          * ROCKET_LAUNCH_FACTOR, mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
+    else
+      mWorld.createRocket(  this, mX, mY, 
+                            Math.cos( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR,
+                            Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
+                            
     mRocketTimeout = ROCKET_TIMEOUT;
     return true;
   }

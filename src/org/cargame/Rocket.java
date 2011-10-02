@@ -7,11 +7,11 @@ import org.newdawn.slick.SlickException;
 public class Rocket {
 
   public static Image image;
-  public HoverCraft owner;
+  public Car owner;
   public double x, y, vx, vy, angle;
   public int life;
 
-  public Rocket(HoverCraft owner, double x, double y, double vx, double vy) {
+  public Rocket(Car owner, double x, double y, double vx, double vy) {
     this.owner = owner;
     this.x = x;
     this.y = y;

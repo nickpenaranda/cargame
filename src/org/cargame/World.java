@@ -29,8 +29,8 @@ public class World {
 
   private CarGame mGame;
 
-  private HoverCraft mPlayer;
-  private Map<Integer, HoverCraft> mCrafts;
+  private Car mPlayer;
+  private Map<Integer, Car> mCrafts;
 
   private List<Region> mRegions;
 
@@ -60,15 +60,15 @@ public class World {
 
     mRegions = new LinkedList<Region>();
 
-    mCrafts = (Map<Integer, HoverCraft>)Collections
-        .synchronizedMap( new TreeMap<Integer, HoverCraft>() );
+    mCrafts = (Map<Integer, Car>)Collections
+        .synchronizedMap( new TreeMap<Integer, Car>() );
 
     mRockets = (List<Rocket>)Collections.synchronizedList( new ArrayList<Rocket>() );
     mExplosions = new ArrayList<Explosion>();
 
     genWorldMap();
 
-    mPlayer = new HoverCraft( 0, 0, 0, CarGame.playerName );
+    mPlayer = new Car( 0, 0, 0, CarGame.playerName );
     mPlayer.moveToSpawn();
 
   }
@@ -83,7 +83,7 @@ public class World {
     }
     
     // Apply input/physics for vehicles
-    for (HoverCraft c : mCrafts.values()) {
+    for (Car c : mCrafts.values()) {
       c.think( delta );
     }
 
@@ -109,7 +109,7 @@ public class World {
   
         // Check collision vs player car
         // Only interested in others' rockets
-        for (HoverCraft other : new ArrayList<HoverCraft>( mCrafts.values() )) {
+        for (Car other : new ArrayList<Car>( mCrafts.values() )) {
           if (other == rk.owner) // No collision with owner
             continue;
   
@@ -175,7 +175,7 @@ public class World {
             float ady = ay - y;
             if(Math.sqrt( adx * adx + ady * ady) < PLAYER_RADIUS) {
               float n[] = p.getNormal( i );
-              mPlayer.bounce( new Line(ax + n[1],ay - n[0] ,ax - n[1],ay + n[0]), rg, delta );
+              mPlayer.bounce( ax + n[1],ay - n[0] ,ax - n[1],ay + n[0], rg, delta );
               Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
               continue region;
             }
@@ -208,7 +208,7 @@ public class World {
             // If (x,y) + normal vector * radius projects into polygon, collision!
             if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
               //System.out.printf("Bouncing off of (%.2f,%.2f) -> (%.2f,%.2f)\n",ax,ay,bx,by);
-              mPlayer.bounce( new Line( ax, ay, bx, by ), rg, delta );
+              mPlayer.bounce( ax, ay, bx, by, rg, delta );
               Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
             }
           }
@@ -232,7 +232,7 @@ public class World {
     Sounds.death.playWorld( x, y );
   }
 
-  public void createRocket( HoverCraft owner, double x, double y, double vx, double vy ) {
+  public void createRocket( Car owner, double x, double y, double vx, double vy ) {
     Rocket rk = new Rocket( owner, x, y, vx, vy );
     mRockets.add( rk );
     Sounds.rocket.playWorld( x, y );
@@ -379,11 +379,11 @@ public class World {
     }
   }
 
-  public Map<Integer, HoverCraft> getCars() {
+  public Map<Integer, Car> getCars() {
     return mCrafts;
   }
 
-  public HoverCraft getPlayer() {
+  public Car getPlayer() {
     return mPlayer;
   }
 

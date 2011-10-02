@@ -10,7 +10,7 @@ import org.newdawn.slick.geom.Rectangle;
 
 //TODO
 //// Apply input/physics and generate boosting ghosts
-//for (HoverCraft c : mCars.values()) {
+//for (Car c : mCars.values()) {
 //c.think( delta );
 //BoostGhost ghost = c.getBoostTimeout() > 2000 ? new BoostGhost( c.getX(), c
 //    .getY(), c.getAngle(), c.getImage() ) : null;
@@ -43,7 +43,7 @@ public class Engine {
   }
 
   public static void render( GameContainer container, Graphics g ) {
-    HoverCraft playerCraft = game.getWorld().getPlayer();
+    Car playerCraft = game.getWorld().getPlayer();
 
     float scale_factor = 1 / (1 + (float)Math.pow( playerCraft.getAverageSpeed(), 3 ));
 
@@ -89,7 +89,7 @@ public class Engine {
     }
 
     // Draw cars
-    for (HoverCraft car : game.getWorld().getCars().values()) {
+    for (Car car : game.getWorld().getCars().values()) {
       if (car.isDead())
         continue;
       Image image = car.getImage();
@@ -120,7 +120,7 @@ public class Engine {
     g.resetTransform();
 
     // draw indicator
-    for (HoverCraft craft : game.getWorld().getCars().values()) {
+    for (Car craft : game.getWorld().getCars().values()) {
       if (craft.getJammerEffect() <= 0) {
         int min_len = 33;
         int max_len = 220;
@@ -152,7 +152,7 @@ public class Engine {
     else
       g.setColor( Color.green );
     g.fillRect( 281, 16,
-                79 * (1 - (playerCraft.getBoostTimeout() / (float)HoverCraft.BOOST_TIMEOUT)), 4 );
+                79 * (1 - (playerCraft.getBoostTimeout() / (float)Car.BOOST_TIMEOUT)), 4 );
 
     // Draw jammer indicator
     g.setColor( Color.white );
@@ -162,7 +162,7 @@ public class Engine {
     else
       g.setColor( Color.cyan );
     g.fillRect( 281, 23,
-                79 * (1 - (playerCraft.getJammerTimeout() / (float)HoverCraft.JAMMER_TIMEOUT)), 4 );
+                79 * (1 - (playerCraft.getJammerTimeout() / (float)Car.JAMMER_TIMEOUT)), 4 );
 
     g.setColor( Color.white );
     g.drawString( "Speed = " + playerCraft.getSpeed(), 10, 30 );

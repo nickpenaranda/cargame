@@ -9,7 +9,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cargame.HoverCraft;
+import org.cargame.Car;
 import org.cargame.Network;
 import org.cargame.Network.*;
 
@@ -64,7 +64,7 @@ public class GameServer extends Listener {
         case Network.CONTROL_CONNECT:
           System.out.println( connection + " REPORTS CONNECT" );
 
-          int graphic = graphicCounter++ % HoverCraft.NUM_VEHICLES;
+          int graphic = graphicCounter++ % Car.NUM_VEHICLES;
 
           // Send ACK to connecting player
           ControlMessage resp = new ControlMessage();
