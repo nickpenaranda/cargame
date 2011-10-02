@@ -116,7 +116,7 @@ public class World {
           // Contact with other
           if (CarGame.distance( rk.x, rk.y, other.getX(), other.getY() ) < 32) {
             // If player, report kill
-            if (other == mPlayer) {
+            if (other == mPlayer && !mPlayer.isDead()) {
               mGame.message( "BLOWN UP BY " + rk.owner.getName() );
               mPlayer.kill();
   

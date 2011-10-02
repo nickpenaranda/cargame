@@ -18,9 +18,11 @@ public class HoverCraft {
   public static final int LEFT = 3;
 
   // --- Physics constants ---
-  private static final double BASE_THRUSTER_FORCE = 0.001;
+  //private static final double BASE_THRUSTER_FORCE = 0.001;
+  private static final double BASE_THRUSTER_FORCE = 0.005;
   private static final double MIN_SPEED_BEFORE_STICTION = BASE_THRUSTER_FORCE / 2;
-  private static final double FRICTION = 0.99937;
+  //private static final double FRICTION = 0.99937;
+  private static final double FRICTION = .998;
   private static final double WALL_ELASTICITY = 0.4;
   private static final double DISTANCE_INTEGRAL_MILLIS = 500;
 

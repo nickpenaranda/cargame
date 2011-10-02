@@ -40,7 +40,7 @@ public class CarGame extends BasicGame {
   private GameClient mGameClient;
   
   private int renderDelta = 0;
-  private long lastRender = 0;
+  private long lastRender = 0, ghostTimeout = 0;
 
   public CarGame() {
     super( WINDOW_TITLE );
@@ -96,7 +96,7 @@ public class CarGame extends BasicGame {
       mWorld.getCars().put( 0, mWorld.getPlayer() );
     
     player = mWorld.getPlayer();
-    lastRender = System.nanoTime() / 1000000;
+    lastRender = ghostTimeout = System.nanoTime() / 1000000;
   }
 
   @Override
@@ -160,6 +160,22 @@ public class CarGame extends BasicGame {
     long now = System.nanoTime() / 1000000;
     renderDelta = (int)(now - lastRender);
     lastRender = now;
+    
+    ghostTimeout += renderDelta;
+    if(ghostTimeout >= 75) {
+      for(HoverCraft c:new ArrayList<HoverCraft>(mWorld.getCars().values())) {
+        if(c.getBoostTimeout() > 2000) {
+          mGhosts.add( new BoostGhost(c.getX(),c.getY(),c.getAngle(),c.getImage()) );
+        }
+      }
+      ghostTimeout = 0;
+    }
+    
+    for(BoostGhost gh:new ArrayList<BoostGhost>(mGhosts)) {
+      gh.life -= renderDelta;
+      if(gh.life <= 0)
+        mGhosts.remove( gh );
+    }
     
     for(Message m:new ArrayList<Message>(mMessages)) {
       m.life -= renderDelta;
