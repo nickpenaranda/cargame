@@ -2,27 +2,59 @@ package org.cargame;
 
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Transform;
 import org.newdawn.slick.Image;
 
 public class Region {
   public static final int IMPASSABLE = 1;
   public static final int OVERHEAD   = 2;
-    
-  private Polygon mPolygon;
+  public static final int MOVABLE    = 4;
+  
+  protected Polygon mPolygon;
   private Image mTexture;
   private float mScale;
   private int mFlags;
+  private float mPivotX, mPivotY;
+  private float mVX, mVY, mDTheta;
 
   // Default regions are impassable
-  Region(Polygon polygon, Image texture, float scale) {
-    this(polygon,texture,scale,IMPASSABLE);
+  public Region(Polygon polygon, Image texture, float scale) {
+    this(polygon,texture,scale,IMPASSABLE,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  Region(Polygon polygon, Image texture, float scale, int flags) {
+  public Region(Polygon polygon, Image texture, float scale, int flags) {
+    this(polygon,texture,scale,flags,polygon.getCenterX(),polygon.getCenterY());
+  }
+  
+  Region(Polygon polygon, Image texture, float scale, int flags, float pivotX, float pivotY) {
     this.mPolygon = polygon;
     this.mTexture = texture;
     this.mScale = scale;
     this.mFlags = flags;
+    this.mPivotX = pivotX;
+    this.mPivotY = pivotY;
+  }
+  
+  public void setVelocity(float vx,float vy) {
+    mVX = vx;
+    mVY = vy;
+  }
+  
+  public void setRotationRate(float dTheta) {
+    mDTheta = dTheta;
+  }
+  
+  public void doMovement(int delta) {
+    translate(mVX * delta, mVY * delta);
+    rotate(mDTheta * delta);
+  }
+  
+  private void translate(float dx,float dy) {
+    mPolygon = (Polygon)mPolygon.transform(Transform.createTranslateTransform( dx, dy ));
+  }
+  
+  private void rotate(float theta) {
+    mPolygon = (Polygon)mPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
   }
 
   public boolean overLaps( Rectangle rect ) {
@@ -93,4 +125,27 @@ public class Region {
     return((mFlags & flagmask) == flagmask);
   }
 
+  
+  public float getPivotX() {
+    return mPivotX;
+  }
+
+  
+  public float getPivotY() {
+    return mPivotY;
+  }
+
+  
+  public float getVX() {
+    return mVX;
+  }
+
+  
+  public float getVY() {
+    return mVY;
+  }
+
+  public double getDTheta() {
+    return mDTheta;
+  }
 }

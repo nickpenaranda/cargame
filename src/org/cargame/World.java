@@ -72,7 +72,14 @@ public class World {
   }
 
   public void update( int delta ) {
-    // Apply input/physics
+    // Transform any MOVABLE regions
+    //TODO This currently rotates them, for no good reason.
+    for (Region rg : mRegions) {
+      if(rg.hasFlag( Region.MOVABLE ))
+        rg.doMovement( delta );
+    }
+    
+    // Apply input/physics for vehicles
     for (HoverCraft c : mCrafts.values()) {
       c.think( delta );
     }
@@ -161,7 +168,7 @@ public class World {
             float ady = ay - y;
             if(Math.sqrt( adx * adx + ady * ady) < PLAYER_RADIUS) {
               float n[] = p.getNormal( i );
-              mPlayer.bounce( new Line(ax + n[1],ay - n[0] ,ax - n[1],ay + n[0]), delta );
+              mPlayer.bounce( new Line(ax + n[1],ay - n[0] ,ax - n[1],ay + n[0]), rg, delta );
               Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
             }
           }
@@ -192,8 +199,8 @@ public class World {
   
             // If (x,y) + normal vector * radius projects into polygon, collision!
             if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
-              System.out.printf("Bouncing off of (%.2f,%.2f) -> (%.2f,%.2f)\n",ax,ay,bx,by);
-              mPlayer.bounce( new Line( ax, ay, bx, by ), delta );
+              //System.out.printf("Bouncing off of (%.2f,%.2f) -> (%.2f,%.2f)\n",ax,ay,bx,by);
+              mPlayer.bounce( new Line( ax, ay, bx, by ), rg, delta );
               Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
             }
           }
@@ -242,6 +249,13 @@ public class World {
         Rectangle rect = new Rectangle( buildingL, buildingT, BUILDING_WIDTH * TILE_SIZE,
             BUILDING_WIDTH * TILE_SIZE );
         Region region = new Region( new Polygon( rect.getPoints() ), textures[r.nextInt( 8 )], 1.0f );
+        if(r.nextBoolean()) {
+          region.setFlag( Region.MOVABLE, true );
+          if(r.nextBoolean()) 
+            region.setVelocity( 0.01f * (float)r.nextGaussian(), 0.01f  * (float)r.nextGaussian());
+          else
+            region.setRotationRate( 0.001f * (float)r.nextGaussian() );
+        }
         addRegion( region );
       }
     }

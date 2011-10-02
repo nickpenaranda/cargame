@@ -134,6 +134,13 @@ public class CarGame extends BasicGame {
 
     // Player only: collision vs walls
     mWorld.checkPlayerCollision(delta);
+    
+    // If stuck, die
+    if(player.getStuckCount() > 5) {// Stuck for 5 consecutive updates
+      player.kill();
+      if (multiplayerMode)
+        mGameClient.sendStateUpdate( Network.STATE_DEAD, true);
+    }
   }
 
   static double distance( double x1, double y1, double x2, double y2 ) {

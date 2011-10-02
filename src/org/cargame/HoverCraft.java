@@ -8,7 +8,7 @@ import org.newdawn.slick.SlickException;
 
 public class HoverCraft {
 
-  //private static final Random r = new Random();
+  // private static final Random r = new Random();
 
   // === Class properties ===
   // --- Thruster indices ---
@@ -47,6 +47,7 @@ public class HoverCraft {
   // --- Respawn/life ---
   private int mLives;
   private int mDeadTimeout;
+  private int mStuckCount;
   private boolean mDead;
 
   // --- Physics and movement related ---
@@ -96,6 +97,10 @@ public class HoverCraft {
   }
 
   public void think( int delta ) {
+    mStuckCount--;
+    if(mStuckCount < 0)
+      mStuckCount = 0;
+
     // Update timers
     mBoostTimeout -= delta;
     mJammerTimeout -= delta;
@@ -151,7 +156,7 @@ public class HoverCraft {
     }
 
   }
-  
+
   public void setPosition( double x, double y ) {
     mX = x;
     mY = y;
@@ -160,11 +165,10 @@ public class HoverCraft {
   public void setAngle( double angle ) {
     mAngle = angle;
   }
-  
+
   public void setSpeed( double speed ) {
     mSpeed = speed;
   }
-
 
   public void kill() {
     if (mDeadTimeout <= 0) {
@@ -177,17 +181,16 @@ public class HoverCraft {
       Sounds.death.play();
     }
   }
-  
+
   public void moveToSpawn() {
-    //TODO Make this spawn player at a spawn point item, when those are implemented...
+    // TODO Make this spawn player at a spawn point item, when those are implemented...
     setPosition( -8192 + World.ROAD_WIDTH * 32 + (World.ROAD_WIDTH + World.BUILDING_WIDTH)
-                 * (CarGame.r.nextInt( 15 ) + 1) * 64, 
-                 -8192 + World.ROAD_WIDTH * 32 + (World.ROAD_WIDTH + World.BUILDING_WIDTH)
-                 * (CarGame.r.nextInt( 15 ) + 1) * 64 );
+        * (CarGame.r.nextInt( 15 ) + 1) * 64, -8192 + World.ROAD_WIDTH * 32
+        + (World.ROAD_WIDTH + World.BUILDING_WIDTH) * (CarGame.r.nextInt( 15 ) + 1) * 64 );
   }
 
   public void restore() {
-    if(mLives > 0) {
+    if (mLives > 0) {
       System.out.println( "Restoring" );
       --mLives;
       moveToSpawn();
@@ -195,7 +198,7 @@ public class HoverCraft {
       mDead = false;
     }
   }
-  
+
   public Image getImage() {
     return mImage;
   }
@@ -207,7 +210,7 @@ public class HoverCraft {
   public float getY() {
     return (float)mY;
   }
-  
+
   public boolean isDead() {
     return(mDead);
   }
@@ -228,85 +231,114 @@ public class HoverCraft {
     return mAverageSpeed;
   }
 
-  public void bounce ( Line l, int delta ) {
+  public void bounce( Line l, Region rg, int delta ) {
     double ldx = l.a.x - l.b.x, ldy = l.a.y - l.b.y;
-    
+
     double line_length = Math.sqrt( ldx * ldx + ldy * ldy );
     double ndx = ldx / line_length, ndy = ldy / line_length;
-    
-    System.out.printf( "ndx = %f, ndy = %f\n",ndx,ndy );
+
+    // System.out.printf( "ndx = %f, ndy = %f\n",ndx,ndy );
     double line_dot_vector = ndx * mVX + ndy * mVY;
-    
-    System.out.printf( "line dot velocity = %f\n", line_dot_vector );
-    
-    mX += mVX * delta;
-    mY += mVY * delta;
-  
+
+    mVX = -mVX + ndx * 2 * line_dot_vector;
+    mVY = -mVY + ndy * 2 * line_dot_vector;
+
+    if (rg.hasFlag( Region.MOVABLE )) {// Movable region, must add linear and angular velocities
+      double rdvx = 0, rdvy = 0;
+      double impulseF = Math.sqrt( delta );
+      double magicHackF = 1.2;
+
+      rdvx = rg.getVX() * impulseF; // Linear vel
+      rdvy = rg.getVY() * impulseF;
+
+      // Angular vel
+
+      // Find pivot -> player position vector, then linear velocity vector of surface contact
+      // point
+      double dx = mX - rg.getPivotX();
+      double dy = mY - rg.getPivotY();
+      // double dlen = Math.sqrt(dx * dx + dy * dy);
+
+      rdvx -= dy * rg.getDTheta() * impulseF;
+      rdvy -= -dx * rg.getDTheta() * impulseF;
+
+      rdvx *= magicHackF;
+      rdvy *= magicHackF;
+      
+      System.out.printf( "Region delta V: (%f,%f)\n", rdvx, rdvy );
+
+      mVX += rdvx;
+      mVY += rdvy;
+    }
+
+    mVX *= WALL_ELASTICITY;
+    mVY *= WALL_ELASTICITY;
+    // System.out.printf( "line dot velocity = %f\n", line_dot_vector );
+
     // HACK: move the player out of the wall to their previous spot.
     setPosition( mPrevX, mPrevY );
-
-    mVX = (-mVX + ndx * 2 * line_dot_vector) * WALL_ELASTICITY;
-    mVY = (-mVY + ndy * 2 * line_dot_vector) * WALL_ELASTICITY;
+    
+    mStuckCount += 2;
   }
-  
-//  public void bounce( Line l, int delta ) {
-//    // System.out.println("BOUNCE");
-//
-//    double cross = (l.a.x - l.b.x) * mVY - (l.a.y - l.b.y) * mVX;
-//    double vec_length = Math.sqrt( mVX * mVX + mVY * mVY );
-//    // divide by zero fix
-//    if (vec_length == 0)
-//      vec_length = .00001;
-//    double a_dot_b = (l.a.x - l.b.x) * mVX + (l.a.y - l.b.y) * mVY;
-//    double angleBetween = Math.acos( a_dot_b / (l.length() * vec_length) );
-//
-//    // System.out.println("a . b " + a_dot_b);
-//    // System.out.println("cross " + cross);
-//    // System.out.println("angle " + Math.toDegrees(angleBetween));
-//
-//    if (angleBetween > Math.PI / 2)
-//      angleBetween = Math.PI - angleBetween;
-//
-//    if (cross > 0)
-//      angleBetween = -angleBetween;
-//
-//    // System.out.println("xformed angle " + Math.toDegrees(angleBetween));
-//
-//    double lVecY = l.a.y - l.b.y;
-//    double lVecX = l.a.x - l.b.x;
-//    double angleL = Math.atan( lVecY / lVecX );
-//    if (angleL < 0) {
-//      angleL += Math.PI;
-//    }
-//    // if (lVecY < 0 && lVecX < 0 || lVecY > 0 && lVecX < 0) {
-//    // angleL += 2 * Math.PI;
-//    // }
-//
-//    // System.out.println("angleL " + Math.toDegrees(angleL));
-//
-//    double angleNew;
-//    if (a_dot_b < 0)
-//      angleNew = angleL - angleBetween;
-//    else
-//      angleNew = angleL + (Math.PI + angleBetween);
-//
-//    // System.out.println("angleNew " + Math.toDegrees(angleNew));
-//
-//    mVX = vec_length * Math.cos( angleNew ) * WALL_ELASTICITY;
-//    mVY = vec_length * Math.sin( angleNew ) * WALL_ELASTICITY;
-//
-//    // actually give the player an extra move to get them out
-//    // of the wall if they are there. A hack certainly, but
-//    // shouldn't matter too much as long as delta stays low.
-//    mX += mVX * delta;
-//    mY += mVY * delta;
-//
-//    // HACK: move the player out of the wall to their previous spot.
-//    setPosition( mPrevX, mPrevY );
-//
-//    // System.out.printf("%f %f\n", lVecX, lVecY);
-//    // System.out.printf("new (%f,%f)\n", mVX, mVY);
-//  }
+
+  // public void bounce( Line l, int delta ) {
+  // // System.out.println("BOUNCE");
+  //
+  // double cross = (l.a.x - l.b.x) * mVY - (l.a.y - l.b.y) * mVX;
+  // double vec_length = Math.sqrt( mVX * mVX + mVY * mVY );
+  // // divide by zero fix
+  // if (vec_length == 0)
+  // vec_length = .00001;
+  // double a_dot_b = (l.a.x - l.b.x) * mVX + (l.a.y - l.b.y) * mVY;
+  // double angleBetween = Math.acos( a_dot_b / (l.length() * vec_length) );
+  //
+  // // System.out.println("a . b " + a_dot_b);
+  // // System.out.println("cross " + cross);
+  // // System.out.println("angle " + Math.toDegrees(angleBetween));
+  //
+  // if (angleBetween > Math.PI / 2)
+  // angleBetween = Math.PI - angleBetween;
+  //
+  // if (cross > 0)
+  // angleBetween = -angleBetween;
+  //
+  // // System.out.println("xformed angle " + Math.toDegrees(angleBetween));
+  //
+  // double lVecY = l.a.y - l.b.y;
+  // double lVecX = l.a.x - l.b.x;
+  // double angleL = Math.atan( lVecY / lVecX );
+  // if (angleL < 0) {
+  // angleL += Math.PI;
+  // }
+  // // if (lVecY < 0 && lVecX < 0 || lVecY > 0 && lVecX < 0) {
+  // // angleL += 2 * Math.PI;
+  // // }
+  //
+  // // System.out.println("angleL " + Math.toDegrees(angleL));
+  //
+  // double angleNew;
+  // if (a_dot_b < 0)
+  // angleNew = angleL - angleBetween;
+  // else
+  // angleNew = angleL + (Math.PI + angleBetween);
+  //
+  // // System.out.println("angleNew " + Math.toDegrees(angleNew));
+  //
+  // mVX = vec_length * Math.cos( angleNew ) * WALL_ELASTICITY;
+  // mVY = vec_length * Math.sin( angleNew ) * WALL_ELASTICITY;
+  //
+  // // actually give the player an extra move to get them out
+  // // of the wall if they are there. A hack certainly, but
+  // // shouldn't matter too much as long as delta stays low.
+  // mX += mVX * delta;
+  // mY += mVY * delta;
+  //
+  // // HACK: move the player out of the wall to their previous spot.
+  // setPosition( mPrevX, mPrevY );
+  //
+  // // System.out.printf("%f %f\n", lVecX, lVecY);
+  // // System.out.printf("new (%f,%f)\n", mVX, mVY);
+  // }
 
   public boolean boost() {
     if (mBoostTimeout > 0)
@@ -322,9 +354,8 @@ public class HoverCraft {
     if (mRocketTimeout > 0)
       return false;
     Sounds.rocket.play();
-    mWorld.createRocket( this, mX, mY, 
-                         mVX + Math.cos( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR,
-                         mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
+    mWorld.createRocket( this, mX, mY, mVX + Math.cos( mAngle - Math.PI / 2 )
+        * ROCKET_LAUNCH_FACTOR, mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
 
     mRocketTimeout = ROCKET_TIMEOUT;
     return true;
@@ -347,7 +378,7 @@ public class HoverCraft {
   public int getBoostTimeout() {
     return mBoostTimeout;
   }
-  
+
   // Used for rendering boost "ghosts"
   public void setBoostTimeout( int boostTimeout ) {
     mBoostTimeout = boostTimeout;
@@ -408,5 +439,9 @@ public class HoverCraft {
 
   public static void attachTo( World world ) {
     mWorld = world;
+  }
+
+  public int getStuckCount() {
+    return mStuckCount;
   }
 }
