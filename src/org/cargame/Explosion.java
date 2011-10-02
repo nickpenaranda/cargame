@@ -11,6 +11,7 @@ public class Explosion {
 
   private static final Random r = new Random();
   private static final int EXPLOSION_DURATION = 1000;
+
   private static final int NUM_VARIANTS = 5;
   public double x, y;
   public int life;

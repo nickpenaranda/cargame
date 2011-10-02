@@ -1,7 +1,6 @@
 package org.cargame;
 
 import java.io.IOException;
-import org.cargame.CarGame.Message;
 import org.cargame.Network.*;
 
 import com.esotericsoftware.kryonet.Client;
@@ -21,7 +20,7 @@ public class GameClient extends Listener {
     Network.registerClasses( mClient );
 
     mClient.start();
-    mClient.connect( 5000, CarGame.HOST_NAME, Network.TCP_PORT, Network.UDP_PORT );
+    mClient.connect( 5000, CarGame.hostName, Network.TCP_PORT, Network.UDP_PORT );
 
     mClient.addListener( this );
 
@@ -43,19 +42,22 @@ public class GameClient extends Listener {
       ControlMessage msg = (ControlMessage)object;
       System.out.println( "Received ACK, graphic = " + msg.value );
       if (msg.type == Network.CONTROL_ACK) {
-        mCarGame.mCars.get( connection.getID() ).setImage( msg.value );
+        mCarGame.getWorld().getCars().get( connection.getID() ).setImage( msg.value );
       } else if (msg.type == Network.CONTROL_NEW_PLAYER) {
         System.out.println( "Received NEW_PLAYER: " + msg.value );
-        mCarGame.mCars.put( msg.value, new HoverCraft( msg.value2, 0, 0, msg.text ) );
+        mCarGame.getWorld().getCars().put( msg.value, 
+                                           new HoverCraft( msg.value2, 0, 0, msg.text ) );
+        mCarGame.message( msg.text + " JOINS THE GAME" );
       } else if (msg.type == Network.CONTROL_RM_PLAYER) {
         System.out.println( "Received RM_PLAYER: " + msg.value );
-        mCarGame.mCars.remove( msg.value );
+        mCarGame.getWorld().getCars().remove( msg.value );
+        mCarGame.message( msg.text + " LEAVES THE GAME" );
       }
     } else if (object instanceof MoveMessage) {
       MoveMessage msg = (MoveMessage)object;
-      HoverCraft craft = mCarGame.mCars.get( msg.id );
+      HoverCraft craft = mCarGame.getWorld().getCars().get( msg.id );
       if (craft != null) {
-        craft.moveTo( msg.x, msg.y );
+        craft.setPosition( msg.x, msg.y );
         craft.setVel( msg.vx, msg.vy );
         craft.setAngle( msg.angle );
         craft.setBooster( HoverCraft.TOP, msg.t );
@@ -65,13 +67,13 @@ public class GameClient extends Listener {
       }
     } else if (object instanceof StateMessage) {
       StateMessage msg = (StateMessage)object;
-      HoverCraft craft = mCarGame.mCars.get( msg.id );
+      HoverCraft craft = mCarGame.getWorld().getCars().get( msg.id );
       if (craft != null) {
         switch (msg.state) {
           case Network.STATE_DEAD:
             if (msg.setting) {
               craft.kill();
-              mCarGame.mMessages.add( new Message( craft.getName() + " DIED" ) );
+              mCarGame.message(craft.getName() + " DIED" );
             } else
               craft.restore();
             break;
@@ -79,7 +81,7 @@ public class GameClient extends Listener {
             if (msg.setting)
               craft.jammer();
             else
-              craft.setJammer( 0 );
+              craft.setJammerEffect( 0 );
             break;
           case Network.STATE_BOOST:
             if (msg.setting)
@@ -89,23 +91,22 @@ public class GameClient extends Listener {
     } else if (object instanceof ChatMessage) {
       System.out.println( "Chat message received" );
       ChatMessage msg = (ChatMessage)object;
-      mCarGame.mMessages.add( 0, new Message( mCarGame.mCars.get( msg.id ).getName() + ": "
-          + msg.text ) );
+      mCarGame.message( mCarGame.getWorld().getCars().get( msg.id ).getName() + ": "
+          + msg.text );
       Sounds.chat.play();
       System.out.println( "Chat message received" );
     } else if (object instanceof CommandMessage) {
       CommandMessage msg = (CommandMessage)object;
       switch (msg.type) {
         case Network.COMMAND_KILL_SELF:
-          mCarGame.mPlayerCraft.kill();
-          mCarGame.mMessages.add( new Message( "KILLED BY SERVER. RIP SUCKA" ) );
+          mCarGame.getWorld().getPlayer().kill();
+          mCarGame.message( "KILLED BY SERVER. RIP SUCKA" );
           break;
       }
     } else if (object instanceof RocketMessage) {
       RocketMessage msg = (RocketMessage)object;
-      mCarGame.mRockets
-          .add( new Rocket( mCarGame.mCars.get( msg.id ), msg.x, msg.y, msg.vx, msg.vy ) );
-      Sounds.rocket.play();
+      mCarGame.getWorld().createRocket( mCarGame.getWorld().getCars().get( msg.id ),
+                                        msg.x, msg.y, msg.vx, msg.vy );
     }
   }
 
