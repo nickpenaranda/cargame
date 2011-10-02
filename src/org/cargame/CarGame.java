@@ -233,7 +233,7 @@ public class CarGame extends BasicGame {
           if (player.jammer() && multiplayerMode)
             mGameClient.sendStateUpdate( Network.STATE_JAM, true );
           break;
-        case Input.KEY_E:
+        case Input.KEY_SPACE:
           player.rocket();
           break;
         case Input.KEY_F1:
