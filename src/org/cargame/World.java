@@ -370,8 +370,12 @@ public class World {
 
   public void render( Graphics g, Rectangle clip ) {
     for (Region region : getWallsWithin( clip )) {
-      g.texture( region.getPolygon(), region.getTexture(), region.getScale(), region.getScale(),
-                 true );
+      g.pushTransform();
+        g.translate( region.getX(), region.getY() );
+        g.rotate( region.getPivotX(), region.getPivotY(), (float)(region.getTheta() * 180 / Math.PI) );
+        g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScale() , region.getScale(),
+                   true );
+      g.popTransform();
     }
   }
 

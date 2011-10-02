@@ -214,7 +214,7 @@ public class CarGame extends BasicGame {
           player.setBooster( HoverCraft.LEFT, true );
           break;
         case Input.KEY_Q:
-          if (multiplayerMode && player.jammer())
+          if (player.jammer() && multiplayerMode)
             mGameClient.sendStateUpdate( Network.STATE_JAM, true );
           break;
         case Input.KEY_E:
@@ -285,7 +285,7 @@ public class CarGame extends BasicGame {
   public void mouseClicked( int button, int x, int y, int clickCount ) {
     switch (button) {
       case 0: // Left
-        if (multiplayerMode && player.boost())
+        if (player.boost() && multiplayerMode)
           mGameClient.sendStateUpdate( Network.STATE_BOOST, true );
         break;
     }
@@ -313,8 +313,8 @@ public class CarGame extends BasicGame {
       appGameContainer.setDisplayMode( 640, 480, !_DEBUG_MODE );
       appGameContainer.setMinimumLogicUpdateInterval( 20 );
       appGameContainer.setAlwaysRender( true );
-      // appGameContainer.setMaximumLogicUpdateInterval(60);
-      // appGameContainer.setVSync(true);
+      appGameContainer.setTargetFrameRate( 100 );
+      appGameContainer.setVSync( true );
       appGameContainer.start();
     } catch (SlickException e) {
       e.printStackTrace();

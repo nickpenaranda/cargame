@@ -2,6 +2,7 @@ package org.cargame;
 
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Shape;
 import org.newdawn.slick.geom.Transform;
 import org.newdawn.slick.Image;
 
@@ -10,11 +11,11 @@ public class Region {
   public static final int OVERHEAD   = 2;
   public static final int MOVABLE    = 4;
   
-  protected Polygon mPolygon;
+  protected Polygon mPolygon, mGraphicsPolygon;
   private Image mTexture;
   private float mScale;
   private int mFlags;
-  private float mPivotX, mPivotY;
+  private float mPivotX, mPivotY, mTheta, mX, mY;
   private float mVX, mVY, mDTheta;
 
   // Default regions are impassable
@@ -33,6 +34,9 @@ public class Region {
     this.mFlags = flags;
     this.mPivotX = pivotX;
     this.mPivotY = pivotY;
+    mTexture.setCenterOfRotation( pivotX, pivotY );
+    mTheta = 0;
+    mGraphicsPolygon = polygon;
   }
   
   public void setVelocity(float vx,float vy) {
@@ -51,10 +55,13 @@ public class Region {
   
   private void translate(float dx,float dy) {
     mPolygon = (Polygon)mPolygon.transform(Transform.createTranslateTransform( dx, dy ));
+    mX += dx;
+    mY += dy;
   }
   
   private void rotate(float theta) {
     mPolygon = (Polygon)mPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
+    mTheta += theta;
   }
 
   public boolean overLaps( Rectangle rect ) {
@@ -147,5 +154,21 @@ public class Region {
 
   public double getDTheta() {
     return mDTheta;
+  }
+
+  public float getTheta() {
+    return mTheta;
+  }
+  
+  public float getX() {
+    return mX;
+  }
+  
+  public float getY() {
+    return mY;
+  }
+
+  public Polygon getGraphicsPolygon() {
+    return mGraphicsPolygon;
   }
 }
