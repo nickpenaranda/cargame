@@ -39,6 +39,8 @@ public class World {
   private List<Rocket> mRockets;
   private List<Explosion> mExplosions;
 
+  public boolean movingRegions = true;
+
   public World(CarGame game) {
     mGame = game;
 
@@ -73,10 +75,11 @@ public class World {
 
   public void update( int delta ) {
     // Transform any MOVABLE regions
-    //TODO This currently rotates them, for no good reason.
-    for (Region rg : mRegions) {
-      if(rg.hasFlag( Region.MOVABLE ))
-        rg.doMovement( delta );
+    if(movingRegions) {
+      for (Region rg : mRegions) {
+        if(rg.hasFlag( Region.MOVABLE ))
+          rg.doMovement( delta );
+      }
     }
     
     // Apply input/physics for vehicles
@@ -92,50 +95,54 @@ public class World {
     }
 
     // Rocket physics
-    rocket: for (Rocket rk : new ArrayList<Rocket>( mRockets )) {
+    for (Rocket rk : new ArrayList<Rocket>( mRockets )) {
       rk.life -= delta;
       if (rk.life <= 0) {
         mRockets.remove( rk );
         createExplosion( rk.x, rk.y );
-        continue;
-      }
+      } else {
+      
+        boolean collide = false;
 
-      rk.x += rk.vx * delta;
-      rk.y += rk.vy * delta;
-
-      // Check collision vs player car
-      // Only interested in others' rockets
-      for (HoverCraft other : new ArrayList<HoverCraft>( mCrafts.values() )) {
-        if (other == rk.owner) // No collision with owner
-          continue;
-
-        // Contact with other
-        if (CarGame.distance( rk.x, rk.y, other.getX(), other.getY() ) < 32) {
-          // If player, report kill
-          if (other == mPlayer) {
-            mGame.message( "BLOWN UP BY " + rk.owner.getName() );
-            mPlayer.kill();
-
-            if (CarGame.multiplayerMode)
-              mGame.getClient().sendStateUpdate( Network.STATE_DEAD, true );
+        rk.x += rk.vx * delta;
+        rk.y += rk.vy * delta;
+  
+        // Check collision vs player car
+        // Only interested in others' rockets
+        for (HoverCraft other : new ArrayList<HoverCraft>( mCrafts.values() )) {
+          if (other == rk.owner) // No collision with owner
+            continue;
+  
+          // Contact with other
+          if (CarGame.distance( rk.x, rk.y, other.getX(), other.getY() ) < 32) {
+            // If player, report kill
+            if (other == mPlayer) {
+              mGame.message( "BLOWN UP BY " + rk.owner.getName() );
+              mPlayer.kill();
+  
+              if (CarGame.multiplayerMode)
+                mGame.getClient().sendStateUpdate( Network.STATE_DEAD, true );
+            }
+  
+            // In any case, remove rocket and create explosion
+            System.out.println( "Rocket collide with a player" );
+            mRockets.remove( rk );
+            createExplosion( rk.x, rk.y );
+            collide = true;
+            break;
           }
-
-          // In any case, remove rocket and create explosion
-          System.out.println( "Rocket collide with a player" );
-          mRockets.remove( rk );
-          createExplosion( rk.x, rk.y );
-          continue rocket; // LOL goto
         }
-      }
 
-      // NOTE continue statement, above
-      // If no player collisions, check vs walls...
-      // Collision vs walls
-      for (Region r : mRegions) {
-        if (r.checkForCollision( (float)rk.x, (float)rk.y, 16 )) {
-          mRockets.remove( rk );
-          createExplosion( rk.x, rk.y );
-          break;
+        // If no player collisions, check vs walls...
+        // Collision vs walls
+        if(!collide) {
+          for (Region r : mRegions) {
+            if (r.checkForCollision( (float)rk.x, (float)rk.y, 16 )) {
+              mRockets.remove( rk );
+              createExplosion( rk.x, rk.y );
+              break;
+            }
+          }
         }
       }
     }
@@ -227,7 +234,7 @@ public class World {
     Rocket rk = new Rocket( owner, x, y, vx, vy );
     mRockets.add( rk );
     Sounds.rocket.play();
-    if (CarGame.multiplayerMode)
+    if (CarGame.multiplayerMode && owner == mPlayer)
       mGame.getClient().sendRocket( rk );
   }
 
@@ -249,15 +256,22 @@ public class World {
         Rectangle rect = new Rectangle( buildingL, buildingT, BUILDING_WIDTH * TILE_SIZE,
             BUILDING_WIDTH * TILE_SIZE );
         Region region = new Region( new Polygon( rect.getPoints() ), textures[r.nextInt( 8 )], 1.0f );
-        if(r.nextBoolean()) {
-          region.setFlag( Region.MOVABLE, true );
-          if(r.nextBoolean()) 
-            region.setVelocity( 0.01f * (float)r.nextGaussian(), 0.01f  * (float)r.nextGaussian());
-          else
-            region.setRotationRate( 0.001f * (float)r.nextGaussian() );
+        if(!CarGame.multiplayerMode) {
+          if(r.nextBoolean()) {
+            region.setFlag( Region.MOVABLE, true );
+            if(r.nextBoolean()) 
+              region.setVelocity( 0.01f * (float)r.nextGaussian(), 0.01f  * (float)r.nextGaussian());
+            else
+              region.setRotationRate( 0.001f * (float)r.nextGaussian() );
+          }
         }
         addRegion( region );
       }
+      
+    }
+    //TODO This is just for demo
+    if(!CarGame.multiplayerMode){ 
+      mGame.message( "!!!MOVING REGION TEST ACTIVE!!! F3 to toggle" );
     }
 
     // Set boundaries

@@ -90,6 +90,7 @@ public class HoverCraft {
     mDeadTimeout = 0;
 
     mLives = START_LIVES;
+    mStuckCount = 0;
   }
 
   public void setBooster( int which, boolean state ) {
@@ -243,7 +244,7 @@ public class HoverCraft {
     mVX = -mVX + ndx * 2 * line_dot_vector;
     mVY = -mVY + ndy * 2 * line_dot_vector;
 
-    if (rg.hasFlag( Region.MOVABLE )) {// Movable region, must add linear and angular velocities
+    if (mWorld.movingRegions && rg.hasFlag( Region.MOVABLE )) {// Movable region, must add linear and angular velocities
       double rdvx = 0, rdvy = 0;
       double impulseF = Math.sqrt( delta );
       double magicHackF = 1.2;
@@ -353,6 +354,7 @@ public class HoverCraft {
   public boolean rocket() {
     if (mRocketTimeout > 0)
       return false;
+    
     Sounds.rocket.play();
     mWorld.createRocket( this, mX, mY, mVX + Math.cos( mAngle - Math.PI / 2 )
         * ROCKET_LAUNCH_FACTOR, mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );

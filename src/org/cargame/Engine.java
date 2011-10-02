@@ -110,7 +110,7 @@ public class Engine {
     }
 
     // Draw explosions
-    for (Explosion e : game.getWorld().getExplosions()) {
+    for (Explosion e : new ArrayList<Explosion>(game.getWorld().getExplosions())) {
       e.getImage().drawCentered( (float)e.x, (float)e.y );
     }
 

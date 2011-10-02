@@ -37,6 +37,9 @@ public class CarGame extends BasicGame {
 
   private GameContainer mContainer;
   private GameClient mGameClient;
+  
+  private int renderDelta = 0;
+  private long lastRender = 0;
 
   public CarGame() {
     super( WINDOW_TITLE );
@@ -92,6 +95,7 @@ public class CarGame extends BasicGame {
       mWorld.getCars().put( 0, mWorld.getPlayer() );
     
     player = mWorld.getPlayer();
+    lastRender = System.nanoTime() / 1000000;
   }
 
   @Override
@@ -152,6 +156,16 @@ public class CarGame extends BasicGame {
    */
   @Override
   public void render( GameContainer container, Graphics g ) throws SlickException {
+    long now = System.nanoTime() / 1000000;
+    renderDelta = (int)(now - lastRender);
+    lastRender = now;
+    
+    for(Message m:new ArrayList<Message>(mMessages)) {
+      m.life -= renderDelta;
+      if(m.life <= 0)
+        mMessages.remove( m );
+    }
+    
     Engine.render( container, g );
   }
 
@@ -215,7 +229,11 @@ public class CarGame extends BasicGame {
           break;
         case Input.KEY_F2:
           Sounds.mute = !Sounds.mute;
-          mMessages.add( new Message( "SOUNDS " + (Sounds.mute ? "OFF" : "ON") ) );
+          message( "SOUNDS " + (Sounds.mute ? "OFF" : "ON") );
+          break;
+        case Input.KEY_F3:
+          mWorld.movingRegions = !mWorld.movingRegions;
+          message( "REGION MOVEMENT " + (mWorld.movingRegions ? "ENABLED" : "FROZEN"));
           break;
         case Input.KEY_K:
           player.kill();

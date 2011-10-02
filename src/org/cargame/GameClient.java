@@ -50,8 +50,9 @@ public class GameClient extends Listener {
         mCarGame.message( msg.text + " JOINS THE GAME" );
       } else if (msg.type == Network.CONTROL_RM_PLAYER) {
         System.out.println( "Received RM_PLAYER: " + msg.value );
+        mCarGame.message( mCarGame.getWorld().getCars().get( msg.value ).getName()
+                          + " LEAVES THE GAME" );
         mCarGame.getWorld().getCars().remove( msg.value );
-        mCarGame.message( msg.text + " LEAVES THE GAME" );
       }
     } else if (object instanceof MoveMessage) {
       MoveMessage msg = (MoveMessage)object;
