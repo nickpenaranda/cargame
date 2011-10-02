@@ -155,7 +155,7 @@ public class World {
   public void checkPlayerCollision( int delta ) {
     float x = mPlayer.getX();
     float y = mPlayer.getY();
-    for (Region rg : mRegions) {
+    region: for (Region rg : mRegions) {
       if(rg.hasFlag( Region.IMPASSABLE )) {
         Polygon p = rg.getPolygon();
         float cdx = p.getCenterX() - x;
@@ -177,6 +177,7 @@ public class World {
               float n[] = p.getNormal( i );
               mPlayer.bounce( new Line(ax + n[1],ay - n[0] ,ax - n[1],ay + n[0]), rg, delta );
               Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );
+              continue region;
             }
           }
           
@@ -228,12 +229,13 @@ public class World {
     for (int i = 0; i < EXPLOSION_DENSITY; i++)
       mExplosions.add( new Explosion( x + 32 * r.nextGaussian(), y + 32 * r.nextGaussian() ) );
     mExplosions.add( new Explosion( x, y ) );
+    Sounds.death.playWorld( x, y );
   }
 
   public void createRocket( HoverCraft owner, double x, double y, double vx, double vy ) {
     Rocket rk = new Rocket( owner, x, y, vx, vy );
     mRockets.add( rk );
-    Sounds.rocket.play();
+    Sounds.rocket.playWorld( x, y );
     if (CarGame.multiplayerMode && owner == mPlayer)
       mGame.getClient().sendRocket( rk );
   }

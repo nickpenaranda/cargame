@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Random;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Input;
@@ -77,11 +78,11 @@ public class CarGame extends BasicGame {
     HoverCraft.init();
     Explosion.init();
     Rocket.init();
-    Sounds.init();
     Engine.init( this );
 
     mWorld = new World(this);
     HoverCraft.attachTo(mWorld);
+    Sounds.init( this.mWorld );
 
     if (multiplayerMode) {
       System.out.println( "MULTIPLAYER ENABLED" );
@@ -213,9 +214,8 @@ public class CarGame extends BasicGame {
           player.setBooster( HoverCraft.LEFT, true );
           break;
         case Input.KEY_Q:
-          if (multiplayerMode)
+          if (multiplayerMode && player.jammer())
             mGameClient.sendStateUpdate( Network.STATE_JAM, true );
-          player.jammer();
           break;
         case Input.KEY_E:
           player.rocket();
@@ -285,9 +285,8 @@ public class CarGame extends BasicGame {
   public void mouseClicked( int button, int x, int y, int clickCount ) {
     switch (button) {
       case 0: // Left
-        if (multiplayerMode)
+        if (multiplayerMode && player.boost())
           mGameClient.sendStateUpdate( Network.STATE_BOOST, true );
-        player.boost();
         break;
     }
   }
@@ -328,6 +327,10 @@ public class CarGame extends BasicGame {
 
   public void message( String string ) {
     mMessages.add(0, new Message(string) );
+  }
+  
+  public void message( String string, Color color ) {
+    mMessages.add(0, new Message(string, color));
   }
 
   public StringBuffer getChatBuffer() {

@@ -85,8 +85,11 @@ public class GameClient extends Listener {
               craft.setJammerEffect( 0 );
             break;
           case Network.STATE_BOOST:
-            if (msg.setting)
+            if (msg.setting) {
               craft.setBoostTimeout( HoverCraft.BOOST_TIMEOUT );
+              Sounds.boost.playWorld(craft.getX(),craft.getY());
+            }
+            break;
         }
       }
     } else if (object instanceof ChatMessage) {

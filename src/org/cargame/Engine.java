@@ -181,14 +181,16 @@ public class Engine {
     // Chat log
     int i = 0;
     for (Message m : new ArrayList<Message>( game.getMessages() )) {
+      g.setColor( m.color );
       g.drawString( m.text, 15, container.getHeight() - 45 - (i * 15) );
       ++i;
     }
 
     // Chat buffer
     if (game.chatModeEnabled()) {
+      g.setColor( Color.gray );
       g.drawString( "> " + game.getChatBuffer().toString(), 15, container.getHeight() - 30 );
-      g.fillRect( 17 + g.getFont().getWidth( "> " + game.getChatBuffer().toString() ),
+      g.fillRect( 17 + g.getFont().getWidth( "> " + game.getChatBuffer().toString() + "."),
                   container.getHeight() - 26, 2, 12 );
     }
   }

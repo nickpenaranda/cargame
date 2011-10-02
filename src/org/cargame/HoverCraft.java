@@ -179,7 +179,6 @@ public class HoverCraft {
       mVY = 0;
       // Perhaps this should be automated elsewhere
       mWorld.createExplosion( mX, mY );
-      Sounds.death.play();
     }
   }
 
@@ -347,7 +346,7 @@ public class HoverCraft {
     mVX += Math.cos( mAngle - Math.PI / 2 ) * IMPULSE_FORCE;
     mVY += Math.sin( mAngle - Math.PI / 2 ) * IMPULSE_FORCE;
     mBoostTimeout = BOOST_TIMEOUT;
-    Sounds.boost.play();
+    Sounds.boost.playWorld(mX, mY);
     return true;
   }
 
@@ -355,7 +354,7 @@ public class HoverCraft {
     if (mRocketTimeout > 0)
       return false;
     
-    Sounds.rocket.play();
+    //Sounds.rocket.play();
     mWorld.createRocket( this, mX, mY, mVX + Math.cos( mAngle - Math.PI / 2 )
         * ROCKET_LAUNCH_FACTOR, mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
 
@@ -369,7 +368,7 @@ public class HoverCraft {
 
     mJammerTimeout = JAMMER_TIMEOUT;
     mJammerEffect = JAMMER_EFFECT;
-    Sounds.cloak.play();
+    Sounds.cloak.playWorld( mX, mY );
     return true;
   }
 
