@@ -21,7 +21,7 @@ public class Car {
   private static final double BASE_THRUSTER_FORCE = 0.005;
   private static final double MIN_SPEED_BEFORE_STICTION = BASE_THRUSTER_FORCE / 2;
   //private static final double FRICTION = 0.99937;
-  private static final double FRICTION = .998;
+  private static final double FRICTION = .996;
   private static final double WALL_ELASTICITY = 0.4;
   private static final double DISTANCE_INTEGRAL_MILLIS = 500;
 
@@ -31,6 +31,7 @@ public class Car {
   public static final int JAMMER_TIMEOUT = 30000;
   public static final int JAMMER_EFFECT = 10000;
   public static final int BOOST_TIMEOUT = 2500;
+  public static final int BOOST_EFFECT = 500;
   public static final int ROCKET_TIMEOUT = 500;
 
   private static final double ROCKET_LAUNCH_FACTOR = 2.5;
@@ -61,6 +62,7 @@ public class Car {
   private int mBoostTimeout;
   private int mJammerTimeout;
   private int mRocketTimeout;
+  private int mBoostEffect;
   private int mJammerEffect;
 
   private double mDistanceLastNSecs;
@@ -108,6 +110,7 @@ public class Car {
     mJammerTimeout -= delta;
     mRocketTimeout -= delta;
     mJammerEffect -= delta;
+    mBoostEffect -= delta;
     if (mDeadTimeout >= 0)
       mDeadTimeout -= delta;
 
@@ -119,6 +122,8 @@ public class Car {
       mJammerTimeout = 0;
     if (mJammerEffect < 0)
       mJammerEffect = 0;
+    if (mBoostEffect < 0)
+      mJammerEffect = 0;
 
     mPrevX = mX;
     mPrevY = mY;
@@ -126,19 +131,22 @@ public class Car {
     mX += mVX * delta;
     mY += mVY * delta;
 
-    // Apply booster force -- non exclusive to avoid arbitrary "preference"
-    if (mThrusters[TOP])
-      mVY += BASE_THRUSTER_FORCE * delta;
-    if (mThrusters[BOTTOM])
-      mVY -= BASE_THRUSTER_FORCE * delta;
-    if (mThrusters[RIGHT])
-      mVX -= BASE_THRUSTER_FORCE * delta;
-    if (mThrusters[LEFT])
-      mVX += BASE_THRUSTER_FORCE * delta;
+    // No friction nor thrusters while under boost effect
+    if(mBoostEffect <= 0) {
+      // Apply booster force -- non exclusive to avoid arbitrary "preference"
+      if (mThrusters[TOP])
+        mVY += BASE_THRUSTER_FORCE * delta;
+      if (mThrusters[BOTTOM])
+        mVY -= BASE_THRUSTER_FORCE * delta;
+      if (mThrusters[RIGHT])
+        mVX -= BASE_THRUSTER_FORCE * delta;
+      if (mThrusters[LEFT])
+        mVX += BASE_THRUSTER_FORCE * delta;
 
-    mVX *= Math.pow( FRICTION, delta );
-    mVY *= Math.pow( FRICTION, delta );
-
+      mVX *= Math.pow( FRICTION, delta );
+      mVY *= Math.pow( FRICTION, delta );
+    }
+    
     if (Math.abs( mVX ) < MIN_SPEED_BEFORE_STICTION)
       mVX = 0;
     if (Math.abs( mVY ) < MIN_SPEED_BEFORE_STICTION)
@@ -342,6 +350,7 @@ public class Car {
     mVX += Math.cos( mAngle - Math.PI / 2 ) * IMPULSE_FORCE;
     mVY += Math.sin( mAngle - Math.PI / 2 ) * IMPULSE_FORCE;
     mBoostTimeout = BOOST_TIMEOUT;
+    mBoostEffect = BOOST_EFFECT;
     Sounds.boost.playWorld(mX, mY);
     return true;
   }
