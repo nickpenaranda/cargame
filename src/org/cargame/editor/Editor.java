@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.lwjgl.input.Keyboard;
 import org.newdawn.slick.AngelCodeFont;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
@@ -19,8 +18,6 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
-import org.newdawn.slick.geom.Shape;
-
 import org.cargame.CarGame;
 import org.cargame.Region;
 
@@ -32,38 +29,44 @@ public class Editor extends BasicGame {
 
   public static final String FONT_META = "./gfx/fonts/std14.fnt";
   public static final String FONT_IMG = "./gfx/fonts/std14_0.tga";
+  public static final String FONTBOLD_META = "./gfx/fonts/std14bold.fnt";
+  public static final String FONTBOLD_IMG = "./gfx/fonts/std14bold_0.tga";
 
-  private Font font;
+  public static final Color curRegionBG = new Color(32,32,32);
+  Font font,fontBold;
 
   public static final String TEXTURE_PATH = "./gfx/textures";
   public static final int MESSAGE_DURATION = 5000;
 
-  private static final String HELP_TEXT = "F12: Exit RMB: Pan [,]: Adj. Snap -,+: Zoom";
+  static final String HELP_TEXT = "F12:Exit RMB:Pan [,]:Adj. Snap -,+:Zoom Arrows:Adj. Tex";
 
-  private float viewX = -WINDOW_WIDTH / 2, viewY = -WINDOW_HEIGHT / 2, cursorX = 0, cursorY = 0;
-  private float zoom = 1.0f;
-  private int snapSize = 32;
-  private boolean shift, control;
+  float viewX = -WINDOW_WIDTH / 2, viewY = -WINDOW_HEIGHT / 2, cursorX = 0, cursorY = 0;
+  float zoom = 1.0f;
+  int snapSize = 32;
+  boolean shift, control;
 
-  private ArrayList<Region> regions;
-  private LinkedList<Message> messages;
-  private Region curRegion;
-  private Image curTexture;
-  private String curTexKey;
-  
-  private Polygon pendingShape;
+  ArrayList<Region> regions;
+  LinkedList<Message> messages;
+  Region curRegion;
+  Image curTexture;
+  String curTexKey;
+  int curFlags;
 
-  private TreeMap<String, Image> textures;
-  private ArrayList<String> texKeys;
-  
-  private GameContainer container;
-  private String filename;
-  
+  Polygon pendingShape;
+
+  TreeMap<String, Image> textures;
+  ArrayList<String> texKeys;
+
+  GameContainer container;
+  String filename;
+
   static class Message {
+
     String text;
     Color color;
     int life;
-    public Message(String text,Color color) {
+
+    public Message(String text, Color color) {
       this.text = text;
       this.color = color;
       this.life = MESSAGE_DURATION;
@@ -107,10 +110,10 @@ public class Editor extends BasicGame {
 
   }
 
-  private EditorFunc editorFunc = EditorFunc.REGIONS;
-  private MouseFunc mouseFunc = MouseFunc.NONE;
-  private boolean snap = false;
-  private float curScale = 1.0f;
+  EditorFunc editorFunc = EditorFunc.REGIONS;
+  MouseFunc mouseFunc = MouseFunc.NONE;
+  boolean snap = true, grid = true;
+  float curScaleX = 1.0f, curScaleY = 1.0f;
 
   public Editor() {
     super( WINDOW_TITLE );
@@ -123,7 +126,7 @@ public class Editor extends BasicGame {
     messages = new LinkedList<Message>();
     textures = new TreeMap<String, Image>();
     texKeys = new ArrayList<String>();
-    
+
     System.out.println( "Loading textures:" );
     File textureDir = new File( TEXTURE_PATH );
 
@@ -153,19 +156,21 @@ public class Editor extends BasicGame {
         }
       }
     }
-    
+
     curTexture = textures.firstEntry().getValue();
     curTexKey = textures.firstKey();
-    
+    curFlags = Region.IMPASSABLE;
+
     font = new AngelCodeFont( FONT_META, FONT_IMG );
+    fontBold = new AngelCodeFont( FONTBOLD_META, FONTBOLD_IMG );
   }
 
   @Override
   public void update( GameContainer container, int delta ) throws SlickException {
-    for(Message m:new LinkedList<Message>(messages)) {
+    for (Message m : new LinkedList<Message>( messages )) {
       m.life -= delta;
-      if(m.life <= 0)
-        messages.remove(m);
+      if (m.life <= 0)
+        messages.remove( m );
     }
   }
 
@@ -179,65 +184,132 @@ public class Editor extends BasicGame {
     float adjusted_win_width = WINDOW_WIDTH / zoom;
     float adjusted_win_height = WINDOW_HEIGHT / zoom;
 
-    g.pushTransform(); {
+    g.pushTransform();
+    {
       g.scale( zoom, zoom );
-      g.pushTransform(); {
+      g.pushTransform();
+      {
         g.translate( -viewX, -viewY );
 
         // Grid
-        g.setColor( Color.darkGray );
-        for (float x = sx; x < viewX + adjusted_win_width; x += snapSize)
-          g.drawLine( x, viewY, x, viewY + adjusted_win_height );
+        if (grid) {
+          g.setColor( Color.darkGray );
+          for (float x = sx; x < viewX + adjusted_win_width; x += snapSize)
+            g.drawLine( x, viewY, x, viewY + adjusted_win_height );
 
-        for (float y = sy; y < viewY + adjusted_win_height; y += snapSize)
-          g.drawLine( viewX, y, viewX + adjusted_win_width, y );
-
-
+          for (float y = sy; y < viewY + adjusted_win_height; y += snapSize)
+            g.drawLine( viewX, y, viewX + adjusted_win_width, y );
+        }
+        // Existing geometry
+        g.setColor( Color.white );
         for (Region region : getWallsWithin( clip )) {
-          if (region == curRegion)
-            g.setColor( Color.cyan );
-          else
-            g.setColor( Color.white );
-  
-          g.pushTransform(); {
+          g.pushTransform();
+          {
             g.translate( region.getX(), region.getY() );
             g.rotate( region.getPivotX(), region.getPivotY(),
                       (float)(region.getTheta() * 180 / Math.PI) );
-            g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScale(), region
-                .getScale(), true );
-          } g.popTransform();
-        }
-        
-        if(pendingShape != null) {
-          g.setColor( Color.yellow );
-          for(int i=0;i<pendingShape.getPointCount();++i) {
-            float p[] = pendingShape.getPoint( i );
-            g.drawRect(p[0]-1,p[1]-1,2,2);
+            g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScaleX(), region
+                .getScaleY(), true );
+            if(region == curRegion) {
+              g.setColor( Color.red );
+              g.draw( region.getGraphicsPolygon() );
+              g.setColor( Color.white );
+            }
           }
+          g.popTransform();
+        }
+
+        // Pending
+        if (pendingShape != null) {
+          g.setColor( Color.yellow );
+          for (int i = 0; i < pendingShape.getPointCount(); ++i) {
+            float p[] = pendingShape.getPoint( i );
+            g.drawRect( p[0] - 1, p[1] - 1, 2, 2 );
+          }
+          g.setColor( Color.white );
+          g.texture( pendingShape, curTexture, curScaleX, curScaleY, true );
           g.setColor( Color.red );
           g.draw( pendingShape );
         }
-      } g.popTransform();
+      }
+      g.popTransform();
 
-      g.pushTransform(); {
+      g.pushTransform();
+      {
         g.translate( -viewX, -viewY );
 
         // Cursor
         g.setColor( Color.cyan );
         g.drawLine( cursorX - 4, cursorY - 4, cursorX + 4, cursorY + 4 );
         g.drawLine( cursorX - 4, cursorY + 4, cursorX + 4, cursorY - 4 );
-      } g.popTransform();
-    } g.popTransform();
+      }
+      g.popTransform();
+    }
+    g.popTransform();
 
-    // Current texture
+    // Current REGION texture, flags
+    if(curRegion != null) {
+      g.setColor( curRegionBG );
+      g.fillRoundRect( WINDOW_WIDTH - 170, WINDOW_HEIGHT - 252, 160, 115, 3 );
+      g.setColor( Color.gray );
+      g.drawRoundRect( WINDOW_WIDTH - 170, WINDOW_HEIGHT - 252, 160, 115, 3 );
+      g.setColor( Color.white );
+      g.drawString( "Reg. tex", WINDOW_WIDTH - 80, WINDOW_HEIGHT - 250 );
+      g.drawString( curRegion.getTexKey(), WINDOW_WIDTH - 80, WINDOW_HEIGHT - 235 );
+      g.drawString( curRegion.getScaleX() + " x " + curRegion.getScaleY(), WINDOW_WIDTH - 80, WINDOW_HEIGHT - 151 );
+      Rectangle texView = new Rectangle( WINDOW_WIDTH - 80, WINDOW_HEIGHT - 220, 64, 64 );
+      g.texture( texView, curRegion.getTexture(), curRegion.getScaleX(), curRegion.getScaleY(), true );
+      g.draw( texView ); // Border for contrast
+  
+      g.setFont( fontBold );
+      if (curRegion.hasFlag( Region.IMPASSABLE )) {
+        g.setColor( Color.red );
+        g.drawString( "IMPASSABLE", WINDOW_WIDTH - 85 - g.getFont().getWidth( "IMPASSABLE" ),
+                      WINDOW_HEIGHT - 220 );
+      }
+      if (curRegion.hasFlag( Region.OVERHEAD )) {
+        g.setColor( Color.blue );
+        g.drawString( "OVERHEAD", WINDOW_WIDTH - 85 - g.getFont().getWidth( "OVERHEAD" ),
+                      WINDOW_HEIGHT - 205 );
+      }
+      if (curRegion.hasFlag( Region.MOVABLE )) {
+        g.setColor( Color.green );
+        g.drawString( "MOVABLE", WINDOW_WIDTH - 85 - g.getFont().getWidth( "MOVABLE" ),
+                      WINDOW_HEIGHT - 190 );
+      }
+    }
+    
+    g.setFont( font );
+    
+    // Current texture, flags
     g.setColor( Color.white );
     g.drawString( "Cur. tex", WINDOW_WIDTH - 80, WINDOW_HEIGHT - 130 );
-    g.drawString( curTexKey + " " + curScale, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 115 );
-    Rectangle texView = new Rectangle(WINDOW_WIDTH - 80, WINDOW_HEIGHT - 100,64,64);
-    g.texture( texView, curTexture,curScale,curScale,true);
+    g.drawString( curTexKey, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 115 );
+    g.drawString( curScaleX + " x " + curScaleY, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 31 );
+    Rectangle texView = new Rectangle( WINDOW_WIDTH - 80, WINDOW_HEIGHT - 100, 64, 64 );
+    g.texture( texView, curTexture, curScaleX, curScaleY, true );
     g.draw( texView ); // Border for contrast
+
+    g.setFont( fontBold );
+    if ((curFlags & Region.IMPASSABLE) == Region.IMPASSABLE) {
+      g.setColor( Color.red );
+      g.drawString( "IMPASSABLE", WINDOW_WIDTH - 85 - g.getFont().getWidth( "IMPASSABLE" ),
+                    WINDOW_HEIGHT - 100 );
+    }
+    if ((curFlags & Region.OVERHEAD) == Region.OVERHEAD) {
+      g.setColor( Color.blue );
+      g.drawString( "OVERHEAD", WINDOW_WIDTH - 85 - g.getFont().getWidth( "OVERHEAD" ),
+                    WINDOW_HEIGHT - 85 );
+    }
+    if ((curFlags & Region.MOVABLE) == Region.MOVABLE) {
+      g.setColor( Color.green );
+      g.drawString( "MOVABLE", WINDOW_WIDTH - 85 - g.getFont().getWidth( "MOVABLE" ),
+                    WINDOW_HEIGHT - 70 );
+    }
     
+    g.setFont( font );
     // Persistent help
+    g.setColor( Color.white );
     g.drawString( HELP_TEXT, 15, WINDOW_HEIGHT - 20 );
 
     // Contextual info and cues
@@ -254,6 +326,9 @@ public class Editor extends BasicGame {
 
     String snapinfo = snap ? String.format( "Snap: %d", snapSize ) : "Snap: OFF";
     g.drawString( snapinfo, WINDOW_WIDTH - 15 - g.getFont().getWidth( snapinfo ), 30 );
+    
+    String zoominfo = String.format( "Zoom: %.0f%%", (1 / zoom) * 100 );
+    g.drawString( zoominfo, WINDOW_WIDTH - 15- g.getFont().getWidth( zoominfo), 45);
   }
 
   public List<Region> getWallsWithin( Rectangle rect ) {
@@ -283,6 +358,9 @@ public class Editor extends BasicGame {
       case Input.KEY_S:
         snap = !snap;
         break;
+      case Input.KEY_G:
+        grid = !grid;
+        break;
       case Input.KEY_LBRACKET:
         if (snapSize > 8)
           snapSize = snapSize >> 1;
@@ -290,42 +368,123 @@ public class Editor extends BasicGame {
       case Input.KEY_RBRACKET:
         snapSize = snapSize << 1;
         break;
-      case Input.KEY_MINUS:
-        zoom -= 0.1f;
+      case Input.KEY_MINUS: // Zoom out
+        if(zoom > 0.1f) {
+          zoom -= 0.1f;
+          viewX = cursorX - (WINDOW_WIDTH / 2) / zoom;
+          viewY = cursorY - (WINDOW_HEIGHT / 2) / zoom;
+        }
         break;
-      case Input.KEY_EQUALS:
+      case Input.KEY_EQUALS: // Zoom in
         zoom += 0.1f;
+        viewX = cursorX - (WINDOW_WIDTH / 2) / zoom;
+        viewY = cursorY - (WINDOW_HEIGHT / 2) / zoom;
         break;
+      case Input.KEY_0:
+        zoom = 1.0f;
+        viewX = cursorX - (WINDOW_WIDTH / 2) / zoom;
+        viewY = cursorY - (WINDOW_HEIGHT / 2) / zoom;
+        break;
+        
       case Input.KEY_TAB:
         editorFunc = EditorFunc.next( editorFunc );
         break;
-      case Input.KEY_UP:
-        curScale++;
-        break;
       case Input.KEY_DOWN:
-        if(curScale > 1) curScale--;
+        if (curRegion != null) {
+          if (curRegion.getScaleY() > 1)
+            curRegion.setScale( -1 , curRegion.getScaleY() - 1 );
+        } else {
+          if (curScaleY > 1)
+            curScaleY--;
+        }
+        break;
+      case Input.KEY_UP:
+        if(curRegion != null)
+          curRegion.setScale( -1, curRegion.getScaleY() + 1);
+        else
+          curScaleY++;
         break;
       case Input.KEY_LEFT:
-        prevTex();
+        if (curRegion != null) {
+          if (curRegion.getScaleX() > 1)
+            curRegion.setScale( curRegion.getScaleX() - 1, -1 );
+        } else {
+          if (curScaleX > 1)
+            curScaleX--;
+        }
         break;
       case Input.KEY_RIGHT:
+        if(curRegion != null)
+          curRegion.setScale( curRegion.getScaleX() + 1, -1 );
+        else
+          curScaleX++;
+        break;
+      case Input.KEY_COMMA:
+        prevTex();
+        break;
+      case Input.KEY_PERIOD:
         nextTex();
         break;
+      case Input.KEY_C:
+        if (curRegion != null) {
+          curTexture = curRegion.getTexture();
+          curScaleX = curRegion.getScaleX();
+          curScaleY = curRegion.getScaleY();
+          curFlags = curRegion.getFlags();
+        }
+        break;
+      case Input.KEY_V:
+        if (curRegion != null) {
+          curRegion.setTexture(curTexture);
+          curRegion.setScale(curScaleX,curScaleY);
+          curRegion.setRawFlags(curFlags);
+        }
+      case Input.KEY_1:
+        curFlags ^= Region.IMPASSABLE;
+        break;
+      case Input.KEY_2:
+        curFlags ^= Region.OVERHEAD;
+        break;
+      case Input.KEY_3:
+        curFlags ^= Region.MOVABLE;
+
     }
   }
 
   private void nextTex() {
-    int index = texKeys.indexOf( curTexKey );
-    if(index < texKeys.size() - 1)
-      curTexKey = texKeys.get( index + 1 );
-    else
-      curTexKey = texKeys.get( 0 );
-    curTexture = textures.get( curTexKey );
+    if (curRegion != null) {
+      int index = texKeys.indexOf( curRegion.getTexKey() );
+      if (index < texKeys.size() - 1)
+        curRegion.setTexKey( texKeys.get( index + 1 ) );
+      else
+        curRegion.setTexKey( texKeys.get( 0 ) );
+      curRegion.setTexture( textures.get( curRegion.getTexKey() ) );
+    } else {
+      int index = texKeys.indexOf( curTexKey );
+      if (index < texKeys.size() - 1)
+        curTexKey = texKeys.get( index + 1 );
+      else
+        curTexKey = texKeys.get( 0 );
+      curTexture = textures.get( curTexKey );
+    }
   }
 
   private void prevTex() {
-    // TODO Auto-generated method stub
-    
+    if (curRegion != null) {
+      int index = texKeys.indexOf( curRegion.getTexKey() );
+      if (index > 0)
+        curRegion.setTexKey( texKeys.get( index - 1 ) );
+      else
+        curRegion.setTexKey( texKeys.get( texKeys.size() - 1 ) );
+      curRegion.setTexture( textures.get( curRegion.getTexKey() ) );
+    } else {
+      int index = texKeys.indexOf( curTexKey );
+      if (index > 0)
+        curTexKey = texKeys.get( index - 1 );
+      else
+        curTexKey = texKeys.get( texKeys.size() - 1 );
+      curTexture = textures.get( curTexKey );
+    }
   }
 
   @Override
@@ -353,20 +512,36 @@ public class Editor extends BasicGame {
         break;
     }
   }
-
   private void handleClick( int button ) {
     switch (editorFunc) {
       case REGIONS:
-        if (button == 0 && !shift && !control) {
+        if (button == 0 && shift && !control) { // Add/move points
           if (pendingShape == null) {
             pendingShape = new Polygon();
           }
           pendingShape.addPoint( cursorX, cursorY );
-        } else if (button == 0 && !shift && control) {
+        } else if (button == 0 && !shift && control) { // Delete pending or delete current region
           pendingShape = null;
-        } else if (button == 0 && shift && !control) {
-          Region region = new Region(pendingShape,curTexture,curScale);
-          regions.add( region );
+          if(curRegion != null && curRegion.getPolygon().contains( cursorX,cursorY )) {
+            regions.remove( curRegion );
+            curRegion = null;
+          }
+        } else if (button == 0 && !shift && !control) { // Complete or select
+          if(pendingShape != null) {
+            Region region = new Region( pendingShape, curTexture, curScaleX, curScaleY, curFlags );
+            region.setTexKey( curTexKey );
+            regions.add( region );
+          } else {
+            for(Region region:regions) {
+              if(region != curRegion 
+                  && (region.getPolygon().contains( cursorX,cursorY ) 
+                      || region.getPolygon().includes( cursorX, cursorY ))) {
+                curRegion = region;
+                return;
+              }
+            }
+            curRegion = null;
+          }
           pendingShape = null;
         }
         break;

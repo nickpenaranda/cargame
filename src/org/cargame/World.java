@@ -257,7 +257,7 @@ public class World {
         int buildingT = ((j - offset) * cityBlockWidth + ROAD_WIDTH) * TILE_SIZE;
         Rectangle rect = new Rectangle( buildingL, buildingT, BUILDING_WIDTH * TILE_SIZE,
             BUILDING_WIDTH * TILE_SIZE );
-        Region region = new Region( new Polygon( rect.getPoints() ), textures[r.nextInt( 8 )], 1.0f );
+        Region region = new Region( new Polygon( rect.getPoints() ), textures[r.nextInt( 8 )], 1.0f, 1.0f);
         if(!CarGame.multiplayerMode) {
           if(r.nextBoolean()) {
             region.setFlag( Region.MOVABLE, true );
@@ -373,7 +373,7 @@ public class World {
       g.pushTransform();
         g.translate( region.getX(), region.getY() );
         g.rotate( region.getPivotX(), region.getPivotY(), (float)(region.getTheta() * 180 / Math.PI) );
-        g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScale() , region.getScale(),
+        g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScaleX() , region.getScaleY(),
                    true );
       g.popTransform();
     }

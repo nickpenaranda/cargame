@@ -12,24 +12,26 @@ public class Region {
   
   protected Polygon mPolygon, mGraphicsPolygon;
   private Image mTexture;
-  private float mScale;
+  private float mScaleX,mScaleY;
   private int mFlags;
   private float mPivotX, mPivotY, mTheta, mX, mY;
   private float mVX, mVY, mDTheta;
+  private String mTexKey;
 
   // Default regions are impassable
-  public Region(Polygon polygon, Image texture, float scale) {
-    this(polygon,texture,scale,IMPASSABLE,polygon.getCenterX(),polygon.getCenterY());
+  public Region(Polygon polygon, Image texture, float scaleX, float scaleY) {
+    this(polygon,texture,scaleX,scaleY,IMPASSABLE,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  public Region(Polygon polygon, Image texture, float scale, int flags) {
-    this(polygon,texture,scale,flags,polygon.getCenterX(),polygon.getCenterY());
+  public Region(Polygon polygon, Image texture, float scaleX, float scaleY, int flags) {
+    this(polygon,texture,scaleX,scaleY,flags,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  Region(Polygon polygon, Image texture, float scale, int flags, float pivotX, float pivotY) {
+  Region(Polygon polygon, Image texture, float scaleX, float scaleY, int flags, float pivotX, float pivotY) {
     this.mPolygon = polygon;
     this.mTexture = texture;
-    this.mScale = scale;
+    this.mScaleX = scaleX;
+    this.mScaleY = scaleY;
     this.mFlags = flags;
     this.mPivotX = pivotX;
     this.mPivotY = pivotY;
@@ -75,10 +77,13 @@ public class Region {
     return mTexture;
   }
 
-  public float getScale() {
-    return(mScale);
+  public float getScaleX() {
+    return(mScaleX);
   }
 
+  public float getScaleY() {
+    return(mScaleY);
+  }
   /*
    * General collision method, useful for checking collision against small objects 
    */
@@ -169,5 +174,31 @@ public class Region {
 
   public Polygon getGraphicsPolygon() {
     return mGraphicsPolygon;
+  }
+
+  public int getFlags() {
+    return mFlags;
+  }
+  
+  public void setRawFlags( int flags ) {
+    mFlags = flags;
+  }
+
+  public void setTexture( Image texture) {
+    mTexture = texture;
+  }
+
+  public void setScale( float sx, float sy ) {
+    if(sx > 0) mScaleX = sx;
+    if(sy > 0) mScaleY = sy;
+  }
+
+  // Currently only useful in level editor
+  public String getTexKey() {
+    return mTexKey;
+  }
+
+  public void setTexKey(String key) {
+    mTexKey = key;
   }
 }
