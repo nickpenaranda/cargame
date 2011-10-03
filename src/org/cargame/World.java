@@ -48,11 +48,11 @@ public class World {
 
     // TODO Put tiles in a Map, access by name (e.g., wall1)
     try {
-      mTiles[0] = new Image( "gfx/road.png" );
-      mTiles[1] = new Image( "gfx/wall1.png" );
-      mTiles[2] = new Image( "gfx/wall2.png" );
-      mTiles[3] = new Image( "gfx/wall3.png" );
-      mTiles[4] = new Image( "gfx/wall4.png" );
+      mTiles[0] = new Image( "gfx/textures/road.png" );
+      mTiles[1] = new Image( "gfx/textures/wall1.png" );
+      mTiles[2] = new Image( "gfx/textures/wall2.png" );
+      mTiles[3] = new Image( "gfx/textures/wall3.png" );
+      mTiles[4] = new Image( "gfx/textures/wall4.png" );
     } catch (SlickException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
