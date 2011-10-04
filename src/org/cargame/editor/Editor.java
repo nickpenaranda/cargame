@@ -19,6 +19,7 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
+import org.newdawn.slick.geom.Transform;
 import org.cargame.CarGame;
 import org.cargame.Region;
 
@@ -56,9 +57,11 @@ public class Editor extends BasicGame {
   int maxTexPage;
 
   float viewX = -WINDOW_WIDTH / 2, viewY = -WINDOW_HEIGHT / 2, cursorX = 0, cursorY = 0;
+  float dragX = 0,dragY = 0, originX = 0, originY = 0, cursorOriginX = 0, cursorOriginY = 0;
   float zoom = 1.0f;
   int snapSize = 32;
   boolean shift, control;
+  boolean autoScale = true;
 
   ArrayList<Region> regions;
   LinkedList<Message> messages;
@@ -88,7 +91,7 @@ public class Editor extends BasicGame {
   }
 
   static enum MouseFunc {
-    NONE(""), PAN("PAN"), MOVE("MOVE");
+    NONE(""), PAN("PAN"), MOVEVERT("MOVE VERTEX"), MOVEREGION("MOVE REGION");
 
     String label;
 
@@ -99,7 +102,7 @@ public class Editor extends BasicGame {
   }
 
   static enum EditorFunc {
-    REGIONS("REGIONS", "LMB:Add Ctrl+LMB:Finish Shift+LMB:Move"),
+    REGIONS("REGIONS", "LMB:Select  Shift+LMB:Add/move  Ctrl+LMB:Delete"),
     ITEMS("ITEMS", "???"),
     TEXTURES("TEXTURES", "LMB:Select  W,S:Page");
 
@@ -132,6 +135,7 @@ public class Editor extends BasicGame {
   MouseFunc mouseFunc = MouseFunc.NONE;
   boolean snap = true, grid = true;
   float curScaleX = 1.0f, curScaleY = 1.0f;
+  private boolean texOutOfBounds = false;
 
   public Editor() {
     super( WINDOW_TITLE );
@@ -196,7 +200,7 @@ public class Editor extends BasicGame {
   @Override
   public void render( GameContainer container, Graphics g ) throws SlickException {
     g.setFont( font );
-    Rectangle clip = new Rectangle( viewX - WINDOW_HALFWIDTH / zoom, viewY - WINDOW_HALFHEIGHT / zoom, WINDOW_WIDTH / zoom, WINDOW_HEIGHT / zoom);
+    Rectangle clip = new Rectangle( viewX , viewY, WINDOW_WIDTH / zoom, WINDOW_HEIGHT / zoom);
 
     float sx = (float)(snapSize * Math.ceil( viewX / (float)snapSize ));
     float sy = (float)(snapSize * Math.ceil( viewY / (float)snapSize ));
@@ -227,7 +231,7 @@ public class Editor extends BasicGame {
             g.translate( region.getX(), region.getY() );
             g.rotate( region.getPivotX(), region.getPivotY(),
                       (float)(region.getTheta() * 180 / Math.PI) );
-            g.texture( region.getGraphicsPolygon(), textures.get(region.getTexKey() ), region.getScaleX(), region
+            g.texture( region.getRealPolygon(), textures.get(region.getTexKey() ), region.getScaleX(), region
                 .getScaleY(), true );
           }
           g.popTransform();
@@ -237,7 +241,7 @@ public class Editor extends BasicGame {
         if(curRegion != null) {
           g.pushTransform(); {
             g.setColor( Color.red );
-            g.draw( curRegion.getGraphicsPolygon() );
+            g.draw( curRegion.getRealPolygon() );
           } g.popTransform();
         }
 
@@ -249,7 +253,14 @@ public class Editor extends BasicGame {
             g.drawRect( p[0] - 1, p[1] - 1, 2, 2 );
           }
           g.setColor( Color.white );
-          g.texture( pendingShape, textures.get( curTexKey ), curScaleX, curScaleY, true );
+          if(!autoScale)
+            g.texture( pendingShape, textures.get( curTexKey ), curScaleX, curScaleY, true );
+          else {
+            float scaleX = pendingShape.getWidth() / 64;
+            float scaleY = pendingShape.getHeight() / 64;
+            g.texture( pendingShape, textures.get( curTexKey ), scaleX, scaleY, true );
+          }
+            
           g.setColor( Color.red );
           g.draw( pendingShape );
         }
@@ -272,7 +283,6 @@ public class Editor extends BasicGame {
     // Texture selector
     if(editorFunc == EditorFunc.TEXTURES) {
       int i=0, j=0;
-      int pageYOff = texPage * texColSize * (64 + texWinPadding + 15);
       
       g.setColor( curRegionBG );
       g.fillRoundRect( 10, 50, texWinWidth, texWinHeight, 3);
@@ -360,7 +370,11 @@ public class Editor extends BasicGame {
     g.setColor( Color.white );
     g.drawString( "Cur. tex", WINDOW_WIDTH - 80, WINDOW_HEIGHT - 130 );
     g.drawString( curTexKey, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 115 );
-    g.drawString( curScaleX + " x " + curScaleY, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 31 );
+    if(!autoScale)
+      g.drawString( curScaleX + " x " + curScaleY, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 31 );
+    else
+      g.drawString( "AUTOSCALE", WINDOW_WIDTH - 80, WINDOW_HEIGHT - 31 );
+    
     Rectangle texView = new Rectangle( WINDOW_WIDTH - 80, WINDOW_HEIGHT - 100, 64, 64 );
     g.texture( texView, textures.get(curTexKey), curScaleX, curScaleY, true );
     g.draw( texView ); // Border for contrast
@@ -438,6 +452,9 @@ public class Editor extends BasicGame {
             texPage = maxTexPage;
         }
         break;
+      case Input.KEY_A:
+        autoScale = !autoScale;
+        break;
       case Input.KEY_S:
         if (editorFunc == EditorFunc.TEXTURES) {
           if(texPage < maxTexPage)
@@ -482,7 +499,7 @@ public class Editor extends BasicGame {
         if (curRegion != null) {
           if (curRegion.getScaleY() > 1)
             curRegion.setScale( -1 , curRegion.getScaleY() - 1 );
-        } else {
+        } else if(!autoScale) {
           if (curScaleY > 1)
             curScaleY--;
         }
@@ -490,7 +507,7 @@ public class Editor extends BasicGame {
       case Input.KEY_UP:
         if(curRegion != null)
           curRegion.setScale( -1, curRegion.getScaleY() + 1);
-        else
+        else if(!autoScale)
           curScaleY++;
         break;
       case Input.KEY_LEFT:
@@ -615,27 +632,76 @@ public class Editor extends BasicGame {
     switch (editorFunc) {
       case REGIONS:
         if (button == 0 && shift && !control) { // Add/move points
-          if (pendingShape == null) {
-            pendingShape = new Polygon();
+          if (curRegion == null) {
+            if (pendingShape == null) {
+              pendingShape = new Polygon();
+            }
+            if(!pendingShape.hasVertex( cursorX, cursorY ))
+                pendingShape.addPoint( cursorX, cursorY );
+          } else {
+            if(curRegion.getRealPolygon().hasVertex( cursorX, cursorY )) {
+              mouseFunc = MouseFunc.MOVEVERT;
+              dragX = cursorX;
+              dragY = cursorY;
+            } else if(curRegion.getRealPolygon().contains( cursorX, cursorY )) {
+              mouseFunc = MouseFunc.MOVEREGION;
+              originX = curRegion.getX();
+              originY = curRegion.getY();
+              dragX = cursorOriginX = cursorX;
+              dragY = cursorOriginY = cursorY;
+            } else {
+              curRegion.getRealPolygon().addPoint( cursorX, cursorY );
+            }
           }
-          pendingShape.addPoint( cursorX, cursorY );
         } else if (button == 0 && !shift && control) { // Delete pending or delete current region
-          pendingShape = null;
-          if(curRegion != null && curRegion.getPolygon().contains( cursorX,cursorY )) {
+          if(pendingShape != null) {
+            if(pendingShape.hasVertex( cursorX, cursorY )) {
+              int delIndex = pendingShape.indexOf( cursorX, cursorY );
+              Polygon n = new Polygon();
+              for(int i=0;i< pendingShape.getPointCount();++i) {
+                float point[] = pendingShape.getPoint( i );
+                if(i != delIndex) n.addPoint( point[0], point[1] );
+              }
+              if(pendingShape.getPointCount() == 0)
+                pendingShape = null;
+              else
+                pendingShape = n;
+            } else {
+              pendingShape = null;
+            }
+          }
+          if(curRegion != null && curRegion.getRealPolygon().hasVertex( cursorX,cursorY )) {
+            Polygon p = curRegion.getRealPolygon();
+            int delIndex = p.indexOf( cursorX, cursorY ); 
+            Polygon n = new Polygon();
+            for(int i=0;i < p.getPointCount();++i) {
+              float point[] = p.getPoint( i );
+              if(i != delIndex) n.addPoint( point[0],point[1] );
+            }
+            if(n.getWidth() == 0 || n.getHeight() == 0 || n.getPointCount() < 3) {
+              regions.remove( curRegion );
+              curRegion = null;
+            }
+            else
+              curRegion.setPolygon(n);
+          } else if (curRegion != null && curRegion.getRealPolygon().contains( cursorX, cursorY )) {
             regions.remove( curRegion );
             curRegion = null;
           }
         } else if (button == 0 && !shift && !control) { // Complete or select
-          if(pendingShape != null) {
+          if(pendingShape != null) { 
             Region region = new Region( pendingShape, curTexKey, curScaleX, curScaleY, curFlags );
+            if(autoScale) {
+              region.setScale( pendingShape.getWidth() / 64, pendingShape.getHeight() / 64 );
+            }
             region.setTexKey( curTexKey );
             regions.add( region );
           } else {
             for(Region region:regions) {
               if(region != curRegion 
-                  && (region.getPolygon().contains( cursorX,cursorY ) 
-                      || region.getPolygon().includes( cursorX, cursorY )
-                      || region.getPolygon().hasVertex( cursorX, cursorY) ) ) {
+                  && (region.getRealPolygon().contains( cursorX,cursorY ) 
+                      || region.getRealPolygon().includes( cursorX, cursorY )
+                      || region.getRealPolygon().hasVertex( cursorX, cursorY) ) ) {
                 curRegion = region;
                 return;
               }
@@ -646,14 +712,19 @@ public class Editor extends BasicGame {
         }
         break;
       case TEXTURES:
-        int index = (texColSize * texRowSize * texPage ) +
-        (texSelectY * texRowSize) + texSelectX;
-        if(index < texKeys.size()) {
-          if(curRegion != null)
-            curRegion.setTexKey( texKeys.get( index ) );
-          else
-            curTexKey = texKeys.get( index );
-            texPage = texKeys.indexOf( curTexKey ) / (texRowSize * texColSize);
+        if(!texOutOfBounds) {
+          int index = (texColSize * texRowSize * texPage ) +
+          (texSelectY * texRowSize) + texSelectX;
+          if(index < texKeys.size()) {
+            if(curRegion != null) {
+              curRegion.setTexKey( texKeys.get( index ) );
+            } else {
+              curTexKey = texKeys.get( index );
+              texPage = texKeys.indexOf( curTexKey ) / (texRowSize * texColSize);
+            }
+          }
+        } else {
+          editorFunc = EditorFunc.REGIONS;
         }
         break;
     }
@@ -663,12 +734,16 @@ public class Editor extends BasicGame {
   public void mouseMoved( int oldx, int oldy, int newx, int newy ) {
     switch(editorFunc) {
       case TEXTURES:
-        if(newx - texSelectLeft < texWinWidth - 10)
+        if(newx - texSelectLeft > texWinWidth - 10 || newy - texSelectTop > texWinHeight - 15)
+          texOutOfBounds = true;
+        else
+          texOutOfBounds = false;
+        if(!texOutOfBounds ) {
           texSelectX = 
             Math.round( (newx - texSelectLeft) / (64 + texWinPadding) );
-        if(newy - texSelectTop < texWinHeight - 15)
           texSelectY = 
             Math.round( (newy - texSelectTop) / (64 + texWinPadding + 15));
+        }
         //System.out.printf("TexSelect = (%d,%d)\n",texSelectX,texSelectY);
         break;
       default:
@@ -676,7 +751,8 @@ public class Editor extends BasicGame {
         cursorY = viewY + newy / zoom;
     
         for (Region rg : regions) {
-          Polygon p = rg.getPolygon();
+          Polygon p = rg.getRealPolygon();
+          //TODO Add radius pre-checking
           for (int i = 0; i < p.getPointCount(); ++i) {
             float pt[] = p.getPoint( i );
             if (CarGame.distance( cursorX, cursorY, pt[0], pt[1] ) < 8) {
@@ -706,7 +782,48 @@ public class Editor extends BasicGame {
         viewX -= (newx - oldx) / zoom;
         viewY -= (newy - oldy) / zoom;
         break;
-      case MOVE: // TODO
+      case MOVEVERT: {// TODO
+        dragX += (newx - oldx) / zoom;
+        dragY += (newy - oldy) / zoom;
+        
+        Polygon p = curRegion.getRealPolygon();
+        Polygon n = new Polygon();
+        int moveIndex = p.indexOf( cursorX, cursorY );
+        if(snap) {
+          cursorX = (float)(snapSize * Math.round( dragX / (float)snapSize ));
+          cursorY = (float)(snapSize * Math.round( dragY / (float)snapSize ));
+        } else {
+          cursorX = dragX;
+          cursorY = dragY;
+        }
+        //System.out.printf("(%f,%f) by (%f, %f),moveIndex = %d\n",dragX,dragY,moveX,moveY,moveIndex);
+        for(int i=0;i<p.getPointCount();++i) {
+          float point[] = p.getPoint( i );
+          if(i != moveIndex)
+            n.addPoint( point[0], point[1] );
+          else
+            n.addPoint( cursorX, cursorY );
+        }
+        curRegion.setPolygon( n );
+        if(autoScale)
+          curRegion.setScale( curRegion.getRealPolygon().getWidth() / 64, 
+                              curRegion.getRealPolygon().getHeight() / 64);
+        break;
+      }
+      case MOVEREGION: // TODO
+        dragX += (newx - oldx) / zoom;
+        dragY += (newy - oldy) / zoom;
+        
+        if(snap) {
+          cursorX = (float)(snapSize * Math.round( dragX / (float)snapSize ));
+          cursorY = (float)(snapSize * Math.round( dragY / (float)snapSize ));
+        } else {
+          cursorX = dragX;
+          cursorY = dragY;
+        }
+
+        curRegion.getRealPolygon().setX( originX + (cursorX - cursorOriginX) );
+        curRegion.getRealPolygon().setY( originY + (cursorY - cursorOriginY) );
         break;
       case NONE: // TODO
         break;

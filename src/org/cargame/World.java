@@ -159,7 +159,7 @@ public class World {
     float y = mPlayer.getY();
     region: for (Region rg : mRegions) {
       if(rg.hasFlag( Region.IMPASSABLE )) {
-        Polygon p = rg.getPolygon();
+        Polygon p = rg.getTransformedPolygon();
         float cdx = p.getCenterX() - x;
         float cdy = p.getCenterY() - y;
         if (p.getBoundingCircleRadius() + PLAYER_RADIUS >= Math.sqrt( cdx * cdx + cdy * cdy )) {
@@ -376,7 +376,7 @@ public class World {
       g.pushTransform();
         g.translate( region.getX(), region.getY() );
         g.rotate( region.getPivotX(), region.getPivotY(), (float)(region.getTheta() * 180 / Math.PI) );
-        g.texture( region.getGraphicsPolygon(), mTextures.get( region.getTexKey() ), region.getScaleX() , region.getScaleY(),
+        g.texture( region.getRealPolygon(), mTextures.get( region.getTexKey() ), region.getScaleX() , region.getScaleY(),
                    true );
       g.popTransform();
     }

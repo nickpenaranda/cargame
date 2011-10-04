@@ -9,7 +9,7 @@ public class Region {
   public static final int OVERHEAD   = 2;
   public static final int MOVABLE    = 4;
   
-  protected Polygon mPolygon, mGraphicsPolygon;
+  protected Polygon mTransformedPolygon, mGraphicsPolygon;
   //private Image mTexture;
   private float mScaleX,mScaleY;
   private int mFlags;
@@ -27,7 +27,7 @@ public class Region {
   }
   
   Region(Polygon polygon, String texKey, float scaleX, float scaleY, int flags, float pivotX, float pivotY) {
-    this.mPolygon = polygon;
+    this.mTransformedPolygon = polygon;
     this.mTexKey = texKey;
     this.mScaleX = scaleX;
     this.mScaleY = scaleY;
@@ -54,22 +54,22 @@ public class Region {
   }
   
   private void translate(float dx,float dy) {
-    mPolygon = (Polygon)mPolygon.transform(Transform.createTranslateTransform( dx, dy ));
+    mTransformedPolygon = (Polygon)mTransformedPolygon.transform(Transform.createTranslateTransform( dx, dy ));
     mX += dx;
     mY += dy;
   }
   
   private void rotate(float theta) {
-    mPolygon = (Polygon)mPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
+    mTransformedPolygon = (Polygon)mTransformedPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
     mTheta += theta;
   }
 
   public boolean overLaps( Rectangle rect ) {
-    return(mPolygon.intersects( rect ) || mPolygon.contains( rect ) || rect.contains( mPolygon ));
+    return(mTransformedPolygon.intersects( rect ) || mTransformedPolygon.contains( rect ) || rect.contains( mTransformedPolygon ));
   }
 
-  public Polygon getPolygon() {
-    return mPolygon;
+  public Polygon getTransformedPolygon() {
+    return mTransformedPolygon;
   }
 
   public float getScaleX() {
@@ -83,8 +83,8 @@ public class Region {
    * General collision method, useful for checking collision against small objects 
    */
   public boolean checkForCollision( float x, float y, double radius ) {
-    int numVerts = mPolygon.getPointCount();
-    float points[] = mPolygon.getPoints();
+    int numVerts = mTransformedPolygon.getPointCount();
+    float points[] = mTransformedPolygon.getPoints();
     for (int i = 0; i < numVerts; i++) {
       
       // Select clockwise line segment
@@ -109,7 +109,7 @@ public class Region {
       float ny = dx / len;
 
       // If (x,y) + normal vector * radius projects into polygon, collision!
-      if (mPolygon.contains( (float)(x + nx * radius), (float)(y + ny * radius) ))
+      if (mTransformedPolygon.contains( (float)(x + nx * radius), (float)(y + ny * radius) ))
         return true;
     }   
     return false;
@@ -167,7 +167,7 @@ public class Region {
     return mY;
   }
 
-  public Polygon getGraphicsPolygon() {
+  public Polygon getRealPolygon() {
     return mGraphicsPolygon;
   }
 
@@ -191,5 +191,9 @@ public class Region {
 
   public void setTexKey(String key) {
     mTexKey = key;
+  }
+
+  public void setPolygon( Polygon polygon ) {
+    mGraphicsPolygon = polygon;
   }
 }
