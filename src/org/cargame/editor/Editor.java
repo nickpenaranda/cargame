@@ -24,8 +24,8 @@ import org.cargame.Region;
 public class Editor extends BasicGame {
 
   public static final String WINDOW_TITLE = "CarGame Map Editor";
-  public static final int WINDOW_WIDTH = 640;
-  public static final int WINDOW_HEIGHT = 480;
+  public static final int WINDOW_WIDTH = 800;
+  public static final int WINDOW_HEIGHT = 600;
 
   public static final String FONT_META = "./gfx/fonts/std14.fnt";
   public static final String FONT_IMG = "./gfx/fonts/std14_0.tga";
@@ -210,13 +210,16 @@ public class Editor extends BasicGame {
                       (float)(region.getTheta() * 180 / Math.PI) );
             g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScaleX(), region
                 .getScaleY(), true );
-            if(region == curRegion) {
-              g.setColor( Color.red );
-              g.draw( region.getGraphicsPolygon() );
-              g.setColor( Color.white );
-            }
           }
           g.popTransform();
+        }
+        
+        // Current region
+        if(curRegion != null) {
+          g.pushTransform(); {
+            g.setColor( Color.red );
+            g.draw( curRegion.getGraphicsPolygon() );
+          } g.popTransform();
         }
 
         // Pending
@@ -535,7 +538,8 @@ public class Editor extends BasicGame {
             for(Region region:regions) {
               if(region != curRegion 
                   && (region.getPolygon().contains( cursorX,cursorY ) 
-                      || region.getPolygon().includes( cursorX, cursorY ))) {
+                      || region.getPolygon().includes( cursorX, cursorY )
+                      || region.getPolygon().hasVertex( cursorX, cursorY) ) ) {
                 curRegion = region;
                 return;
               }
