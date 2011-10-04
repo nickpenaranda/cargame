@@ -11,7 +11,7 @@ public class Region {
   public static final int MOVABLE    = 4;
   
   protected Polygon mPolygon, mGraphicsPolygon;
-  private Image mTexture;
+  //private Image mTexture;
   private float mScaleX,mScaleY;
   private int mFlags;
   private float mPivotX, mPivotY, mTheta, mX, mY;
@@ -19,23 +19,23 @@ public class Region {
   private String mTexKey;
 
   // Default regions are impassable
-  public Region(Polygon polygon, Image texture, float scaleX, float scaleY) {
-    this(polygon,texture,scaleX,scaleY,IMPASSABLE,polygon.getCenterX(),polygon.getCenterY());
+  public Region(Polygon polygon, String texKey, float scaleX, float scaleY) {
+    this(polygon,texKey,scaleX,scaleY,IMPASSABLE,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  public Region(Polygon polygon, Image texture, float scaleX, float scaleY, int flags) {
-    this(polygon,texture,scaleX,scaleY,flags,polygon.getCenterX(),polygon.getCenterY());
+  public Region(Polygon polygon, String texKey, float scaleX, float scaleY, int flags) {
+    this(polygon,texKey,scaleX,scaleY,flags,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  Region(Polygon polygon, Image texture, float scaleX, float scaleY, int flags, float pivotX, float pivotY) {
+  Region(Polygon polygon, String texKey, float scaleX, float scaleY, int flags, float pivotX, float pivotY) {
     this.mPolygon = polygon;
-    this.mTexture = texture;
+    this.mTexKey = texKey;
     this.mScaleX = scaleX;
     this.mScaleY = scaleY;
     this.mFlags = flags;
     this.mPivotX = pivotX;
     this.mPivotY = pivotY;
-    mTexture.setCenterOfRotation( pivotX, pivotY );
+    //mTexture.setCenterOfRotation( pivotX, pivotY );
     mTheta = 0;
     mGraphicsPolygon = polygon;
   }
@@ -71,10 +71,6 @@ public class Region {
 
   public Polygon getPolygon() {
     return mPolygon;
-  }
-
-  public Image getTexture() {
-    return mTexture;
   }
 
   public float getScaleX() {
@@ -182,10 +178,6 @@ public class Region {
   
   public void setRawFlags( int flags ) {
     mFlags = flags;
-  }
-
-  public void setTexture( Image texture) {
-    mTexture = texture;
   }
 
   public void setScale( float sx, float sy ) {

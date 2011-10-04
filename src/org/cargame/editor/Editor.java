@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.newdawn.slick.AngelCodeFont;
 import org.newdawn.slick.AppGameContainer;
@@ -40,6 +41,18 @@ public class Editor extends BasicGame {
 
   static final String HELP_TEXT = "F12:Exit RMB:Pan [,]:Adj. Snap -,+:Zoom Arrows:Adj. Tex";
 
+  int texSelectLeft = 15;
+  int texSelectX = 0;
+  int texSelectY = 0; 
+  int texSelectTop = 55;
+  int texWinPadding = 2;
+  int texWinWidth = WINDOW_WIDTH - 200;
+  int texWinHeight = WINDOW_HEIGHT - 105;
+  int texRowSize = texWinWidth / (64 + texWinPadding);
+  int texColSize = texWinHeight / (64 + texWinPadding + 15);
+  int texPage = 0;
+  int maxTexPage;
+
   float viewX = -WINDOW_WIDTH / 2, viewY = -WINDOW_HEIGHT / 2, cursorX = 0, cursorY = 0;
   float zoom = 1.0f;
   int snapSize = 32;
@@ -48,7 +61,6 @@ public class Editor extends BasicGame {
   ArrayList<Region> regions;
   LinkedList<Message> messages;
   Region curRegion;
-  Image curTexture;
   String curTexKey;
   int curFlags;
 
@@ -56,7 +68,7 @@ public class Editor extends BasicGame {
 
   TreeMap<String, Image> textures;
   ArrayList<String> texKeys;
-
+  
   GameContainer container;
   String filename;
 
@@ -85,7 +97,9 @@ public class Editor extends BasicGame {
   }
 
   static enum EditorFunc {
-    REGIONS("REGIONS", "LMB:Add Ctrl+LMB:Finish Shift+LMB:Move"), ITEMS("ITEMS", "???");
+    REGIONS("REGIONS", "LMB:Add Ctrl+LMB:Finish Shift+LMB:Move"),
+    ITEMS("ITEMS", "???"),
+    TEXTURES("TEXTURES", "LMB:Select");
 
     String label;
     String mouseHelp;
@@ -103,6 +117,8 @@ public class Editor extends BasicGame {
         case REGIONS:
           return(EditorFunc.ITEMS);
         case ITEMS:
+          return(EditorFunc.TEXTURES);
+        case TEXTURES:
           return(EditorFunc.REGIONS);
       }
       return EditorFunc.REGIONS;
@@ -126,7 +142,7 @@ public class Editor extends BasicGame {
     messages = new LinkedList<Message>();
     textures = new TreeMap<String, Image>();
     texKeys = new ArrayList<String>();
-
+    
     System.out.println( "Loading textures:" );
     File textureDir = new File( TEXTURE_PATH );
 
@@ -151,13 +167,14 @@ public class Editor extends BasicGame {
         } else {
           i.setName( f.getName().substring( 0, f.getName().length() - 4 ) );
           textures.put( i.getName(), i );
-          texKeys.add( i.getName() );
+          //texKeys.add( i.getName() );
           System.out.println( "OK!" );
         }
       }
     }
-
-    curTexture = textures.firstEntry().getValue();
+    
+    maxTexPage = textures.size() / (texColSize * texRowSize);
+    texKeys.addAll( textures.keySet() );
     curTexKey = textures.firstKey();
     curFlags = Region.IMPASSABLE;
 
@@ -208,7 +225,7 @@ public class Editor extends BasicGame {
             g.translate( region.getX(), region.getY() );
             g.rotate( region.getPivotX(), region.getPivotY(),
                       (float)(region.getTheta() * 180 / Math.PI) );
-            g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScaleX(), region
+            g.texture( region.getGraphicsPolygon(), textures.get(region.getTexKey() ), region.getScaleX(), region
                 .getScaleY(), true );
           }
           g.popTransform();
@@ -230,7 +247,7 @@ public class Editor extends BasicGame {
             g.drawRect( p[0] - 1, p[1] - 1, 2, 2 );
           }
           g.setColor( Color.white );
-          g.texture( pendingShape, curTexture, curScaleX, curScaleY, true );
+          g.texture( pendingShape, textures.get( curTexKey ), curScaleX, curScaleY, true );
           g.setColor( Color.red );
           g.draw( pendingShape );
         }
@@ -249,6 +266,59 @@ public class Editor extends BasicGame {
       g.popTransform();
     }
     g.popTransform();
+    
+    // Texture selector
+    if(editorFunc == EditorFunc.TEXTURES) {
+      int i=0, j=0;
+      int pageYOff = texPage * texColSize * (64 + texWinPadding + 15);
+      
+      g.setColor( curRegionBG );
+      g.fillRoundRect( 10, 50, texWinWidth, texWinHeight, 3);
+      g.setColor( Color.lightGray );
+      g.drawRoundRect( 10, 50, texWinWidth, texWinHeight, 3);
+
+      g.setColor(Color.white);
+      for(Entry<String,Image> e:textures.entrySet()) {
+        if(i < texRowSize * texColSize * texPage) {
+          ++i;
+          continue;
+        }
+        
+        if((curRegion != null && curRegion.getTexKey() == e.getKey()) ||
+           (curRegion == null && curTexKey == e.getKey())) {
+          Rectangle texRect = new Rectangle(texSelectLeft + (i % texRowSize) * (64 + texWinPadding),
+                                            15 + texSelectTop + (j % texColSize) * (64 + texWinPadding + 15),
+                                            64,64);
+          g.texture( texRect, e.getValue(),true);
+          g.setColor( Color.red );
+          g.drawString( e.getKey(), 
+                        texSelectLeft + (i % texRowSize) * (64 + texWinPadding), 
+                        texSelectTop + (j % texColSize) * (64 + texWinPadding + 15) );
+          g.draw( texRect );
+          g.setColor(Color.white);
+        } else {
+          g.drawString( e.getKey(), 
+                        texSelectLeft + (i % texRowSize) * (64 + texWinPadding), 
+                        texSelectTop + (j % texColSize) * (64 + texWinPadding + 15) );
+          g.texture( new Rectangle(texSelectLeft + (i % texRowSize) * (64 + texWinPadding),
+                                   15 + texSelectTop + (j % texColSize) * (64 + texWinPadding + 15),
+                                   64,64),
+                                   e.getValue(),true);
+        }
+        
+        ++i;
+        if(i > 0 && i % texRowSize == 0)
+          ++j;
+        
+        if(i >= texRowSize * texColSize * (texPage + 1))
+          break;
+      }
+      g.setColor( Color.yellow );
+      g.drawRect( texSelectLeft + texSelectX * (64 + texWinPadding) - 1,
+                  15 + texSelectTop + texSelectY * (64 + texWinPadding + 15) - 1, 
+                  64, 64 );
+      
+    }
 
     // Current REGION texture, flags
     if(curRegion != null) {
@@ -257,11 +327,11 @@ public class Editor extends BasicGame {
       g.setColor( Color.gray );
       g.drawRoundRect( WINDOW_WIDTH - 170, WINDOW_HEIGHT - 252, 160, 115, 3 );
       g.setColor( Color.white );
-      g.drawString( "Reg. tex", WINDOW_WIDTH - 80, WINDOW_HEIGHT - 250 );
+      g.drawString( "Reg #" + regions.indexOf( curRegion ), WINDOW_WIDTH - 80, WINDOW_HEIGHT - 250 );
       g.drawString( curRegion.getTexKey(), WINDOW_WIDTH - 80, WINDOW_HEIGHT - 235 );
       g.drawString( curRegion.getScaleX() + " x " + curRegion.getScaleY(), WINDOW_WIDTH - 80, WINDOW_HEIGHT - 151 );
       Rectangle texView = new Rectangle( WINDOW_WIDTH - 80, WINDOW_HEIGHT - 220, 64, 64 );
-      g.texture( texView, curRegion.getTexture(), curRegion.getScaleX(), curRegion.getScaleY(), true );
+      g.texture( texView, textures.get( curRegion.getTexKey() ), curRegion.getScaleX(), curRegion.getScaleY(), true );
       g.draw( texView ); // Border for contrast
   
       g.setFont( fontBold );
@@ -290,7 +360,7 @@ public class Editor extends BasicGame {
     g.drawString( curTexKey, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 115 );
     g.drawString( curScaleX + " x " + curScaleY, WINDOW_WIDTH - 80, WINDOW_HEIGHT - 31 );
     Rectangle texView = new Rectangle( WINDOW_WIDTH - 80, WINDOW_HEIGHT - 100, 64, 64 );
-    g.texture( texView, curTexture, curScaleX, curScaleY, true );
+    g.texture( texView, textures.get(curTexKey), curScaleX, curScaleY, true );
     g.draw( texView ); // Border for contrast
 
     g.setFont( fontBold );
@@ -358,8 +428,22 @@ public class Editor extends BasicGame {
       case Input.KEY_F12:
         System.exit( 0 );
         break;
+      case Input.KEY_W:
+        if (editorFunc == EditorFunc.TEXTURES) {
+          if (texPage > 0)
+            texPage--;
+          else
+            texPage = maxTexPage;
+        }
+        break;
       case Input.KEY_S:
-        snap = !snap;
+        if (editorFunc == EditorFunc.TEXTURES) {
+          if(texPage < maxTexPage)
+            texPage++;
+          else
+            texPage = 0;
+        } else
+          snap = !snap;
         break;
       case Input.KEY_G:
         grid = !grid;
@@ -430,7 +514,7 @@ public class Editor extends BasicGame {
         break;
       case Input.KEY_C:
         if (curRegion != null) {
-          curTexture = curRegion.getTexture();
+          curTexKey = curRegion.getTexKey();
           curScaleX = curRegion.getScaleX();
           curScaleY = curRegion.getScaleY();
           curFlags = curRegion.getFlags();
@@ -438,19 +522,29 @@ public class Editor extends BasicGame {
         break;
       case Input.KEY_V:
         if (curRegion != null) {
-          curRegion.setTexture(curTexture);
+          curRegion.setTexKey(curTexKey);
           curRegion.setScale(curScaleX,curScaleY);
           curRegion.setRawFlags(curFlags);
         }
+        break;
       case Input.KEY_1:
-        curFlags ^= Region.IMPASSABLE;
+        if (curRegion != null)
+          curRegion.toggleFlag( Region.IMPASSABLE );
+        else
+          curFlags ^= Region.IMPASSABLE;
         break;
       case Input.KEY_2:
-        curFlags ^= Region.OVERHEAD;
+        if (curRegion != null)
+          curRegion.toggleFlag( Region.OVERHEAD );
+        else
+          curFlags ^= Region.OVERHEAD;
         break;
       case Input.KEY_3:
-        curFlags ^= Region.MOVABLE;
-
+        if (curRegion != null)
+          curRegion.toggleFlag( Region.MOVABLE );
+        else
+          curFlags ^= Region.MOVABLE;
+        break;
     }
   }
 
@@ -461,15 +555,15 @@ public class Editor extends BasicGame {
         curRegion.setTexKey( texKeys.get( index + 1 ) );
       else
         curRegion.setTexKey( texKeys.get( 0 ) );
-      curRegion.setTexture( textures.get( curRegion.getTexKey() ) );
     } else {
       int index = texKeys.indexOf( curTexKey );
       if (index < texKeys.size() - 1)
         curTexKey = texKeys.get( index + 1 );
       else
         curTexKey = texKeys.get( 0 );
-      curTexture = textures.get( curTexKey );
     }
+    texPage = texKeys.indexOf( curTexKey ) / (texRowSize * texColSize);
+    System.out.println("texPage = " + texPage);
   }
 
   private void prevTex() {
@@ -479,15 +573,15 @@ public class Editor extends BasicGame {
         curRegion.setTexKey( texKeys.get( index - 1 ) );
       else
         curRegion.setTexKey( texKeys.get( texKeys.size() - 1 ) );
-      curRegion.setTexture( textures.get( curRegion.getTexKey() ) );
     } else {
       int index = texKeys.indexOf( curTexKey );
       if (index > 0)
         curTexKey = texKeys.get( index - 1 );
       else
         curTexKey = texKeys.get( texKeys.size() - 1 );
-      curTexture = textures.get( curTexKey );
     }
+    texPage = texKeys.indexOf( curTexKey ) / (texRowSize * texColSize);
+    System.out.println("texPage = " + texPage);
   }
 
   @Override
@@ -531,7 +625,7 @@ public class Editor extends BasicGame {
           }
         } else if (button == 0 && !shift && !control) { // Complete or select
           if(pendingShape != null) {
-            Region region = new Region( pendingShape, curTexture, curScaleX, curScaleY, curFlags );
+            Region region = new Region( pendingShape, curTexKey, curScaleX, curScaleY, curFlags );
             region.setTexKey( curTexKey );
             regions.add( region );
           } else {
@@ -549,28 +643,52 @@ public class Editor extends BasicGame {
           pendingShape = null;
         }
         break;
+      case TEXTURES:
+        int index = (texColSize * texRowSize * texPage ) +
+        (texSelectY * texRowSize) + texSelectX;
+        if(index < texKeys.size()) {
+          if(curRegion != null)
+            curRegion.setTexKey( texKeys.get( index ) );
+          else
+            curTexKey = texKeys.get( index );
+            texPage = texKeys.indexOf( curTexKey ) / (texRowSize * texColSize);
+        }
+        break;
     }
   }
 
   @Override
   public void mouseMoved( int oldx, int oldy, int newx, int newy ) {
-    cursorX = viewX + newx / zoom;
-    cursorY = viewY + newy / zoom;
-
-    for (Region rg : regions) {
-      Polygon p = rg.getPolygon();
-      for (int i = 0; i < p.getPointCount(); ++i) {
-        float pt[] = p.getPoint( i );
-        if (CarGame.distance( cursorX, cursorY, pt[0], pt[1] ) < 8) {
-          cursorX = pt[0];
-          cursorY = pt[1];
-          return;
+    switch(editorFunc) {
+      case TEXTURES:
+        if(newx - texSelectLeft < texWinWidth - 10)
+          texSelectX = 
+            Math.round( (newx - texSelectLeft) / (64 + texWinPadding) );
+        if(newy - texSelectTop < texWinHeight - 15)
+          texSelectY = 
+            Math.round( (newy - texSelectTop) / (64 + texWinPadding + 15));
+        //System.out.printf("TexSelect = (%d,%d)\n",texSelectX,texSelectY);
+        break;
+      default:
+        cursorX = viewX + newx / zoom;
+        cursorY = viewY + newy / zoom;
+    
+        for (Region rg : regions) {
+          Polygon p = rg.getPolygon();
+          for (int i = 0; i < p.getPointCount(); ++i) {
+            float pt[] = p.getPoint( i );
+            if (CarGame.distance( cursorX, cursorY, pt[0], pt[1] ) < 8) {
+              cursorX = pt[0];
+              cursorY = pt[1];
+              return;
+            }
+          }
         }
-      }
-    }
-    if (snap) {
-      cursorX = (float)(snapSize * Math.round( cursorX / (float)snapSize ));
-      cursorY = (float)(snapSize * Math.round( cursorY / (float)snapSize ));
+        if (snap) {
+          cursorX = (float)(snapSize * Math.round( cursorX / (float)snapSize ));
+          cursorY = (float)(snapSize * Math.round( cursorY / (float)snapSize ));
+        }
+        break;
     }
   }
 

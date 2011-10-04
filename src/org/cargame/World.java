@@ -35,6 +35,7 @@ public class World {
   private List<Region> mRegions;
 
   private Image[] mTiles;
+  private Map<String,Image> mTextures;
 
   private List<Rocket> mRockets;
   private List<Explosion> mExplosions;
@@ -45,7 +46,8 @@ public class World {
     mGame = game;
 
     mTiles = new Image[5];
-
+    mTextures = new TreeMap<String,Image>();
+    
     // TODO Put tiles in a Map, access by name (e.g., wall1)
     try {
       mTiles[0] = new Image( "gfx/textures/road.png" );
@@ -245,10 +247,11 @@ public class World {
     int numBuildingsAcross = 16;
     int cityBlockWidth = ROAD_WIDTH + BUILDING_WIDTH;
     int offset = numBuildingsAcross / 2; // center city at (0, 0)
-
-    Image textures[] = new Image[8];
-    for (int i = 0; i < textures.length; i++) {
-      textures[i] = genRandomTexture( 8, 8 );
+    
+    // Hack to conform to new texture map
+    int numTextures = 10;
+    for (int i = 0; i < numTextures; i++) {
+      mTextures.put(new String("" + i),genRandomTexture( 8, 8 ));
     }
 
     for (int i = 0; i < numBuildingsAcross; i++) {
@@ -257,7 +260,7 @@ public class World {
         int buildingT = ((j - offset) * cityBlockWidth + ROAD_WIDTH) * TILE_SIZE;
         Rectangle rect = new Rectangle( buildingL, buildingT, BUILDING_WIDTH * TILE_SIZE,
             BUILDING_WIDTH * TILE_SIZE );
-        Region region = new Region( new Polygon( rect.getPoints() ), textures[r.nextInt( 8 )], 1.0f, 1.0f);
+        Region region = new Region( new Polygon( rect.getPoints() ), "" + r.nextInt(numTextures), 1.0f, 1.0f);
         if(!CarGame.multiplayerMode) {
           if(r.nextBoolean()) {
             region.setFlag( Region.MOVABLE, true );
@@ -373,7 +376,7 @@ public class World {
       g.pushTransform();
         g.translate( region.getX(), region.getY() );
         g.rotate( region.getPivotX(), region.getPivotY(), (float)(region.getTheta() * 180 / Math.PI) );
-        g.texture( region.getGraphicsPolygon(), region.getTexture(), region.getScaleX() , region.getScaleY(),
+        g.texture( region.getGraphicsPolygon(), mTextures.get( region.getTexKey() ), region.getScaleX() , region.getScaleY(),
                    true );
       g.popTransform();
     }
