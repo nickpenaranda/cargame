@@ -1,7 +1,6 @@
 package org.cargame;
 
 import java.util.ArrayList;
-
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -35,7 +34,7 @@ import org.newdawn.slick.geom.Rectangle;
 public class Engine {
 
   private static final float CLOAK_ALPHA = 0.05f;
-
+  
   static final int WINDOW_WIDTH = 640;
   static final int WINDOW_HEIGHT = 480;
   

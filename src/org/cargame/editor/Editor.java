@@ -19,7 +19,6 @@ import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
-import org.newdawn.slick.geom.Transform;
 import org.cargame.CarGame;
 import org.cargame.Region;
 
@@ -91,7 +90,12 @@ public class Editor extends BasicGame {
   }
 
   static enum MouseFunc {
-    NONE(""), PAN("PAN"), MOVEVERT("MOVE VERTEX"), MOVEREGION("MOVE REGION");
+    NONE(""), PAN("PAN"), 
+    MOVEREGIONVERT("MOVE VERTEX"), 
+    MOVEREGION("MOVE REGION"),
+    MOVEPENDINGVERT("MOVE VERTEX"),
+    MOVEPENDING("MOVE PENDING REGION")
+    ;
 
     String label;
 
@@ -423,7 +427,7 @@ public class Editor extends BasicGame {
   public List<Region> getWallsWithin( Rectangle rect ) {
     LinkedList<Region> within = new LinkedList<Region>();
     for (Region region : regions) {
-      if (region.overLaps( rect ))
+      if (region.overlaps( rect ))
         within.add( region );
     }
     return within;
@@ -534,15 +538,15 @@ public class Editor extends BasicGame {
       case Input.KEY_C:
         if (curRegion != null) {
           curTexKey = curRegion.getTexKey();
-          curScaleX = curRegion.getScaleX();
-          curScaleY = curRegion.getScaleY();
+          //curScaleX = curRegion.getScaleX();
+          //curScaleY = curRegion.getScaleY();
           curFlags = curRegion.getFlags();
         }
         break;
       case Input.KEY_V:
         if (curRegion != null) {
           curRegion.setTexKey(curTexKey);
-          curRegion.setScale(curScaleX,curScaleY);
+          //curRegion.setScale(curScaleX,curScaleY);
           curRegion.setRawFlags(curFlags);
         }
         break;
@@ -635,12 +639,23 @@ public class Editor extends BasicGame {
           if (curRegion == null) {
             if (pendingShape == null) {
               pendingShape = new Polygon();
+              pendingShape.addPoint( cursorX, cursorY );
+            } else if(pendingShape.hasVertex( cursorX, cursorY )) {
+              mouseFunc = MouseFunc.MOVEPENDINGVERT;
+              dragX = cursorX;
+              dragY = cursorY;
+            } else if(pendingShape.contains( cursorX,cursorY )) {
+              mouseFunc = MouseFunc.MOVEPENDING;
+              originX = pendingShape.getX();
+              originY = pendingShape.getY();
+              dragX = cursorOriginX = cursorX;
+              dragY = cursorOriginY = cursorY;
+            } else {
+              pendingShape.addPoint( cursorX, cursorY );
             }
-            if(!pendingShape.hasVertex( cursorX, cursorY ))
-                pendingShape.addPoint( cursorX, cursorY );
           } else {
             if(curRegion.getRealPolygon().hasVertex( cursorX, cursorY )) {
-              mouseFunc = MouseFunc.MOVEVERT;
+              mouseFunc = MouseFunc.MOVEREGIONVERT;
               dragX = cursorX;
               dragY = cursorY;
             } else if(curRegion.getRealPolygon().contains( cursorX, cursorY )) {
@@ -662,7 +677,7 @@ public class Editor extends BasicGame {
                 float point[] = pendingShape.getPoint( i );
                 if(i != delIndex) n.addPoint( point[0], point[1] );
               }
-              if(pendingShape.getPointCount() == 0)
+              if(pendingShape.getPointCount() == 1)
                 pendingShape = null;
               else
                 pendingShape = n;
@@ -782,7 +797,7 @@ public class Editor extends BasicGame {
         viewX -= (newx - oldx) / zoom;
         viewY -= (newy - oldy) / zoom;
         break;
-      case MOVEVERT: {// TODO
+      case MOVEREGIONVERT: {// TODO
         dragX += (newx - oldx) / zoom;
         dragY += (newy - oldy) / zoom;
         
@@ -824,6 +839,50 @@ public class Editor extends BasicGame {
 
         curRegion.getRealPolygon().setX( originX + (cursorX - cursorOriginX) );
         curRegion.getRealPolygon().setY( originY + (cursorY - cursorOriginY) );
+        break;
+      case MOVEPENDINGVERT: {// TODO
+        dragX += (newx - oldx) / zoom;
+        dragY += (newy - oldy) / zoom;
+        
+        Polygon p = pendingShape;
+        Polygon n = new Polygon();
+        int moveIndex = p.indexOf( cursorX, cursorY );
+        if(snap) {
+          cursorX = (float)(snapSize * Math.round( dragX / (float)snapSize ));
+          cursorY = (float)(snapSize * Math.round( dragY / (float)snapSize ));
+        } else {
+          cursorX = dragX;
+          cursorY = dragY;
+        }
+        //System.out.printf("(%f,%f) by (%f, %f),moveIndex = %d\n",dragX,dragY,moveX,moveY,moveIndex);
+        for(int i=0;i<p.getPointCount();++i) {
+          float point[] = p.getPoint( i );
+          if(i != moveIndex)
+            n.addPoint( point[0], point[1] );
+          else
+            n.addPoint( cursorX, cursorY );
+        }
+        pendingShape = n;
+        if(autoScale) {
+          curScaleX = pendingShape.getWidth() / 64;
+          curScaleY = pendingShape.getHeight() / 64;
+        }
+        break;
+      }
+      case MOVEPENDING: // TODO
+        dragX += (newx - oldx) / zoom;
+        dragY += (newy - oldy) / zoom;
+        
+        if(snap) {
+          cursorX = (float)(snapSize * Math.round( dragX / (float)snapSize ));
+          cursorY = (float)(snapSize * Math.round( dragY / (float)snapSize ));
+        } else {
+          cursorX = dragX;
+          cursorY = dragY;
+        }
+
+        pendingShape.setX( originX + (cursorX - cursorOriginX) );
+        pendingShape.setY( originY + (cursorY - cursorOriginY) );
         break;
       case NONE: // TODO
         break;

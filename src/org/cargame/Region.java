@@ -64,7 +64,7 @@ public class Region {
     mTheta += theta;
   }
 
-  public boolean overLaps( Rectangle rect ) {
+  public boolean overlaps( Rectangle rect ) {
     return(mTransformedPolygon.intersects( rect ) || mTransformedPolygon.contains( rect ) || rect.contains( mTransformedPolygon ));
   }
 

@@ -1,5 +1,6 @@
 package org.cargame;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -24,6 +25,9 @@ public class World {
   public static final int ROAD_WIDTH = 6;
   public static final int BUILDING_WIDTH = 10;
   public static final int TILE_SIZE = 64;
+  
+  private static final String TEXTURE_PATH = "gfx/textures";
+
 
   private static final float PLAYER_RADIUS = 32;
 
@@ -34,7 +38,6 @@ public class World {
 
   private List<Region> mRegions;
 
-  private Image[] mTiles;
   private Map<String,Image> mTextures;
 
   private List<Rocket> mRockets;
@@ -45,21 +48,39 @@ public class World {
   public World(CarGame game) {
     mGame = game;
 
-    mTiles = new Image[5];
     mTextures = new TreeMap<String,Image>();
     
-    // TODO Put tiles in a Map, access by name (e.g., wall1)
-    try {
-      mTiles[0] = new Image( "gfx/textures/road.png" );
-      mTiles[1] = new Image( "gfx/textures/wall1.png" );
-      mTiles[2] = new Image( "gfx/textures/wall2.png" );
-      mTiles[3] = new Image( "gfx/textures/wall3.png" );
-      mTiles[4] = new Image( "gfx/textures/wall4.png" );
-    } catch (SlickException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+    System.out.println( "Loading textures:" );
+    File textureDir = new File( TEXTURE_PATH );
+
+    File[] texFileList = textureDir.listFiles();
+
+    if (texFileList == null) {
+      System.err.println( "Texture directory not found: " + TEXTURE_PATH );
+      System.exit( -1 );
+    } else {
+      for (File f : texFileList) {
+        String path = f.getPath();
+        System.out.print( "  " + path + ": " );
+        Image i = null;
+        try {
+          i = new Image( path );
+        } catch (SlickException e) {
+          System.out.println( "ERROR--Texture not loaded: " + e.getMessage() );
+        }
+
+        if (i == null) {
+          System.out.println( "ERROR--Texture not loaded: Unknown cause." );
+        } else {
+          i.setName( f.getName().substring( 0, f.getName().length() - 4 ) );
+          mTextures.put( i.getName(), i );
+          //texKeys.add( i.getName() );
+          System.out.println( "OK!" );
+        }
+      }
     }
 
+    
     mRegions = new LinkedList<Region>();
 
     mCrafts = (Map<Integer, Car>)Collections
@@ -248,19 +269,14 @@ public class World {
     int cityBlockWidth = ROAD_WIDTH + BUILDING_WIDTH;
     int offset = numBuildingsAcross / 2; // center city at (0, 0)
     
-    // Hack to conform to new texture map
-    int numTextures = 10;
-    for (int i = 0; i < numTextures; i++) {
-      mTextures.put(new String("" + i),genRandomTexture( 8, 8 ));
-    }
-
+    List<String> texKeys = new ArrayList<String>(mTextures.keySet());
     for (int i = 0; i < numBuildingsAcross; i++) {
       int buildingL = ((i - offset) * cityBlockWidth + ROAD_WIDTH) * TILE_SIZE;
       for (int j = 0; j < numBuildingsAcross; j++) {
         int buildingT = ((j - offset) * cityBlockWidth + ROAD_WIDTH) * TILE_SIZE;
         Rectangle rect = new Rectangle( buildingL, buildingT, BUILDING_WIDTH * TILE_SIZE,
             BUILDING_WIDTH * TILE_SIZE );
-        Region region = new Region( new Polygon( rect.getPoints() ), "" + r.nextInt(numTextures), 1.0f, 1.0f);
+        Region region = new Region( new Polygon( rect.getPoints() ), texKeys.get(r.nextInt(mTextures.size())), 1.0f, 1.0f);
         if(!CarGame.multiplayerMode) {
           if(r.nextBoolean()) {
             region.setFlag( Region.MOVABLE, true );
@@ -339,24 +355,24 @@ public class World {
     return -8192 + tileNum * 64;
   }
 
-  private Image genRandomTexture( int numTilesWidth, int numTilesHeight ) {
-    Image texture = null;
-    Graphics g = null;
-    System.out.println( "CALLED" );
-    try {
-      texture = new Image( numTilesWidth * TILE_SIZE, numTilesHeight * TILE_SIZE );
-      g = texture.getGraphics();
-    } catch (SlickException e) {
-      e.printStackTrace();
-    }
-    for (int i = 0; i < numTilesWidth; i++) {
-      for (int j = 0; j < numTilesHeight; j++) {
-        g.drawImage( mTiles[r.nextInt( 4 ) + 1], i * TILE_SIZE, j * TILE_SIZE );
-      }
-    }
-    g.flush();
-    return texture;
-  }
+//  private Image genRandomTexture( int numTilesWidth, int numTilesHeight ) {
+//    Image texture = null;
+//    Graphics g = null;
+//    System.out.println( "CALLED" );
+//    try {
+//      texture = new Image( numTilesWidth * TILE_SIZE, numTilesHeight * TILE_SIZE );
+//      g = texture.getGraphics();
+//    } catch (SlickException e) {
+//      e.printStackTrace();
+//    }
+//    for (int i = 0; i < numTilesWidth; i++) {
+//      for (int j = 0; j < numTilesHeight; j++) {
+//        g.drawImage( mTiles[r.nextInt( 4 ) + 1], i * TILE_SIZE, j * TILE_SIZE );
+//      }
+//    }
+//    g.flush();
+//    return texture;
+//  }
 
   public void addRegion( Region region ) {
     mRegions.add( region );
@@ -365,7 +381,7 @@ public class World {
   public List<Region> getWallsWithin( Rectangle rect ) {
     LinkedList<Region> within = new LinkedList<Region>();
     for (Region region : mRegions) {
-      if (region.overLaps( rect ))
+      if (region.overlaps( rect ))
         within.add( region );
     }
     return within;
