@@ -61,25 +61,19 @@ public class Engine {
     g.setColor( Color.white );
 
     g.pushTransform(); {
-      g.scale( scale_factor, scale_factor );
   
       // //////////////////
       // World Relative //
       // //////////////////
   
+      g.scale( scale_factor, scale_factor );
       g.translate( -(playerCraft.getX() - WINDOW_HALFWIDTH / scale_factor),
                    -(playerCraft.getY() - WINDOW_HALFHEIGHT / scale_factor) );
   
       Rectangle viewPort = new Rectangle( playerCraft.getX() - WINDOW_HALFWIDTH / scale_factor, playerCraft.getY()
           - WINDOW_HALFHEIGHT / scale_factor, WINDOW_WIDTH / scale_factor, WINDOW_HEIGHT / scale_factor );
       game.getWorld().render( g, viewPort );
-  
-      // Draw boundaries
-  //    for (Boundary boundary : mWalls) {
-  //      g.drawLine( (float)boundary.a.x, (float)boundary.a.y, (float)boundary.b.x,
-  //                  (float)boundary.b.y );
-  //    }
-  
+    
       // Draw boost ghosts
       for (BoostGhost ghost : game.getGhosts()) {
         Image image = ghost.image;

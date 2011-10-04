@@ -123,7 +123,7 @@ public class Car {
     if (mJammerEffect < 0)
       mJammerEffect = 0;
     if (mBoostEffect < 0)
-      mJammerEffect = 0;
+      mBoostEffect = 0;
 
     mPrevX = mX;
     mPrevY = mY;
