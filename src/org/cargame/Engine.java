@@ -36,6 +36,12 @@ public class Engine {
 
   private static final float CLOAK_ALPHA = 0.05f;
 
+  static final int WINDOW_WIDTH = 640;
+  static final int WINDOW_HEIGHT = 480;
+  
+  private static final int WINDOW_HALFWIDTH = WINDOW_WIDTH / 2;
+  private static final int WINDOW_HALFHEIGHT = WINDOW_HEIGHT / 2;
+
   private static CarGame game;
 
   public static void init( CarGame aGame ) {
@@ -47,77 +53,78 @@ public class Engine {
 
     float scale_factor = 1 / (1 + (float)Math.pow( playerCraft.getAverageSpeed(), 3 ));
 
-    if (scale_factor < 0.2)
+    if (scale_factor < 0.2f)
       scale_factor = 0.2f;
     else if (scale_factor > 0.5f)
       scale_factor = 0.5f;
 
-    g.scale( scale_factor, scale_factor );
-
     g.setColor( Color.white );
 
-    // //////////////////
-    // World Relative //
-    // //////////////////
-
-    g.translate( -(playerCraft.getX() - 320 / scale_factor),
-                 -(playerCraft.getY() - 240 / scale_factor) );
-
-    Rectangle viewPort = new Rectangle( playerCraft.getX() - 320 / scale_factor, playerCraft.getY()
-        - 240 / scale_factor, 640 / scale_factor, 480 / scale_factor );
-    game.getWorld().render( g, viewPort );
-
-    // Draw boundaries
-//    for (Boundary boundary : mWalls) {
-//      g.drawLine( (float)boundary.a.x, (float)boundary.a.y, (float)boundary.b.x,
-//                  (float)boundary.b.y );
-//    }
-
-    // Draw boost ghosts
-    for (BoostGhost ghost : game.getGhosts()) {
-      Image image = ghost.image;
-      image.setRotation( (float)(ghost.angle * 180 / Math.PI) );
-      int life = ghost.life;
-      image.setAlpha( life / (float)250 * 0.3f );
-      image.drawCentered( ghost.x, ghost.y );
-    }
-
-    // Draw rockets
-    for (Rocket rk : new ArrayList<Rocket>( game.getWorld().getRockets() )) {
-      Rocket.image.setRotation( (float)(rk.angle * 180 / Math.PI) );
-      Rocket.image.drawCentered( (float)rk.x, (float)rk.y );
-    }
-
-    // Draw cars
-    for (Car car : game.getWorld().getCars().values()) {
-      if (car.isDead())
-        continue;
-      Image image = car.getImage();
-      image.setRotation( (float)(car.getAngle() * 180 / Math.PI) );
-      int jammer = car.getJammerEffect();
-      if (jammer > 500)
-        image.setAlpha( CLOAK_ALPHA );
-      else if (jammer > 0)
-        image.setAlpha( CLOAK_ALPHA + (500 - jammer) / (float)500 * (1 - CLOAK_ALPHA) );
-      else {
-        g.setColor( Color.white );
-        if (car != playerCraft)
-          g.drawString( car.getName(), car.getX() - g.getFont().getWidth( car.getName() ) / 2, car
-              .getY() + 40 );
-        image.setAlpha( 1.0f );
+    g.pushTransform(); {
+      g.scale( scale_factor, scale_factor );
+  
+      // //////////////////
+      // World Relative //
+      // //////////////////
+  
+      g.translate( -(playerCraft.getX() - WINDOW_HALFWIDTH / scale_factor),
+                   -(playerCraft.getY() - WINDOW_HALFHEIGHT / scale_factor) );
+  
+      Rectangle viewPort = new Rectangle( playerCraft.getX() - WINDOW_HALFWIDTH / scale_factor, playerCraft.getY()
+          - WINDOW_HALFHEIGHT / scale_factor, WINDOW_WIDTH / scale_factor, WINDOW_HEIGHT / scale_factor );
+      game.getWorld().render( g, viewPort );
+  
+      // Draw boundaries
+  //    for (Boundary boundary : mWalls) {
+  //      g.drawLine( (float)boundary.a.x, (float)boundary.a.y, (float)boundary.b.x,
+  //                  (float)boundary.b.y );
+  //    }
+  
+      // Draw boost ghosts
+      for (BoostGhost ghost : game.getGhosts()) {
+        Image image = ghost.image;
+        image.setRotation( (float)(ghost.angle * 180 / Math.PI) );
+        int life = ghost.life;
+        image.setAlpha( life / (float)250 * 0.3f );
+        image.drawCentered( ghost.x, ghost.y );
       }
-      image.drawCentered( car.getX(), car.getY() );
-    }
-
-    // Draw explosions
-    for (Explosion e : new ArrayList<Explosion>(game.getWorld().getExplosions())) {
-      e.getImage().drawCentered( (float)e.x, (float)e.y );
-    }
+  
+      // Draw rockets
+      for (Rocket rk : new ArrayList<Rocket>( game.getWorld().getRockets() )) {
+        Rocket.image.setRotation( (float)(rk.angle * 180 / Math.PI) );
+        Rocket.image.drawCentered( (float)rk.x, (float)rk.y );
+      }
+  
+      // Draw cars
+      for (Car car : game.getWorld().getCars().values()) {
+        if (car.isDead())
+          continue;
+        Image image = car.getImage();
+        image.setRotation( (float)(car.getAngle() * 180 / Math.PI) );
+        int jammer = car.getJammerEffect();
+        if (jammer > 500)
+          image.setAlpha( CLOAK_ALPHA );
+        else if (jammer > 0)
+          image.setAlpha( CLOAK_ALPHA + (500 - jammer) / (float)500 * (1 - CLOAK_ALPHA) );
+        else {
+          g.setColor( Color.white );
+          if (car != playerCraft)
+            g.drawString( car.getName(), car.getX() - g.getFont().getWidth( car.getName() ) / 2, car
+                .getY() + 40 );
+          image.setAlpha( 1.0f );
+        }
+        image.drawCentered( car.getX(), car.getY() );
+      }
+  
+      // Draw explosions
+      for (Explosion e : new ArrayList<Explosion>(game.getWorld().getExplosions())) {
+        e.getImage().drawCentered( (float)e.x, (float)e.y );
+      }
 
     // ///////////////////
     // Screen relative //
     // ///////////////////
-    g.resetTransform();
+    } g.popTransform();
 
     // draw indicator
     for (Car craft : game.getWorld().getCars().values()) {
@@ -135,8 +142,8 @@ public class Engine {
         if (len > max_len)
           len = max_len;
 
-        float x = (float)((640 / 2) - len * Math.cos( angle ));
-        float y = (float)((480 / 2) - len * Math.sin( angle ));
+        float x = (float)((WINDOW_WIDTH / 2) - len * Math.cos( angle ));
+        float y = (float)((WINDOW_HEIGHT / 2) - len * Math.sin( angle ));
 
         g.setColor( Color.red );
         g.fillOval( x, y, (float)5.0, (float)5.0 );
@@ -174,7 +181,7 @@ public class Engine {
 
     if (playerCraft.isDead()) {
       g.setColor( Color.red );
-      g.drawString( "!!!!BOOM SUCKA!!!!", 320 - g.getFont().getWidth( "!!!!BOOM SUCKA!!!" ) / 2,
+      g.drawString( "!!!!BOOM SUCKA!!!!", WINDOW_HALFWIDTH - g.getFont().getWidth( "!!!!BOOM SUCKA!!!" ) / 2,
                     240 );
     }
 

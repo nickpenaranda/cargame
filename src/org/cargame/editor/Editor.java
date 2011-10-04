@@ -592,7 +592,7 @@ public class Editor extends BasicGame {
   public static void main( String[] args ) {
     try {
       AppGameContainer container = new AppGameContainer( new Editor() );
-      container.setDisplayMode( 640, 480, false );
+      container.setDisplayMode( WINDOW_WIDTH, WINDOW_HEIGHT, false );
       container.setShowFPS( false );
       container.setMinimumLogicUpdateInterval( 100 );
       container.start();

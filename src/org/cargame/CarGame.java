@@ -327,7 +327,7 @@ public class CarGame extends BasicGame {
   public static void main( String[] args ) {
     try {
       AppGameContainer appGameContainer = new AppGameContainer( new CarGame() );
-      appGameContainer.setDisplayMode( 640, 480, !_DEBUG_MODE );
+      appGameContainer.setDisplayMode( Engine.WINDOW_WIDTH, Engine.WINDOW_HEIGHT, !_DEBUG_MODE );
       appGameContainer.setMinimumLogicUpdateInterval( 20 );
       appGameContainer.setAlwaysRender( true );
       appGameContainer.setTargetFrameRate( 100 );
