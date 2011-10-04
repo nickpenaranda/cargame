@@ -27,6 +27,8 @@ public class Editor extends BasicGame {
   public static final String WINDOW_TITLE = "CarGame Map Editor";
   public static final int WINDOW_WIDTH = 800;
   public static final int WINDOW_HEIGHT = 600;
+  public static final int WINDOW_HALFWIDTH = WINDOW_WIDTH / 2;
+  public static final int WINDOW_HALFHEIGHT = WINDOW_HEIGHT / 2;
 
   public static final String FONT_META = "./gfx/fonts/std14.fnt";
   public static final String FONT_IMG = "./gfx/fonts/std14_0.tga";
@@ -46,7 +48,7 @@ public class Editor extends BasicGame {
   int texSelectY = 0; 
   int texSelectTop = 55;
   int texWinPadding = 2;
-  int texWinWidth = WINDOW_WIDTH - 200;
+  int texWinWidth = (64 + texWinPadding) * 5 + 8;
   int texWinHeight = WINDOW_HEIGHT - 105;
   int texRowSize = texWinWidth / (64 + texWinPadding);
   int texColSize = texWinHeight / (64 + texWinPadding + 15);
@@ -99,7 +101,7 @@ public class Editor extends BasicGame {
   static enum EditorFunc {
     REGIONS("REGIONS", "LMB:Add Ctrl+LMB:Finish Shift+LMB:Move"),
     ITEMS("ITEMS", "???"),
-    TEXTURES("TEXTURES", "LMB:Select");
+    TEXTURES("TEXTURES", "LMB:Select  W,S:Page");
 
     String label;
     String mouseHelp;
@@ -194,7 +196,7 @@ public class Editor extends BasicGame {
   @Override
   public void render( GameContainer container, Graphics g ) throws SlickException {
     g.setFont( font );
-    Rectangle clip = new Rectangle( viewX, viewY, WINDOW_WIDTH, WINDOW_HEIGHT );
+    Rectangle clip = new Rectangle( viewX - WINDOW_HALFWIDTH / zoom, viewY - WINDOW_HALFHEIGHT / zoom, WINDOW_WIDTH / zoom, WINDOW_HEIGHT / zoom);
 
     float sx = (float)(snapSize * Math.ceil( viewX / (float)snapSize ));
     float sy = (float)(snapSize * Math.ceil( viewY / (float)snapSize ));

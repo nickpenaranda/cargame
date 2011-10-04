@@ -3,7 +3,6 @@ package org.cargame;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 import org.newdawn.slick.geom.Transform;
-import org.newdawn.slick.Image;
 
 public class Region {
   public static final int IMPASSABLE = 1;
