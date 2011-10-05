@@ -15,9 +15,11 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 
-public class World {
+import com.esotericsoftware.kryo.Kryo;
 
+public class World {
   private static final Random r = new Random();
+  private static Kryo mKryo;
 
   public static final int EXPLOSION_DENSITY = 5;
 
@@ -47,7 +49,7 @@ public class World {
 
   public World(CarGame game) {
     mGame = game;
-
+    mKryo = initKryo();
     mTextures = new TreeMap<String,Image>();
     
     System.out.println( "Loading textures:" );
@@ -276,7 +278,7 @@ public class World {
         int buildingT = ((j - offset) * cityBlockWidth + ROAD_WIDTH) * TILE_SIZE;
         Rectangle rect = new Rectangle( buildingL, buildingT, BUILDING_WIDTH * TILE_SIZE,
             BUILDING_WIDTH * TILE_SIZE );
-        Region region = new Region( new Polygon( rect.getPoints() ), texKeys.get(r.nextInt(mTextures.size())), 1.0f, 1.0f);
+        Region region = new Region( new SPolygon( rect.getPoints() ), texKeys.get(r.nextInt(mTextures.size())), 1.0f, 1.0f);
         if(!CarGame.multiplayerMode) {
           if(r.nextBoolean()) {
             region.setFlag( Region.MOVABLE, true );
@@ -414,4 +416,16 @@ public class World {
     // TODO Auto-generated method stub
     return(mExplosions);
   }
+  
+  public static Kryo initKryo() {
+    mKryo = new Kryo();
+    mKryo.register( float[].class );
+    mKryo.register( ArrayList.class );
+    mKryo.register( Region.class );
+    mKryo.register( SPolygon.class );
+    mKryo.register( Item.class );
+    mKryo.register( Item.Type.class );
+    return(mKryo);
+  }
+
 }

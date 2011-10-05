@@ -9,7 +9,7 @@ public class Region {
   public static final int OVERHEAD   = 2;
   public static final int MOVABLE    = 4;
   
-  protected Polygon mTransformedPolygon, mGraphicsPolygon;
+  protected SPolygon mTransformedPolygon, mGraphicsPolygon;
   //private Image mTexture;
   private float mScaleX,mScaleY;
   private int mFlags;
@@ -17,16 +17,21 @@ public class Region {
   private float mVX, mVY, mDTheta;
   private String mTexKey;
 
+  public Region() {
+    this(null,null,1.0f,1.0f,IMPASSABLE,0f,0f);
+  }
+
   // Default regions are impassable
-  public Region(Polygon polygon, String texKey, float scaleX, float scaleY) {
+  
+  public Region(SPolygon polygon, String texKey, float scaleX, float scaleY) {
     this(polygon,texKey,scaleX,scaleY,IMPASSABLE,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  public Region(Polygon polygon, String texKey, float scaleX, float scaleY, int flags) {
+  public Region(SPolygon polygon, String texKey, float scaleX, float scaleY, int flags) {
     this(polygon,texKey,scaleX,scaleY,flags,polygon.getCenterX(),polygon.getCenterY());
   }
   
-  Region(Polygon polygon, String texKey, float scaleX, float scaleY, int flags, float pivotX, float pivotY) {
+  Region(SPolygon polygon, String texKey, float scaleX, float scaleY, int flags, float pivotX, float pivotY) {
     this.mTransformedPolygon = polygon;
     this.mTexKey = texKey;
     this.mScaleX = scaleX;
@@ -54,13 +59,13 @@ public class Region {
   }
   
   private void translate(float dx,float dy) {
-    mTransformedPolygon = (Polygon)mTransformedPolygon.transform(Transform.createTranslateTransform( dx, dy ));
+    mTransformedPolygon = (SPolygon)mTransformedPolygon.transform(Transform.createTranslateTransform( dx, dy ));
     mX += dx;
     mY += dy;
   }
   
   private void rotate(float theta) {
-    mTransformedPolygon = (Polygon)mTransformedPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
+    mTransformedPolygon = (SPolygon)mTransformedPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
     mTheta += theta;
   }
 
@@ -193,7 +198,7 @@ public class Region {
     mTexKey = key;
   }
 
-  public void setPolygon( Polygon polygon ) {
+  public void setPolygon( SPolygon polygon ) {
     mGraphicsPolygon = polygon;
   }
 }

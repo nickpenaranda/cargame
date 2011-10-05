@@ -1,11 +1,18 @@
 package org.cargame.editor;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.newdawn.slick.AngelCodeFont;
 import org.newdawn.slick.AppGameContainer;
@@ -20,10 +27,18 @@ import org.newdawn.slick.SlickException;
 import org.newdawn.slick.geom.Polygon;
 import org.newdawn.slick.geom.Rectangle;
 import org.cargame.CarGame;
+import org.cargame.Item;
 import org.cargame.Region;
+import org.cargame.SPolygon;
+import org.cargame.World;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.ObjectBuffer;
 
 public class Editor extends BasicGame {
 
+  public static Kryo kryo;
+  
   public static final String WINDOW_TITLE = "CarGame Map Editor";
   public static final int WINDOW_WIDTH = 800;
   public static final int WINDOW_HEIGHT = 600;
@@ -63,6 +78,7 @@ public class Editor extends BasicGame {
   boolean autoScale = true;
 
   ArrayList<Region> regions;
+  ArrayList<Item> items;
   LinkedList<Message> messages;
   Region curRegion;
   String curTexKey;
@@ -148,7 +164,12 @@ public class Editor extends BasicGame {
   @Override
   public void init( GameContainer container ) throws SlickException {
     this.container = container;
+    
+    kryo = World.initKryo();
+    
     regions = new ArrayList<Region>();
+    items = new ArrayList<Item>();
+    
     messages = new LinkedList<Message>();
     textures = new TreeMap<String, Image>();
     texKeys = new ArrayList<String>();
@@ -422,6 +443,13 @@ public class Editor extends BasicGame {
     
     String zoominfo = String.format( "Zoom: %.0f%%", (1 / zoom) * 100 );
     g.drawString( zoominfo, WINDOW_WIDTH - 15- g.getFont().getWidth( zoominfo), 45);
+    
+    // Messages
+    int i=0;
+    for(Message m:messages) {
+      g.setColor( m.color );
+      g.drawString(m.text,15, WINDOW_HEIGHT - 20 - (++i * 15));
+    }
   }
 
   public List<Region> getWallsWithin( Rectangle rect ) {
@@ -444,7 +472,12 @@ public class Editor extends BasicGame {
       case Input.KEY_RCONTROL:
         control = true;
         break;
-
+      case Input.KEY_F3:
+        saveFile();
+        break;
+      case Input.KEY_F4:
+        loadFile();
+        break;
       case Input.KEY_F12:
         System.exit( 0 );
         break;
@@ -638,7 +671,7 @@ public class Editor extends BasicGame {
         if (button == 0 && shift && !control) { // Add/move points
           if (curRegion == null) {
             if (pendingShape == null) {
-              pendingShape = new Polygon();
+              pendingShape = new SPolygon();
               pendingShape.addPoint( cursorX, cursorY );
             } else if(pendingShape.hasVertex( cursorX, cursorY )) {
               mouseFunc = MouseFunc.MOVEPENDINGVERT;
@@ -660,8 +693,8 @@ public class Editor extends BasicGame {
               dragY = cursorY;
             } else if(curRegion.getRealPolygon().contains( cursorX, cursorY )) {
               mouseFunc = MouseFunc.MOVEREGION;
-              originX = curRegion.getX();
-              originY = curRegion.getY();
+              originX = curRegion.getRealPolygon().getX();
+              originY = curRegion.getRealPolygon().getY();
               dragX = cursorOriginX = cursorX;
               dragY = cursorOriginY = cursorY;
             } else {
@@ -672,7 +705,7 @@ public class Editor extends BasicGame {
           if(pendingShape != null) {
             if(pendingShape.hasVertex( cursorX, cursorY )) {
               int delIndex = pendingShape.indexOf( cursorX, cursorY );
-              Polygon n = new Polygon();
+              SPolygon n = new SPolygon();
               for(int i=0;i< pendingShape.getPointCount();++i) {
                 float point[] = pendingShape.getPoint( i );
                 if(i != delIndex) n.addPoint( point[0], point[1] );
@@ -688,7 +721,7 @@ public class Editor extends BasicGame {
           if(curRegion != null && curRegion.getRealPolygon().hasVertex( cursorX,cursorY )) {
             Polygon p = curRegion.getRealPolygon();
             int delIndex = p.indexOf( cursorX, cursorY ); 
-            Polygon n = new Polygon();
+            SPolygon n = new SPolygon();
             for(int i=0;i < p.getPointCount();++i) {
               float point[] = p.getPoint( i );
               if(i != delIndex) n.addPoint( point[0],point[1] );
@@ -705,7 +738,7 @@ public class Editor extends BasicGame {
           }
         } else if (button == 0 && !shift && !control) { // Complete or select
           if(pendingShape != null) { 
-            Region region = new Region( pendingShape, curTexKey, curScaleX, curScaleY, curFlags );
+            Region region = new Region( (SPolygon)pendingShape, curTexKey, curScaleX, curScaleY, curFlags );
             if(autoScale) {
               region.setScale( pendingShape.getWidth() / 64, pendingShape.getHeight() / 64 );
             }
@@ -801,8 +834,8 @@ public class Editor extends BasicGame {
         dragX += (newx - oldx) / zoom;
         dragY += (newy - oldy) / zoom;
         
-        Polygon p = curRegion.getRealPolygon();
-        Polygon n = new Polygon();
+        SPolygon p = (SPolygon)curRegion.getRealPolygon();
+        SPolygon n = new SPolygon();
         int moveIndex = p.indexOf( cursorX, cursorY );
         if(snap) {
           cursorX = (float)(snapSize * Math.round( dragX / (float)snapSize ));
@@ -839,13 +872,14 @@ public class Editor extends BasicGame {
 
         curRegion.getRealPolygon().setX( originX + (cursorX - cursorOriginX) );
         curRegion.getRealPolygon().setY( originY + (cursorY - cursorOriginY) );
+        
         break;
       case MOVEPENDINGVERT: {// TODO
         dragX += (newx - oldx) / zoom;
         dragY += (newy - oldy) / zoom;
         
         Polygon p = pendingShape;
-        Polygon n = new Polygon();
+        SPolygon n = new SPolygon();
         int moveIndex = p.indexOf( cursorX, cursorY );
         if(snap) {
           cursorX = (float)(snapSize * Math.round( dragX / (float)snapSize ));
@@ -899,5 +933,79 @@ public class Editor extends BasicGame {
     } catch (SlickException e) {
       e.printStackTrace();
     }
+  }
+  
+  private void loadFile() {
+    final JFileChooser fc = new JFileChooser();
+    fc.setFileFilter( new FileNameExtensionFilter( "Car Game map (*.map)", "map" ));
+    fc.setCurrentDirectory( new File("./maps/") );
+    int rval = fc.showOpenDialog( null );
+    switch(rval) {
+      case JFileChooser.APPROVE_OPTION:
+        File f = fc.getSelectedFile();
+        if(!f.getName().endsWith( ".map" ))
+          f = new File(f.getPath() + ".map");
+        FileInputStream fs = null;
+        try {
+          fs = new FileInputStream( f );
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        }
+        if(fs != null) {
+          ObjectBuffer oBuf = new ObjectBuffer(kryo);
+          
+          // READ OBJECTS
+          regions = oBuf.readObject( fs, ArrayList.class );
+          try {
+            fs.close();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          message(f.getName() + " loaded", Color.green);
+        }
+        break;
+      case JFileChooser.CANCEL_OPTION:
+      default:
+        break;
+    }
+  }
+  
+  private void saveFile() {
+    final JFileChooser fc = new JFileChooser();
+    fc.setFileFilter( new FileNameExtensionFilter( "Car Game map (*.map)", "map" ));
+    fc.setCurrentDirectory( new File("./maps/") );
+    int rval = fc.showSaveDialog( null );
+    switch(rval) {
+      case JFileChooser.APPROVE_OPTION:
+        File f = fc.getSelectedFile();
+        if(!f.getName().endsWith( ".map" ))
+          f = new File(f.getPath() + ".map");
+        FileOutputStream fs = null;
+        try {
+          fs = new FileOutputStream( f );
+        } catch (FileNotFoundException e) {
+          e.printStackTrace();
+        }
+        if(fs != null) {
+          ObjectBuffer oBuf = new ObjectBuffer(kryo);
+          
+          // WRITE OBJECTS
+          oBuf.writeObject( fs, regions );
+          try {
+            fs.close();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          message(f.getName() + " saved successfully!", Color.green);
+        }
+        break;
+      case JFileChooser.CANCEL_OPTION:
+      default:
+        break;
+    }
+  }
+  
+  private void message(String text,Color col) {
+    messages.addFirst(new Message(text,col));
   }
 }
