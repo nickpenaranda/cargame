@@ -9,7 +9,7 @@ public class Region {
   public static final int OVERHEAD   = 2;
   public static final int MOVABLE    = 4;
   
-  protected SPolygon mTransformedPolygon, mGraphicsPolygon;
+  protected Polygon mTransformedPolygon, mGraphicsPolygon;
   //private Image mTexture;
   private float mScaleX,mScaleY;
   private int mFlags;
@@ -59,13 +59,13 @@ public class Region {
   }
   
   private void translate(float dx,float dy) {
-    mTransformedPolygon = (SPolygon)mTransformedPolygon.transform(Transform.createTranslateTransform( dx, dy ));
+    mTransformedPolygon = (Polygon)mTransformedPolygon.transform(Transform.createTranslateTransform( dx, dy ));
     mX += dx;
     mY += dy;
   }
   
   private void rotate(float theta) {
-    mTransformedPolygon = (SPolygon)mTransformedPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
+    mTransformedPolygon = (Polygon)mTransformedPolygon.transform( Transform.createRotateTransform( theta, mPivotX, mPivotY ) );
     mTheta += theta;
   }
 
