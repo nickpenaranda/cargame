@@ -5,8 +5,9 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 public class Car {
+
   public static final boolean _ROCKETS_INHERIT_SPEED = false;
-  
+
   // private static final Random r = new Random();
 
   // === Class properties ===
@@ -17,10 +18,10 @@ public class Car {
   public static final int LEFT = 3;
 
   // --- Physics constants ---
-  //private static final double BASE_THRUSTER_FORCE = 0.001;
+  // private static final double BASE_THRUSTER_FORCE = 0.001;
   private static final double BASE_THRUSTER_FORCE = 0.005;
   private static final double MIN_SPEED_BEFORE_STICTION = BASE_THRUSTER_FORCE / 2;
-  //private static final double FRICTION = 0.99937;
+  // private static final double FRICTION = 0.99937;
   private static final double FRICTION = .996;
   private static final double WALL_ELASTICITY = 0.4;
   private static final double DISTANCE_INTEGRAL_MILLIS = 500;
@@ -101,8 +102,8 @@ public class Car {
   }
 
   public void think( int delta ) {
-    mStuckCount--;
-    if(mStuckCount < 0)
+    mStuckCount-= delta;
+    if (mStuckCount < 0)
       mStuckCount = 0;
 
     // Update timers
@@ -132,7 +133,7 @@ public class Car {
     mY += mVY * delta;
 
     // No friction nor thrusters while under boost effect
-    if(mBoostEffect <= 0) {
+    if (mBoostEffect <= 0) {
       // Apply booster force -- non exclusive to avoid arbitrary "preference"
       if (mThrusters[TOP])
         mVY += BASE_THRUSTER_FORCE * delta;
@@ -146,7 +147,7 @@ public class Car {
       mVX *= Math.pow( FRICTION, delta );
       mVY *= Math.pow( FRICTION, delta );
     }
-    
+
     if (Math.abs( mVX ) < MIN_SPEED_BEFORE_STICTION)
       mVX = 0;
     if (Math.abs( mVY ) < MIN_SPEED_BEFORE_STICTION)
@@ -240,22 +241,78 @@ public class Car {
     return mAverageSpeed;
   }
 
+  /**
+   * Adapted from http://www.codeguru.com/forum/printthread.php?t=194400
+   * Philip Nicoletti 14 Jun 2002
+   * @param cx
+   * @param cy
+   * @param ax
+   * @param ay
+   * @param bx
+   * @param by
+   * @return
+   */
+  public static double distanceToSeg(double cx, double cy, double ax, double ay, double bx, double by) {
+    double r_numerator = (cx - ax) * (bx - ax) + (cy - ay) * (by - ay);
+    double r_denomenator = (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
+    double r = r_numerator / r_denomenator;
+
+    double px = ax + r * (bx - ax);
+    double py = ay + r * (by - ay);
+
+    double s = ((ay - cy) * (bx - ax) - (ax - cx) * (by - ay)) / r_denomenator;
+
+    double distanceLine = Math.abs( s ) * Math.sqrt( r_denomenator );
+    double xx = px;
+    double yy = py;
+
+    double distanceSegment;
+
+    if ((r >= 0) && (r <= 1)) {
+      distanceSegment = distanceLine;
+    } else {
+      double dist1 = (cx - ax) * (cx - ax) + (cy - ay) * (cy - ay);
+      double dist2 = (cx - bx) * (cx - bx) + (cy - by) * (cy - by);
+      if (dist1 < dist2) {
+        xx = ax;
+        yy = ay;
+        distanceSegment = Math.sqrt( dist1 );
+      } else {
+        xx = bx;
+        yy = by;
+        distanceSegment = Math.sqrt( dist2 );
+      }
+    }
+    return distanceSegment;
+  }
+  
   public void bounce( double x1, double y1, double x2, double y2, Region rg, int delta ) {
     double ldx = x1 - x2, ldy = y1 - y2;
 
     double line_length = Math.sqrt( ldx * ldx + ldy * ldy );
+
+    // Unit-length surface vector
     double ndx = ldx / line_length, ndy = ldy / line_length;
 
-    // System.out.printf( "ndx = %f, ndy = %f\n",ndx,ndy );
+    //System.out.printf( "ndx = %f, ndy = %f\n",ndx,ndy );
     double line_dot_vector = ndx * mVX + ndy * mVY;
 
     mVX = -mVX + ndx * 2 * line_dot_vector;
     mVY = -mVY + ndy * 2 * line_dot_vector;
+    
+    // Translate player out of surface
+    double dist = 32 - distanceToSeg(mX,mY,x1,y1,x2,y2);
+    //System.out.println(dist); // TODO Debug
+    if(dist > 0)
+    mX -= dist * ndy;
+    mY -= dist * -ndx;
 
-    if (mWorld.movingRegions && rg.hasFlag( Region.MOVABLE )) {// Movable region, must add linear and angular velocities
+    if (mWorld.movingRegions && rg.hasFlag( Region.MOVABLE )) {// Movable region, must add linear
+                                                               // and angular velocities
+      // Region velocity vector
       double rdvx = 0, rdvy = 0;
       double impulseF = Math.sqrt( delta );
-      double magicHackF = 1.2; // Anti-sticking coefficient
+      // double magicHackF = 1.2; // Anti-sticking coefficient
 
       rdvx = rg.getVX() * impulseF; // Linear vel
       rdvy = rg.getVY() * impulseF;
@@ -268,9 +325,10 @@ public class Car {
       double dy = mY - rg.getPivotY();
       // double dlen = Math.sqrt(dx * dx + dy * dy);
 
-      rdvx -= dy * rg.getDTheta() * impulseF * magicHackF;
-      rdvy -= -dx * rg.getDTheta() * impulseF * magicHackF;
-      
+      rdvx -= dy * rg.getDTheta() * impulseF;
+      rdvy += dx * rg.getDTheta() * impulseF;
+
+      // Add region linear + angular velocity to player velocity
       mVX += rdvx;
       mVY += rdvy;
     }
@@ -279,10 +337,10 @@ public class Car {
     mVY *= WALL_ELASTICITY;
     // System.out.printf( "line dot velocity = %f\n", line_dot_vector );
 
-    // HACK: move the player out of the wall to their previous spot.
-    setPosition( mPrevX, mPrevY );
-    
-    mStuckCount += 2;
+    mX += mVX * delta;
+    mY += mVY * delta;
+
+    mStuckCount += delta * 2;
   }
 
   // public void bounce( Line l, int delta ) {
@@ -351,23 +409,22 @@ public class Car {
     mVY += Math.sin( mAngle - Math.PI / 2 ) * IMPULSE_FORCE;
     mBoostTimeout = BOOST_TIMEOUT;
     mBoostEffect = BOOST_EFFECT;
-    Sounds.boost.playWorld(mX, mY);
+    Sounds.boost.playWorld( mX, mY );
     return true;
   }
 
   public boolean rocket() {
     if (mRocketTimeout > 0)
       return false;
-    
-    //Sounds.rocket.play();
-    if(_ROCKETS_INHERIT_SPEED)
+
+    // Sounds.rocket.play();
+    if (_ROCKETS_INHERIT_SPEED)
       mWorld.createRocket( this, mX, mY, mVX + Math.cos( mAngle - Math.PI / 2 )
           * ROCKET_LAUNCH_FACTOR, mVY + Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
     else
-      mWorld.createRocket(  this, mX, mY, 
-                            Math.cos( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR,
-                            Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
-                            
+      mWorld.createRocket( this, mX, mY, Math.cos( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR,
+                           Math.sin( mAngle - Math.PI / 2 ) * ROCKET_LAUNCH_FACTOR );
+
     mRocketTimeout = ROCKET_TIMEOUT;
     return true;
   }

@@ -231,7 +231,8 @@ public class World {
             float ny = dx / len;
   
             // If (x,y) + normal vector * radius projects into polygon, collision!
-            if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
+            //if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
+            if(Car.distanceToSeg(x,y,ax,ay,bx,by) < PLAYER_RADIUS) {
               //System.out.printf("Bouncing off of (%.2f,%.2f) -> (%.2f,%.2f)\n",ax,ay,bx,by);
               mPlayer.bounce( ax, ay, bx, by, rg, delta );
               Sounds.bounce.play( (float)(1 + r.nextGaussian() / 5), 1.0f );

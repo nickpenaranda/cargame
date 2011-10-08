@@ -141,7 +141,7 @@ public class CarGame extends BasicGame {
     mWorld.checkPlayerCollision(delta);
     
     // If stuck, die
-    if(player.getStuckCount() > 10) {// Stuck for N consecutive updates
+    if(player.getStuckCount() > 200) {// Stuck for 200ms
       player.kill();
       if (multiplayerMode)
         mGameClient.sendStateUpdate( Network.STATE_DEAD, true);
