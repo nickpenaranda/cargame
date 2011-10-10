@@ -55,7 +55,7 @@ public class Car {
 
   // --- Physics and movement related ---
   private double mX, mY, mVX, mVY, mAngle;
-  private double mPrevX, mPrevY;
+  //private double mPrevX, mPrevY;
   private double mSpeed;
   private boolean[] mThrusters = new boolean[4];
 
@@ -126,8 +126,8 @@ public class Car {
     if (mBoostEffect < 0)
       mBoostEffect = 0;
 
-    mPrevX = mX;
-    mPrevY = mY;
+//    mPrevX = mX;
+//    mPrevY = mY;
 
     mX += mVX * delta;
     mY += mVY * delta;
@@ -257,14 +257,9 @@ public class Car {
     double r_denomenator = (bx - ax) * (bx - ax) + (by - ay) * (by - ay);
     double r = r_numerator / r_denomenator;
 
-    double px = ax + r * (bx - ax);
-    double py = ay + r * (by - ay);
-
     double s = ((ay - cy) * (bx - ax) - (ax - cx) * (by - ay)) / r_denomenator;
 
     double distanceLine = Math.abs( s ) * Math.sqrt( r_denomenator );
-    double xx = px;
-    double yy = py;
 
     double distanceSegment;
 
@@ -274,12 +269,8 @@ public class Car {
       double dist1 = (cx - ax) * (cx - ax) + (cy - ay) * (cy - ay);
       double dist2 = (cx - bx) * (cx - bx) + (cy - by) * (cy - by);
       if (dist1 < dist2) {
-        xx = ax;
-        yy = ay;
         distanceSegment = Math.sqrt( dist1 );
       } else {
-        xx = bx;
-        yy = by;
         distanceSegment = Math.sqrt( dist2 );
       }
     }

@@ -221,15 +221,6 @@ public class World {
               by = points[1];
             }
   
-            // Find slope,
-            float dx = bx - ax;
-            float dy = by - ay;
-  
-            // Calculate unit length internal normal vector
-            float len = (float)Math.sqrt( dx * dx + dy * dy );
-            float nx = -dy / len;
-            float ny = dx / len;
-  
             // If (x,y) + normal vector * radius projects into polygon, collision!
             //if (p.contains( (float)(x + nx * PLAYER_RADIUS), (float)(y + ny * PLAYER_RADIUS) )) {
             if(Car.distanceToSeg(x,y,ax,ay,bx,by) < PLAYER_RADIUS) {
